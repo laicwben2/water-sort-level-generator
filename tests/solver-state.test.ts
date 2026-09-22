@@ -55,6 +55,17 @@ describe('packed solver state', () => {
     expect(packedStateKey(first)).toBe(packedStateKey(second))
   })
 
+  it('keeps tube count in the packed state key', () => {
+    const oneEmpty = packBoard([[0, 1], []], 2)
+    const twoEmpty = packBoard([[0, 1], [], []], 2)
+    expect(packedStateKey(oneEmpty)).not.toBe(packedStateKey(twoEmpty))
+  })
+
+  it('round-trips the highest supported type id', () => {
+    const board: Board = [[15, 15, 15, 15], []]
+    expect(unpackBoard(packBoard(board, 4), 4)).toEqual(board)
+  })
+
   it('matches classic-v1 solved-state semantics', () => {
     const boards: Board[] = [
       [[0, 0], [1, 1], []],
