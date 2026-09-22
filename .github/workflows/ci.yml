@@ -18,3 +18,4 @@ jobs:
       - run: npm run generate -- --profile=baseline --count=1 --max-attempts=1000 --output=data/audit/ci-smoke.json
       - run: npm run validate -- --file=data/audit/ci-smoke.json
       - run: npm run export:runtime -- --input=data/audit/ci-smoke.json --output=data/output/ci-smoke.json --pack-id=ci-smoke
+      - run: npm run export:solutions -- --input=data/audit/ci-smoke.json --output=data/output/ci-solutions.json
