@@ -116,3 +116,68 @@ This violated the intended memory-guard semantics.
 The solver has been corrected so `maxVisitedStates` now limits unique discovered states in `bestDepth`. A new state is not inserted once the configured visited-state budget is full, and the solver returns `budget-exceeded`.
 
 Therefore the first-pass and first tail-pass timing/RSS data remain useful as observations of the previous implementation, but their budget-hit rates must not be used as the final v0.2 production limits. A corrected tail benchmark is required.
+
+
+## Corrected 14..16 tail benchmark
+
+After fixing `maxVisitedStates` to cap unique discovered states, the same deterministic tail seed was rerun with:
+
+- 14..16 types;
+- 20 samples per type count;
+- 200,000 visited-state budget;
+- max depth 180;
+- concurrency 1;
+- one child process per candidate.
+
+| Types | Exact | Unknown | p50 time | p95 time | max time | p50 visited | p95 visited | max RSS |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 14 | 20/20 | 0 | 774 ms | 3.21 s | 4.60 s | 38,531 | 82,493 | 177 MB |
+| 15 | 19/20 | 1 | 1.15 s | 6.51 s | 18.33 s | 39,790 | 166,733 | 236 MB |
+| 16 | 15/20 | 5 | 1.81 s | 14.39 s | 14.86 s | 52,132 | 200,000 | 253 MB |
+
+All unknown results were `budget-exceeded`.
+
+The corrected guard successfully bounds the visited map at 200,000 states. Peak RSS stayed around 253 MB instead of the previous pathological ~592 MB.
+
+## Tail behavior
+
+Most 14..16 Type candidates still have a minimum of two empty tubes.
+
+Two important pathological shapes appeared:
+
+1. two empty tubes are solvable, but optimal A* reaches the memory budget before proving the shortest solution;
+2. two empty tubes are proven unsolvable, then the three-empty-tube search has a much larger branching frontier and reaches the visited-state budget.
+
+Example 15-Type pathological candidate:
+
+```text
+1 empty:
+  unsolvable
+  visited = 380
+
+2 empty:
+  unsolvable
+  visited = 29,183
+
+3 empty:
+  budget-exceeded
+  visited = 200,000
+```
+
+This confirms that minimum-empty proof is usually cheap at one empty tube, but can become expensive when a candidate requires three or more empty tubes.
+
+## Engineering recommendation
+
+For Generator v0.2:
+
+- keep 16 types as the encoding/research ceiling;
+- keep generation sequential by default;
+- use a strict visited-state budget as the primary memory guard;
+- reject `budget-exceeded` candidates instead of increasing memory without bound;
+- treat 14 types as comfortably within the current solver envelope;
+- treat 15 types as viable with occasional rejection;
+- treat 16 types as supported for research/content generation, but expect a meaningful reject rate under a 200k visited-state budget.
+
+The current result does not justify lowering the encoding ceiling below 16. Offline generation can tolerate rejecting pathological candidates.
+
+Existing 4..7 Type profile budgets have been reduced substantially because the older 60k..1.5M limits were inherited from the pre-packed solver and are no longer justified by measured state counts.
