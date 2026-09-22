@@ -115,25 +115,12 @@ export function findMinimumEmptyTubes(
   }
 }
 
-function scoreDifficultyMatch(
-  entry: {
-    emptyTubes: number
-    result: Extract<SolverResult, { status: 'solved' }>
-    path: ReturnType<typeof analyzeSolutionPath>
-  },
+function matchesCurrentDifficultyWindow(
+  result: Extract<SolverResult, { status: 'solved' }>,
   profile: DifficultyProfile,
-): number | undefined {
-  if (entry.result.solution.length < profile.minMoves || entry.result.solution.length > profile.maxMoves) {
-    return undefined
-  }
-
-  const decisionRatio = entry.result.solution.length === 0
-    ? 0
-    : entry.path.decisionSteps / entry.result.solution.length
-
-  return Math.abs(entry.result.solution.length - profile.targetMoves)
-    + Math.abs(decisionRatio - profile.targetDecisionRatio) * 4
-    + Math.abs(entry.emptyTubes - 2) * 1.5
+): boolean {
+  return result.solution.length >= profile.minMoves
+    && result.solution.length <= profile.maxMoves
 }
 
 export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalog {
@@ -172,12 +159,7 @@ export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalo
       if (minimum.status !== 'exact') continue
 
       const path = analyzeSolutionPath(minimum.board, minimum.result.solution, capacity)
-      const score = scoreDifficultyMatch({
-        emptyTubes: minimum.minimumRequiredEmptyTubes,
-        result: minimum.result,
-        path,
-      }, profile)
-      if (score === undefined) continue
+      if (!matchesCurrentDifficultyWindow(minimum.result, profile)) continue
 
       const canonicalSequence = canonicalPuzzleSequence(minimum.board)
       if (!canonicalIndex.add(canonicalSequence)) continue
@@ -201,8 +183,6 @@ export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalo
         solutionPath: path,
         emptyTubeAnalysis: minimum.analyses,
       })
-
-      void score
     }
 
     if (accepted < perDifficulty) {
