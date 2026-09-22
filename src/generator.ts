@@ -63,7 +63,7 @@ function summarizeResult(result: SolverResult, emptyTubes: number): EmptyTubeAna
   return {
     emptyTubes,
     status: result.status,
-    ...(result.status === 'solved' ? { minimumMoves: result.solution.length } : {}),
+    ...(result.status === 'solved' ? { optimalMoves: result.solution.length } : {}),
     metrics: result.metrics,
   }
 }
@@ -191,10 +191,10 @@ export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalo
         emptyTubes: minimum.minimumRequiredEmptyTubes,
         minimumRequiredEmptyTubes: minimum.minimumRequiredEmptyTubes,
         board: minimum.board,
-        solution: minimum.result.solution,
+        optimalSolution: minimum.result.solution,
         canonicalKey,
         solver: {
-          minimumMoves: minimum.result.solution.length,
+          optimalMoves: minimum.result.solution.length,
           ...minimum.result.metrics,
         },
         solutionPath: path,
