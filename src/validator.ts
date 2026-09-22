@@ -2,7 +2,7 @@ import { CANONICAL_VERSION, ENCODING_VERSION, canonicalPuzzleKey } from './canon
 import { applyMove, calculatePour, isSolved } from './rules'
 import { analyzeSolutionPath } from './solver'
 import type { AuditCatalog } from './types'
-import { GENERATOR_VERSION, RNG_VERSION } from './version'
+import { GENERATOR_VERSION, RNG_VERSION, SOLVER_STATE_ENCODING_VERSION } from './version'
 
 export interface ValidationSummary {
   valid: true
@@ -21,6 +21,9 @@ export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
   }
   if (catalog.reproducibility.encodingVersion !== ENCODING_VERSION) {
     throw new Error('Encoding version mismatch')
+  }
+  if (catalog.reproducibility.solverStateEncodingVersion !== SOLVER_STATE_ENCODING_VERSION) {
+    throw new Error('Solver state encoding version mismatch')
   }
 
   const ids = new Set<string>()
