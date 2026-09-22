@@ -148,11 +148,14 @@ export function canonicalPuzzleSequence(board: Board): bigint[] {
   return search(board.map((tube) => [...tube]), new Map(), 0)
 }
 
-export function canonicalPuzzleKey(board: Board): string {
-  const sequence = canonicalPuzzleSequence(board)
+export function canonicalPuzzleKeyFromSequence(sequence: readonly bigint[]): string {
   return `${CANONICAL_VERSION}:${ENCODING_VERSION}:${sequence
     .map((value) => value.toString(16).padStart(16, '0'))
     .join('.')}`
+}
+
+export function canonicalPuzzleKey(board: Board): string {
+  return canonicalPuzzleKeyFromSequence(canonicalPuzzleSequence(board))
 }
 
 function encodeTubeForState(tube: readonly number[]): string {
