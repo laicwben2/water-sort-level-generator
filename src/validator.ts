@@ -78,7 +78,7 @@ export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
     }
 
     let board = puzzle.board.map((tube) => [...tube])
-    for (const expectedMove of puzzle.solution) {
+    for (const expectedMove of puzzle.optimalSolution) {
       const move = calculatePour(board, expectedMove.from, expectedMove.to, puzzle.capacity)
       if (JSON.stringify(move) !== JSON.stringify(expectedMove)) {
         throw new Error(`Invalid saved move: ${puzzle.id}`)
@@ -87,11 +87,11 @@ export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
     }
 
     if (!isSolved(board, puzzle.capacity)) throw new Error(`Solution does not finish: ${puzzle.id}`)
-    if (puzzle.solution.length !== puzzle.solver.minimumMoves) {
+    if (puzzle.optimalSolution.length !== puzzle.solver.optimalMoves) {
       throw new Error(`Solution length mismatch: ${puzzle.id}`)
     }
-    if (JSON.stringify(analyzeSolutionPath(puzzle.board, puzzle.solution, puzzle.capacity))
-      !== JSON.stringify(puzzle.solutionPath)) {
+    if (JSON.stringify(analyzeSolutionPath(puzzle.board, puzzle.optimalSolution, puzzle.capacity))
+      !== JSON.stringify(puzzle.optimalSolutionPath)) {
       throw new Error(`Solution path metrics mismatch: ${puzzle.id}`)
     }
 
