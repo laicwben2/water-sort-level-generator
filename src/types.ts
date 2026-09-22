@@ -36,7 +36,9 @@ export interface MistakeAnalysisMetrics {
   deadEndAlternatives: number
   unknownAlternatives: number
   analysisCoverage: number
+  alternativesPerAnalyzedState: number
   wrongMoveDensity: number
+  deadEndDensity: number
   deadEndRisk: number
   averageRecoveryPenalty: number
   p50RecoveryPenalty: number
