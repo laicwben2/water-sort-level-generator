@@ -181,3 +181,43 @@ For Generator v0.2:
 The current result does not justify lowering the encoding ceiling below 16. Offline generation can tolerate rejecting pathological candidates.
 
 Existing 4..7 Type profile budgets have been reduced substantially because the older 60k..1.5M limits were inherited from the pre-packed solver and are no longer justified by measured state counts.
+
+
+## Corrected tail benchmark results
+
+After fixing `maxVisitedStates` to cap unique discovered states in `bestDepth`, the same 14..16-Type deterministic tail sample was rerun with a 200,000 visited-state budget.
+
+| Types | Exact | Unknown | p50 time | p95 time | max time | p50 visited | p95 visited | max RSS |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 14 | 20/20 | 0 | 0.77 s | 3.21 s | 4.60 s | 38,531 | 82,493 | 177 MB |
+| 15 | 19/20 | 1 | 1.15 s | 6.51 s | 18.33 s | 39,790 | 166,733 | 236 MB |
+| 16 | 15/20 | 5 | 1.81 s | 14.39 s | 14.86 s | 52,132 | 200,000 | 253 MB |
+
+All exact accepted cases in this sample used two empty tubes.
+
+The corrected guard materially improved worst-case memory behavior:
+
+- the previous 15-Type pathological case reached ~592 MB because the visited map grew to 682,774 states;
+- with the corrected 200,000-state cap, the same candidate stops at ~236 MB RSS;
+- 16-Type budget-hit cases remain near ~250 MB rather than growing without a meaningful bound.
+
+## Engineering recommendation
+
+For Generator v0.2:
+
+- **16 types remains the encoding/research ceiling.**
+- **14 types is the current conservative production-solver ceiling** at a 200k visited-state budget: 20/20 exact in this deterministic tail sample.
+- **15 types is feasible but has a measurable pathological tail**: 19/20 exact.
+- **16 types is research/experimental** under the current A*: 15/20 exact.
+
+This is not a gameplay recommendation. UI readability, palette/pattern design, and human difficulty may require lower consumer limits.
+
+The generator should continue to:
+
+1. process one candidate at a time;
+2. cap unique visited states per solver invocation;
+3. reject `budget-exceeded` candidates;
+4. retain 16-Type support for research;
+5. avoid increasing the production state budget merely to rescue rare pathological candidates.
+
+A future solver representation or heuristic improvement may raise the practical production ceiling without changing the Level Pack contract.
