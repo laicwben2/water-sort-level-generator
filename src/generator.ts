@@ -1,8 +1,10 @@
 import {
   CANONICAL_VERSION,
   ENCODING_VERSION,
-  canonicalPuzzleKey,
+  canonicalPuzzleKeyFromSequence,
+  canonicalPuzzleSequence,
 } from './canonical'
+import { CanonicalSequenceTrie } from './dedup'
 import { PROFILE_SETS, type DifficultyProfile, type ProfileName } from './profiles'
 import {
   createRng,
@@ -143,7 +145,7 @@ export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalo
   const batchSeed = options.batchSeed ?? 'water-sort:generator:v0.2:default'
   const profiles = PROFILE_SETS[profileName]
   const puzzles: AuditPuzzle[] = []
-  const canonicalKeys = new Set<string>()
+  const canonicalIndex = new CanonicalSequenceTrie()
 
   const configFingerprint = fingerprintConfig({
     profileName,
@@ -177,10 +179,9 @@ export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalo
       }, profile)
       if (score === undefined) continue
 
-      const canonicalKey = canonicalPuzzleKey(minimum.board)
-      if (canonicalKeys.has(canonicalKey)) continue
-
-      canonicalKeys.add(canonicalKey)
+      const canonicalSequence = canonicalPuzzleSequence(minimum.board)
+      if (!canonicalIndex.add(canonicalSequence)) continue
+      const canonicalKey = canonicalPuzzleKeyFromSequence(canonicalSequence)
       accepted += 1
       puzzles.push({
         id: `ws-${profileName}-${difficulty}-c${String(attempt).padStart(6, '0')}`,
