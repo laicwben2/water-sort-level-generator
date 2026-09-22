@@ -161,3 +161,28 @@ Tests must cover:
 5. budget-exceeded alternate analysis remains unknown;
 6. aggregate puzzle metrics exclude unknown alternatives from exact known ratios;
 7. stored optimal move is consistent with zero penalty.
+
+
+## Research report CLI
+
+Generate a machine-readable summary from an audit catalog:
+
+```bash
+npm run report:difficulty -- \
+  --input=data/audit/catalog-expanded.json \
+  --output=data/output/difficulty-report.json
+```
+
+The report includes per-puzzle metrics plus per-difficulty distributions for:
+
+- optimal move count;
+- decision ratio;
+- average choices;
+- alternative move count;
+- unknown-analysis rate;
+- optimal-alternative rate;
+- known dead-end ratio;
+- average/max recovery penalty;
+- high-penalty mistake count.
+
+These distributions are research inputs only. They do not yet define Easy/Medium/Hard thresholds.
