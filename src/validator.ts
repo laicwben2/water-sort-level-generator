@@ -10,6 +10,10 @@ export interface ValidationSummary {
   byDifficulty: Record<string, number>
 }
 
+function approximatelyEqual(first: number, second: number): boolean {
+  return Math.abs(first - second) <= 1e-12
+}
+
 function validateMistakeAnalysis(puzzleId: string, metrics: NonNullable<AuditCatalog['puzzles'][number]['mistakeAnalysis']>) {
   const countedAlternatives = metrics.optimalEquivalentAlternatives
     + metrics.recoverableAlternatives
@@ -23,13 +27,30 @@ function validateMistakeAnalysis(puzzleId: string, metrics: NonNullable<AuditCat
     throw new Error(`Mistake-analysis decision count exceeds analyzed states: ${puzzleId}`)
   }
 
-  for (const [name, value] of [
-    ['analysisCoverage', metrics.analysisCoverage],
-    ['wrongMoveDensity', metrics.wrongMoveDensity],
-    ['deadEndRisk', metrics.deadEndRisk],
+  const knownAlternatives = metrics.alternatives - metrics.unknownAlternatives
+  const knownWrongAlternatives = metrics.recoverableAlternatives + metrics.deadEndAlternatives
+
+  const expectedCoverage = metrics.alternatives === 0 ? 1 : knownAlternatives / metrics.alternatives
+  const expectedAlternativesPerState = metrics.analyzedStates === 0 ? 0 : metrics.alternatives / metrics.analyzedStates
+  const expectedWrongMoveDensity = knownAlternatives === 0 ? 0 : knownWrongAlternatives / knownAlternatives
+  const expectedDeadEndDensity = knownAlternatives === 0 ? 0 : metrics.deadEndAlternatives / knownAlternatives
+  const expectedDeadEndRisk = knownWrongAlternatives === 0 ? 0 : metrics.deadEndAlternatives / knownWrongAlternatives
+
+  for (const [name, value, expected] of [
+    ['analysisCoverage', metrics.analysisCoverage, expectedCoverage],
+    ['alternativesPerAnalyzedState', metrics.alternativesPerAnalyzedState, expectedAlternativesPerState],
+    ['wrongMoveDensity', metrics.wrongMoveDensity, expectedWrongMoveDensity],
+    ['deadEndDensity', metrics.deadEndDensity, expectedDeadEndDensity],
+    ['deadEndRisk', metrics.deadEndRisk, expectedDeadEndRisk],
   ] as const) {
-    if (!Number.isFinite(value) || value < 0 || value > 1) {
+    if (!Number.isFinite(value) || value < 0) {
       throw new Error(`Invalid ${name} in mistake analysis: ${puzzleId}`)
+    }
+    if (name !== 'alternativesPerAnalyzedState' && value > 1) {
+      throw new Error(`Invalid ${name} in mistake analysis: ${puzzleId}`)
+    }
+    if (!approximatelyEqual(value, expected)) {
+      throw new Error(`Inconsistent ${name} in mistake analysis: ${puzzleId}`)
     }
   }
 
