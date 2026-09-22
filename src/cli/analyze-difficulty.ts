@@ -24,6 +24,28 @@ function distribution(values: readonly number[]) {
   }
 }
 
+function cueRisk(
+  puzzles: readonly AuditPuzzle[],
+  predicate: (entry: AuditPuzzle['difficultyV2']['states'][number]['alternatives'][number]) => boolean,
+) {
+  const entries = puzzles
+    .flatMap((puzzle) => puzzle.difficultyV2.states)
+    .flatMap((state) => state.alternatives)
+    .filter((entry) => entry.status !== 'unknown' && predicate(entry))
+
+  const nonOptimal = entries.filter((entry) =>
+    entry.status === 'recoverable-mistake' || entry.status === 'dead-end').length
+  const deadEnds = entries.filter((entry) => entry.status === 'dead-end').length
+
+  return {
+    known: entries.length,
+    nonOptimal,
+    deadEnds,
+    riskRate: entries.length === 0 ? 0 : nonOptimal / entries.length,
+    deadEndRate: entries.length === 0 ? 0 : deadEnds / entries.length,
+  }
+}
+
 function puzzleMetrics(puzzle: AuditPuzzle) {
   const analysis = puzzle.difficultyV2
   const knownAlternatives = analysis.totalAlternativeMoves - analysis.unknownMoves
@@ -83,6 +105,32 @@ const groups = difficultyNames.map((difficulty) => {
     averageRecoveryPenalty: distribution(group.map((puzzle) => puzzle.averageRecoveryPenalty)),
     maxRecoveryPenalty: distribution(group.map((puzzle) => puzzle.maxRecoveryPenalty)),
     highPenaltyMistakes: distribution(group.map((puzzle) => puzzle.highPenaltyMistakes)),
+    cueRisk: {
+      sameTypeJoin: cueRisk(
+        catalog.puzzles.filter((puzzle) => puzzle.difficulty === difficulty),
+        (entry) => entry.features.joinsSameType,
+      ),
+      emptyDestination: cueRisk(
+        catalog.puzzles.filter((puzzle) => puzzle.difficulty === difficulty),
+        (entry) => entry.features.destination === 'empty',
+      ),
+      sourceBecomesEmpty: cueRisk(
+        catalog.puzzles.filter((puzzle) => puzzle.difficulty === difficulty),
+        (entry) => entry.features.sourceBecomesEmpty,
+      ),
+      targetBecomesComplete: cueRisk(
+        catalog.puzzles.filter((puzzle) => puzzle.difficulty === difficulty),
+        (entry) => entry.features.targetBecomesComplete,
+      ),
+      segmentImproves: cueRisk(
+        catalog.puzzles.filter((puzzle) => puzzle.difficulty === difficulty),
+        (entry) => entry.features.segmentDelta < 0,
+      ),
+      multiLayerMove: cueRisk(
+        catalog.puzzles.filter((puzzle) => puzzle.difficulty === difficulty),
+        (entry) => entry.features.movedAmount > 1,
+      ),
+    },
   }
 })
 
