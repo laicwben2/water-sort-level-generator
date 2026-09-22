@@ -120,3 +120,31 @@ Official game releases should never run this solver on the player's device. Gene
 ## Consumer repository
 
 The current web consumer is [laicwben2/water-sort](https://github.com/laicwben2/water-sort). Both projects share the versioned Level Pack contract in `spec/level-pack-v1.schema.json`.
+
+
+## Generator v0.2 foundation
+
+The v0.2 foundation is documented in [docs/v0.2-foundation.md](docs/v0.2-foundation.md).
+
+Key invariants:
+
+- puzzle identity uses abstract types, not presentation colors;
+- type renaming and tube order do not change puzzle identity;
+- canonicalization uses a shared global type mapping and exact tube-order search;
+- generation uses an explicit versioned PRNG and independently derived candidate seeds;
+- the CLI accepts an explicit batch seed with `--seed=...`;
+- empty tubes are searched from 1 upward and are only declared minimal when every smaller count is proven unsolvable;
+- `budget-exceeded` means unknown and causes that candidate to be rejected;
+- generation is sequential by default so solver memory does not multiply by worker count.
+
+Example reproducible generation:
+
+```bash
+npm run generate -- \
+  --profile=expanded \
+  --count=20 \
+  --max-attempts=5000 \
+  --seed=water-sort-research-2026-09
+```
+
+The audit catalog records generator, RNG, canonicalization, encoding, batch-seed, candidate-seed, and config-fingerprint metadata needed to reproduce accepted candidates.
