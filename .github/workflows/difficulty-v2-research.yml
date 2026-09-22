@@ -1,0 +1,43 @@
+name: Difficulty v2 research smoke
+
+on:
+  push:
+    branches:
+      - feat/difficulty-v2
+    paths:
+      - .github/workflows/difficulty-v2-research.yml
+  workflow_dispatch:
+
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - name: Generate deterministic research catalog
+        run: |
+          npm run generate -- \
+            --profile=expanded \
+            --count=3 \
+            --max-attempts=5000 \
+            --seed=difficulty-v2-research-smoke \
+            --output=data/audit/difficulty-v2-research.json
+      - name: Analyze Difficulty v2
+        run: |
+          npm run analyze:difficulty -- \
+            --input=data/audit/difficulty-v2-research.json \
+            --output=data/audit/difficulty-v2-research-analyzed.json \
+            --max-states=25000 \
+            --max-depth=100 \
+            --max-steps=20 \
+            --max-alternatives=6 \
+            --severe-penalty=5
+      - run: npm run validate -- --file=data/audit/difficulty-v2-research-analyzed.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: difficulty-v2-research-smoke
+          path: data/audit/difficulty-v2-research-analyzed.json
