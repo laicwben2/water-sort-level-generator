@@ -97,3 +97,22 @@ A second pass uses:
 - deterministic seed `water-sort-benchmark-tail-v0.2`.
 
 Its purpose is to estimate the long-tail unknown rate and memory/time envelope more reliably.
+
+
+## Budget semantics correction
+
+The initial benchmark exposed an implementation mismatch: `maxVisitedStates` was being enforced against popped/explored states while the visited map could grow substantially beyond that limit.
+
+One 15-Type tail case reached:
+
+```text
+explored states = 200,000
+visited states  = 682,774
+max RSS         = ~592 MB
+```
+
+This violated the intended memory-guard semantics.
+
+The solver has been corrected so `maxVisitedStates` now limits unique discovered states in `bestDepth`. A new state is not inserted once the configured visited-state budget is full, and the solver returns `budget-exceeded`.
+
+Therefore the first-pass and first tail-pass timing/RSS data remain useful as observations of the previous implementation, but their budget-hit rates must not be used as the final v0.2 production limits. A corrected tail benchmark is required.
