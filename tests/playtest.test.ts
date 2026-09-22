@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { selectPlaytestCases } from '../src/playtest'
+import { exportBlindPlaytestPack, selectPlaytestCases } from '../src/playtest'
 import type { ResearchPool, ResearchPuzzle } from '../src/research'
 
 function fakePuzzle(index: number): ResearchPuzzle {
@@ -109,5 +109,21 @@ describe('playtest selection', () => {
       expect(entry.reason.rankWithinMetric).toBeGreaterThanOrEqual(1)
       expect(entry.puzzle.id).toBe(entry.id)
     }
+  })
+
+  it('exports a blind pack without research hints or answers', () => {
+    const selection = selectPlaytestCases(fakePool(), 'selection-test')
+    const pack = exportBlindPlaytestPack(selection, 'types7-test')
+
+    expect(pack.kind).toBe('blind-playtest')
+    expect(pack.levels).toHaveLength(12)
+    expect(pack.levels.map((level) => level.order))
+      .toEqual(Array.from({ length: 12 }, (_, index) => index + 1))
+
+    const serialized = JSON.stringify(pack)
+    expect(serialized).not.toContain('optimalSolution')
+    expect(serialized).not.toContain('optimalMoves')
+    expect(serialized).not.toContain('reason')
+    expect(serialized).not.toContain('difficulty')
   })
 })
