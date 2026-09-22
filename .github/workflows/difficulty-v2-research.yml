@@ -30,7 +30,7 @@ jobs:
         run: |
           npm run analyze:difficulty -- \
             --input=data/audit/difficulty-v2-research.json \
-            --output=data/audit/difficulty-v2-research-analyzed.json \
+            --output=data/audit/difficulty-v2-research-analyzed-v2.json \
             --max-states=25000 \
             --max-depth=100 \
             --max-steps=20 \
@@ -39,5 +39,5 @@ jobs:
       - run: npm run validate -- --file=data/audit/difficulty-v2-research-analyzed.json
       - uses: actions/upload-artifact@v4
         with:
-          name: difficulty-v2-research-smoke
-          path: data/audit/difficulty-v2-research-analyzed.json
+          name: difficulty-v2-research-smoke-v2
+          path: data/audit/difficulty-v2-research-analyzed-v2.json
