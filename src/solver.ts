@@ -143,14 +143,14 @@ export function solveBoard(board: Board, options: SolverOptions = {}): SolverRes
   let maxDepthReached = 0
   let depthCutoffReached = false
 
-  while (queue.size > 0) {
-    if (exploredStates >= maxVisitedStates) {
-      return {
-        status: 'budget-exceeded',
-        metrics: metrics(exploredStates, bestDepth.size, generatedMoves, maxDepthReached),
-      }
+  if (maxVisitedStates < 1) {
+    return {
+      status: 'budget-exceeded',
+      metrics: metrics(0, bestDepth.size, 0, 0),
     }
+  }
 
+  while (queue.size > 0) {
     const queued = queue.pop()!
     const node = nodes[queued.nodeId]
     if (bestDepth.get(node.key) !== node.depth) continue
@@ -175,6 +175,12 @@ export function solveBoard(board: Board, options: SolverOptions = {}): SolverRes
     for (const transition of transitions) {
       const nextDepth = node.depth + 1
       if ((bestDepth.get(transition.key) ?? Number.POSITIVE_INFINITY) <= nextDepth) continue
+      if (!bestDepth.has(transition.key) && bestDepth.size >= maxVisitedStates) {
+        return {
+          status: 'budget-exceeded',
+          metrics: metrics(exploredStates, bestDepth.size, generatedMoves, maxDepthReached),
+        }
+      }
       bestDepth.set(transition.key, nextDepth)
       const next: SearchNode = {
         board: transition.board,
