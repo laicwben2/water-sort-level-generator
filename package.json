@@ -11,7 +11,8 @@
     "validate": "tsx src/cli/validate.ts",
     "export:runtime": "tsx src/cli/export-runtime.ts",
     "export:solutions": "tsx src/cli/export-solutions.ts",
-    "benchmark": "tsx src/cli/benchmark.ts"
+    "benchmark": "tsx src/cli/benchmark.ts",
+    "summarize:difficulty": "tsx src/cli/summarize-difficulty.ts"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
