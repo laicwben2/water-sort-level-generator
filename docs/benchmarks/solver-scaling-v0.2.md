@@ -221,3 +221,37 @@ The generator should continue to:
 5. avoid increasing the production state budget merely to rescue rare pathological candidates.
 
 A future solver representation or heuristic improvement may raise the practical production ceiling without changing the Level Pack contract.
+
+
+## 200k cross-check across 6..16 types
+
+A later deterministic cross-check reran the full 6..16 Type range with:
+
+- 5 samples per type count;
+- 200,000 visited-state budget;
+- max depth 200;
+- maximum 5 empty tubes;
+- concurrency 1;
+- one child process per candidate;
+- seed `water-sort:benchmark:v0.2:research-1`.
+
+All 55/55 candidates completed with exact minimum-empty results in this particular sample.
+
+Selected results:
+
+| Types | Exact | p50 time | max time | p50 visited | max visited | max RSS |
+|---:|---:|---:|---:|---:|---:|---:|
+| 10 | 5/5 | 69 ms | 324 ms | 4,884 | 22,914 | 108 MB |
+| 12 | 5/5 | 140 ms | 351 ms | 8,005 | 26,071 | 109 MB |
+| 13 | 5/5 | 169 ms | 1.98 s | 8,739 | 107,727 | 162 MB |
+| 14 | 5/5 | 541 ms | 2.85 s | 24,900 | 68,588 | 143 MB |
+| 15 | 5/5 | 349 ms | 4.44 s | 19,919 | 138,421 | 207 MB |
+| 16 | 5/5 | 687 ms | 3.43 s | 25,498 | 102,189 | 175 MB |
+
+This small sample does not supersede the corrected 20-sample 14..16 tail benchmark. It is a regression/cross-check showing that the packed solver remains stable across the full supported research range after the visited-state guard correction.
+
+The broader conclusion remains unchanged:
+
+- 14 types is comfortably inside the present offline solver envelope;
+- 15 types is viable with occasional pathological rejection in larger samples;
+- 16 types remains a supported research ceiling with a meaningful long-tail reject rate under 200k visited states.
