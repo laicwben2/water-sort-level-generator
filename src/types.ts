@@ -26,6 +26,62 @@ export interface SolutionPathMetrics {
   maximumChoices: number
 }
 
+
+export interface StructuralDifficultyMetrics {
+  typeCount: number
+  tubeCount: number
+  initialEmptyTubes: number
+  initialSegments: number
+  fragmentationExcess: number
+  averageTypeTubeSpread: number
+  maximumTypeTubeSpread: number
+  averageBuriedDepth: number
+  maximumBuriedDepth: number
+  mixedTubeCount: number
+  monochromeFullTubeCount: number
+}
+
+export interface OptimalPathDifficultyMetrics extends SolutionPathMetrics {
+  optimalMoves: number
+  movesIntoEmptyTube: number
+  movesJoiningSameType: number
+  stagingRatio: number
+}
+
+export interface MistakeAnalysisConfig {
+  maxVisitedStatesPerAlternative: number
+  maxDepthPerAlternative: number
+  maxAnalyzedSteps: number
+  maxAlternativesPerStep: number
+  severeRecoveryThreshold: number
+}
+
+export interface MistakeRecoveryMetrics {
+  config: MistakeAnalysisConfig
+  analyzedSteps: number
+  skippedSteps: number
+  eligibleAlternatives: number
+  analyzedAlternatives: number
+  skippedAlternatives: number
+  equivalentOptimalSuccessorsExcluded: number
+  optimalAlternativeCount: number
+  recoverableMistakeCount: number
+  deadEndCount: number
+  unknownCount: number
+  analyzedCoverage: number
+  knownCoverage: number
+  deadEndRatio: number
+  averageRecoveryPenalty: number
+  maximumRecoveryPenalty: number
+  severeRecoveryCount: number
+}
+
+export interface DifficultyV2Metrics {
+  structural: StructuralDifficultyMetrics
+  optimalPath: OptimalPathDifficultyMetrics
+  mistakeRecovery?: MistakeRecoveryMetrics
+}
+
 export type SolverResult =
   | { status: 'solved'; solution: Move[]; metrics: SolverMetrics }
   | { status: 'unsolvable'; metrics: SolverMetrics }
@@ -52,6 +108,7 @@ export interface AuditPuzzle {
   solver: SolverMetrics & { optimalMoves: number }
   solutionPath: SolutionPathMetrics
   emptyTubeAnalysis: EmptyTubeAnalysis[]
+  difficultyV2?: DifficultyV2Metrics
 }
 
 export interface AuditCatalog {
