@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { CANONICAL_VERSION, ENCODING_VERSION, canonicalPuzzleKey } from '../src/canonical'
-import { exportRuntimePack } from '../src/exporter'
+import { exportRuntimePack, exportSolutionArtifact } from '../src/exporter'
 import { analyzeSolutionPath, solveBoard } from '../src/solver'
 import type { AuditCatalog } from '../src/types'
 import { validateAuditCatalog } from '../src/validator'
@@ -31,24 +31,25 @@ function fixture(): AuditCatalog {
       emptyTubes: 1,
       minimumRequiredEmptyTubes: 1,
       board,
-      solution: result.solution,
+      optimalSolution: result.solution,
       canonicalKey: canonicalPuzzleKey(board),
-      solver: { minimumMoves: result.solution.length, ...result.metrics },
+      solver: { optimalMoves: result.solution.length, ...result.metrics },
       solutionPath: analyzeSolutionPath(board, result.solution, 2),
       emptyTubeAnalysis: [{
         emptyTubes: 1,
         status: 'solved',
-        minimumMoves: result.solution.length,
+        optimalMoves: result.solution.length,
         metrics: result.metrics,
       }],
     }],
   }
 }
 
-describe('catalog validation and runtime export', () => {
-  it('validates audit data then strips solver-only fields', () => {
+describe('catalog validation and exports', () => {
+  it('validates audit data then strips full solutions from runtime packs', () => {
     const catalog = fixture()
     expect(validateAuditCatalog(catalog).valid).toBe(true)
+
     const runtime = exportRuntimePack(catalog, 'test-pack')
     expect(runtime.rulesVersion).toBe('classic-v1')
     expect(runtime.levels[0]).toEqual({
@@ -56,11 +57,18 @@ describe('catalog validation and runtime export', () => {
       difficulty: 'easy',
       capacity: 2,
       board: [[0, 1], [0, 1], []],
-      metadata: { optimalMoves: resultLength(catalog) },
+      metadata: { optimalMoves: catalog.puzzles[0].solver.optimalMoves },
+    })
+    expect(runtime.levels[0]).not.toHaveProperty('optimalSolution')
+  })
+
+  it('exports a separate exact solution artifact', () => {
+    const catalog = fixture()
+    const artifact = exportSolutionArtifact(catalog)
+    expect(artifact.solutions[0]).toEqual({
+      id: 'fixture-1',
+      optimalMoves: catalog.puzzles[0].solver.optimalMoves,
+      optimalSolution: catalog.puzzles[0].optimalSolution,
     })
   })
 })
-
-function resultLength(catalog: AuditCatalog): number {
-  return catalog.puzzles[0].solver.minimumMoves
-}
