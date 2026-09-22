@@ -1,5 +1,6 @@
 import { CANONICAL_VERSION, ENCODING_VERSION, canonicalPuzzleKey } from './canonical'
 import { applyMove, calculatePour, isSolved } from './rules'
+import { analyzeOptimalPathDifficulty, analyzeStructuralDifficulty } from './difficulty'
 import { analyzeSolutionPath } from './solver'
 import type { AuditCatalog } from './types'
 import { GENERATOR_VERSION, RNG_VERSION, SOLVER_STATE_ENCODING_VERSION } from './version'
@@ -96,6 +97,34 @@ export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
     if (JSON.stringify(analyzeSolutionPath(puzzle.board, puzzle.optimalSolution, puzzle.capacity))
       !== JSON.stringify(puzzle.solutionPath)) {
       throw new Error(`Solution path metrics mismatch: ${puzzle.id}`)
+    }
+
+    if (puzzle.difficultyV2) {
+      const structural = analyzeStructuralDifficulty(puzzle.board, puzzle.capacity)
+      if (JSON.stringify(structural) !== JSON.stringify(puzzle.difficultyV2.structural)) {
+        throw new Error(`Difficulty v2 structural metrics mismatch: ${puzzle.id}`)
+      }
+      const optimalPath = analyzeOptimalPathDifficulty(
+        puzzle.board,
+        puzzle.optimalSolution,
+        puzzle.capacity,
+      )
+      if (JSON.stringify(optimalPath) !== JSON.stringify(puzzle.difficultyV2.optimalPath)) {
+        throw new Error(`Difficulty v2 optimal-path metrics mismatch: ${puzzle.id}`)
+      }
+      const mistake = puzzle.difficultyV2.mistakeRecovery
+      if (mistake) {
+        const counted = mistake.optimalAlternativeCount
+          + mistake.recoverableMistakeCount
+          + mistake.deadEndCount
+          + mistake.unknownCount
+        if (counted !== mistake.analyzedAlternatives) {
+          throw new Error(`Difficulty v2 mistake counts mismatch: ${puzzle.id}`)
+        }
+        if (mistake.analyzedAlternatives + mistake.skippedAlternatives !== mistake.eligibleAlternatives) {
+          throw new Error(`Difficulty v2 alternative coverage mismatch: ${puzzle.id}`)
+        }
+      }
     }
 
     byDifficulty[puzzle.difficulty] = (byDifficulty[puzzle.difficulty] ?? 0) + 1
