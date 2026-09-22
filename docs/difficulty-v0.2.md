@@ -186,3 +186,46 @@ The report includes per-puzzle metrics plus per-difficulty distributions for:
 - high-penalty mistake count.
 
 These distributions are research inputs only. They do not yet define Easy/Medium/Hard thresholds.
+
+
+## First deterministic research sample
+
+A first fixed-seed sample generated 5 accepted puzzles per current expanded difficulty (15 total).
+
+Observed pattern:
+
+- optimal move count and raw choice count increase from current Easy -> Medium -> Hard, as expected from the legacy profile;
+- all alternate analyses completed without unknowns;
+- many legal alternatives are still optimal: roughly 30-60% in many Medium/Hard samples;
+- every recoverable mistake in this sample had recovery penalty exactly 1;
+- high-penalty mistake count was zero for all 15 puzzles;
+- dead-end ratio was not monotonic with the current difficulty label: some Easy samples contained more dead-end alternatives than Medium/Hard samples.
+
+This means two proposed metrics are insufficient on their own:
+
+1. **raw branching / choice count** overstates difficulty when many choices are equally optimal;
+2. **recovery penalty** currently has little discriminatory power for these generated Water Sort states.
+
+The analyzer should therefore retain those facts but must not make them dominant difficulty signals.
+
+## Next metric: local move plausibility
+
+Human difficulty depends on whether a non-optimal move looks locally reasonable.
+
+The next analyzer revision records raw local cues for every alternate move instead of immediately assigning a hand-tuned plausibility score:
+
+- destination is empty vs same-Type;
+- move joins the same Type;
+- amount moved;
+- source becomes empty;
+- target becomes a completed tube;
+- segment-count delta / solver-heuristic direction.
+
+These features allow research to ask questions such as:
+
+- how many non-optimal moves appear locally progressive?
+- how many dead ends arise from an apparently good same-Type merge?
+- how many decision states contain only harmless alternatives?
+- which local cues correlate with human mistakes during playtests?
+
+No weighted plausibility score should be treated as authoritative until human calibration data exists.
