@@ -15,7 +15,8 @@
     "report:difficulty": "tsx src/cli/analyze-difficulty.ts",
     "research:pool": "tsx src/cli/research-pool.ts",
     "report:research": "tsx src/cli/report-research.ts",
-    "select:playtest": "tsx src/cli/select-playtest.ts"
+    "select:playtest": "tsx src/cli/select-playtest.ts",
+    "export:playtest": "tsx src/cli/export-blind-playtest.ts"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
