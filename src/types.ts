@@ -31,6 +31,58 @@ export type SolverResult =
   | { status: 'unsolvable'; metrics: SolverMetrics }
   | { status: 'budget-exceeded'; metrics: SolverMetrics }
 
+export type AlternativeMoveAnalysis =
+  | {
+      move: Move
+      status: 'optimal-alternative'
+      nextOptimalMoves: number
+      recoveryPenalty: 0
+    }
+  | {
+      move: Move
+      status: 'recoverable-mistake'
+      nextOptimalMoves: number
+      recoveryPenalty: number
+    }
+  | {
+      move: Move
+      status: 'dead-end'
+    }
+  | {
+      move: Move
+      status: 'unknown'
+    }
+
+export interface MistakeStateAnalysis {
+  pathIndex: number
+  remainingOptimalMoves: number
+  legalMoves: number
+  optimalAlternatives: number
+  recoverableMistakes: number
+  deadEndMoves: number
+  unknownMoves: number
+  recoveryPenalties: number[]
+  maxRecoveryPenalty: number
+  alternatives: AlternativeMoveAnalysis[]
+}
+
+export interface MistakeAnalysis {
+  analyzedStates: number
+  decisionStates: number
+  forcedStates: number
+  totalAlternativeMoves: number
+  optimalAlternativeMoves: number
+  recoverableMistakes: number
+  deadEndMoves: number
+  unknownMoves: number
+  knownNonOptimalMoves: number
+  deadEndRatioKnown: number
+  averageRecoveryPenalty: number
+  maxRecoveryPenalty: number
+  highPenaltyMistakes: number
+  states: MistakeStateAnalysis[]
+}
+
 export interface EmptyTubeAnalysis {
   emptyTubes: number
   status: SolverResult['status']
@@ -51,6 +103,7 @@ export interface AuditPuzzle {
   canonicalKey: string
   solver: SolverMetrics & { optimalMoves: number }
   solutionPath: SolutionPathMetrics
+  difficultyV2: MistakeAnalysis
   emptyTubeAnalysis: EmptyTubeAnalysis[]
 }
 
