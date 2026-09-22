@@ -31,6 +31,71 @@ export type SolverResult =
   | { status: 'unsolvable'; metrics: SolverMetrics }
   | { status: 'budget-exceeded'; metrics: SolverMetrics }
 
+export interface MoveLocalFeatures {
+  destination: 'empty' | 'same-type'
+  joinsSameType: boolean
+  movedAmount: number
+  sourceBecomesEmpty: boolean
+  targetBecomesComplete: boolean
+  segmentDelta: number
+}
+
+export type AlternativeMoveAnalysis =
+  | {
+      move: Move
+      features: MoveLocalFeatures
+      status: 'optimal-alternative'
+      nextOptimalMoves: number
+      recoveryPenalty: 0
+    }
+  | {
+      move: Move
+      features: MoveLocalFeatures
+      status: 'recoverable-mistake'
+      nextOptimalMoves: number
+      recoveryPenalty: number
+    }
+  | {
+      move: Move
+      features: MoveLocalFeatures
+      status: 'dead-end'
+    }
+  | {
+      move: Move
+      features: MoveLocalFeatures
+      status: 'unknown'
+    }
+
+export interface MistakeStateAnalysis {
+  pathIndex: number
+  remainingOptimalMoves: number
+  legalMoves: number
+  optimalAlternatives: number
+  recoverableMistakes: number
+  deadEndMoves: number
+  unknownMoves: number
+  recoveryPenalties: number[]
+  maxRecoveryPenalty: number
+  alternatives: AlternativeMoveAnalysis[]
+}
+
+export interface MistakeAnalysis {
+  analyzedStates: number
+  decisionStates: number
+  forcedStates: number
+  totalAlternativeMoves: number
+  optimalAlternativeMoves: number
+  recoverableMistakes: number
+  deadEndMoves: number
+  unknownMoves: number
+  knownNonOptimalMoves: number
+  deadEndRatioKnown: number
+  averageRecoveryPenalty: number
+  maxRecoveryPenalty: number
+  highPenaltyMistakes: number
+  states: MistakeStateAnalysis[]
+}
+
 export interface EmptyTubeAnalysis {
   emptyTubes: number
   status: SolverResult['status']
@@ -51,6 +116,7 @@ export interface AuditPuzzle {
   canonicalKey: string
   solver: SolverMetrics & { optimalMoves: number }
   solutionPath: SolutionPathMetrics
+  difficultyV2: MistakeAnalysis
   emptyTubeAnalysis: EmptyTubeAnalysis[]
 }
 

@@ -1,0 +1,44 @@
+name: Difficulty v2 research sample
+
+on:
+  push:
+    branches:
+      - feat/difficulty-v0.2
+    paths:
+      - .github/workflows/difficulty-research-v0.2.yml
+      - src/difficulty.ts
+      - src/types.ts
+      - src/generator.ts
+      - src/cli/analyze-difficulty.ts
+      - docs/difficulty-v0.2.md
+  workflow_dispatch:
+
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - name: Generate deterministic research catalog
+        run: |
+          npm run generate -- \
+            --profile=expanded \
+            --count=5 \
+            --max-attempts=5000 \
+            --seed=water-sort-difficulty-research-v0.2 \
+            --output=data/audit/difficulty-research-v0.2.json
+      - name: Build difficulty report
+        run: |
+          npm run report:difficulty -- \
+            --input=data/audit/difficulty-research-v0.2.json \
+            --output=data/output/difficulty-research-v0.2-report.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: difficulty-research-v0.2
+          path: |
+            data/audit/difficulty-research-v0.2.json
+            data/output/difficulty-research-v0.2-report.json

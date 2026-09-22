@@ -4,6 +4,80 @@ import { analyzeSolutionPath } from './solver'
 import type { AuditCatalog } from './types'
 import { GENERATOR_VERSION, RNG_VERSION, SOLVER_STATE_ENCODING_VERSION } from './version'
 
+export function validateDifficultyV2(puzzleId: string, analysis: import('./types').MistakeAnalysis, optimalMoves: number) {
+  if (analysis.analyzedStates !== optimalMoves || analysis.states.length !== optimalMoves) {
+    throw new Error(`Difficulty v2 state count mismatch: ${puzzleId}`)
+  }
+
+  let optimalAlternatives = 0
+  let recoverableMistakes = 0
+  let deadEndMoves = 0
+  let unknownMoves = 0
+  const penalties: number[] = []
+
+  for (let index = 0; index < analysis.states.length; index += 1) {
+    const state = analysis.states[index]
+    if (state.pathIndex !== index) throw new Error(`Difficulty v2 path index mismatch: ${puzzleId}`)
+    if (state.remainingOptimalMoves !== optimalMoves - index) {
+      throw new Error(`Difficulty v2 remaining-distance mismatch: ${puzzleId}`)
+    }
+
+    const stateOptimal = state.alternatives.filter((entry) => entry.status === 'optimal-alternative').length
+    const stateRecoverable = state.alternatives.filter((entry) => entry.status === 'recoverable-mistake').length
+    const stateDead = state.alternatives.filter((entry) => entry.status === 'dead-end').length
+    const stateUnknown = state.alternatives.filter((entry) => entry.status === 'unknown').length
+    const statePenalties = state.alternatives.flatMap((entry) =>
+      entry.status === 'recoverable-mistake' ? [entry.recoveryPenalty] : [])
+
+    if (state.alternatives.length !== Math.max(0, state.legalMoves - 1)) {
+      throw new Error(`Difficulty v2 alternate count mismatch: ${puzzleId}`)
+    }
+    if (state.optimalAlternatives !== stateOptimal
+      || state.recoverableMistakes !== stateRecoverable
+      || state.deadEndMoves !== stateDead
+      || state.unknownMoves !== stateUnknown) {
+      throw new Error(`Difficulty v2 state aggregate mismatch: ${puzzleId}`)
+    }
+
+    const expectedMaxPenalty = statePenalties.length === 0 ? 0 : Math.max(...statePenalties)
+    if (state.maxRecoveryPenalty !== expectedMaxPenalty) {
+      throw new Error(`Difficulty v2 state penalty mismatch: ${puzzleId}`)
+    }
+
+    optimalAlternatives += stateOptimal
+    recoverableMistakes += stateRecoverable
+    deadEndMoves += stateDead
+    unknownMoves += stateUnknown
+    penalties.push(...statePenalties)
+  }
+
+  const totalAlternativeMoves = optimalAlternatives + recoverableMistakes + deadEndMoves + unknownMoves
+  const knownNonOptimalMoves = recoverableMistakes + deadEndMoves
+  const expectedDeadEndRatio = knownNonOptimalMoves === 0 ? 0 : deadEndMoves / knownNonOptimalMoves
+  const expectedAveragePenalty = penalties.length === 0
+    ? 0
+    : penalties.reduce((sum, value) => sum + value, 0) / penalties.length
+  const expectedMaxPenalty = penalties.length === 0 ? 0 : Math.max(...penalties)
+
+  if (analysis.totalAlternativeMoves !== totalAlternativeMoves
+    || analysis.optimalAlternativeMoves !== optimalAlternatives
+    || analysis.recoverableMistakes !== recoverableMistakes
+    || analysis.deadEndMoves !== deadEndMoves
+    || analysis.unknownMoves !== unknownMoves
+    || analysis.knownNonOptimalMoves !== knownNonOptimalMoves
+    || analysis.deadEndRatioKnown !== expectedDeadEndRatio
+    || analysis.averageRecoveryPenalty !== expectedAveragePenalty
+    || analysis.maxRecoveryPenalty !== expectedMaxPenalty) {
+    throw new Error(`Difficulty v2 puzzle aggregate mismatch: ${puzzleId}`)
+  }
+
+  const decisionStates = analysis.states.filter((state) => state.legalMoves > 1).length
+  const forcedStates = analysis.states.filter((state) => state.legalMoves <= 1).length
+  if (analysis.decisionStates !== decisionStates || analysis.forcedStates !== forcedStates) {
+    throw new Error(`Difficulty v2 decision-state mismatch: ${puzzleId}`)
+  }
+}
+
 export interface ValidationSummary {
   valid: true
   puzzles: number
@@ -97,6 +171,7 @@ export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
       !== JSON.stringify(puzzle.solutionPath)) {
       throw new Error(`Solution path metrics mismatch: ${puzzle.id}`)
     }
+    validateDifficultyV2(puzzle.id, puzzle.difficultyV2, puzzle.solver.optimalMoves)
 
     byDifficulty[puzzle.difficulty] = (byDifficulty[puzzle.difficulty] ?? 0) + 1
   }

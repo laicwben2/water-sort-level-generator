@@ -5,6 +5,7 @@ import {
   canonicalPuzzleSequence,
 } from './canonical'
 import { generateBalancedFullTubes } from './candidate'
+import { analyzeMistakes } from './difficulty'
 import { CanonicalSequenceTrie } from './dedup'
 import { PROFILE_SETS, type DifficultyProfile, type ProfileName } from './profiles'
 import {
@@ -29,6 +30,8 @@ export interface GenerateOptions {
   capacity?: number
   maxEmptyTubes?: number
   batchSeed?: string
+  mistakeMaxVisitedStates?: number
+  mistakeMaxDepthExtra?: number
 }
 
 export interface MinimumEmptySearchOptions {
@@ -121,6 +124,8 @@ export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalo
   const capacity = options.capacity ?? 4
   const maxEmptyTubes = options.maxEmptyTubes ?? 5
   const batchSeed = options.batchSeed ?? 'water-sort:generator:v0.2:default'
+  const mistakeMaxVisitedStates = options.mistakeMaxVisitedStates ?? 50_000
+  const mistakeMaxDepthExtra = options.mistakeMaxDepthExtra ?? 40
   const profiles = PROFILE_SETS[profileName]
   const puzzles: AuditPuzzle[] = []
   const canonicalIndex = new CanonicalSequenceTrie()
@@ -131,6 +136,8 @@ export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalo
     maxAttempts,
     capacity,
     maxEmptyTubes,
+    mistakeMaxVisitedStates,
+    mistakeMaxDepthExtra,
     profiles,
   })
 
@@ -155,6 +162,11 @@ export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalo
       const canonicalSequence = canonicalPuzzleSequence(minimum.board)
       if (!canonicalIndex.add(canonicalSequence)) continue
       const canonicalKey = canonicalPuzzleKeyFromSequence(canonicalSequence)
+      const difficultyV2 = analyzeMistakes(minimum.board, minimum.result.solution, {
+        capacity,
+        maxVisitedStates: mistakeMaxVisitedStates,
+        maxDepthExtra: mistakeMaxDepthExtra,
+      })
       accepted += 1
       puzzles.push({
         id: `ws-${profileName}-${difficulty}-c${String(attempt).padStart(6, '0')}`,
@@ -172,6 +184,7 @@ export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalo
           ...minimum.result.metrics,
         },
         solutionPath: path,
+        difficultyV2,
         emptyTubeAnalysis: minimum.analyses,
       })
     }

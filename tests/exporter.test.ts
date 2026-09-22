@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { CANONICAL_VERSION, ENCODING_VERSION, canonicalPuzzleKey } from '../src/canonical'
+import { analyzeMistakes } from '../src/difficulty'
 import { exportRuntimePack, exportSolutionArtifact } from '../src/exporter'
 import { analyzeSolutionPath, solveBoard } from '../src/solver'
 import type { AuditCatalog } from '../src/types'
@@ -36,6 +37,7 @@ function fixture(): AuditCatalog {
       canonicalKey: canonicalPuzzleKey(board),
       solver: { optimalMoves: result.solution.length, ...result.metrics },
       solutionPath: analyzeSolutionPath(board, result.solution, 2),
+      difficultyV2: analyzeMistakes(board, result.solution, { capacity: 2 }),
       emptyTubeAnalysis: [{
         emptyTubes: 1,
         status: 'solved',
