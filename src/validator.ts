@@ -4,7 +4,7 @@ import { analyzeSolutionPath } from './solver'
 import type { AuditCatalog } from './types'
 import { GENERATOR_VERSION, RNG_VERSION, SOLVER_STATE_ENCODING_VERSION } from './version'
 
-function validateDifficultyV2(puzzleId: string, analysis: import('./types').MistakeAnalysis, optimalMoves: number) {
+export function validateDifficultyV2(puzzleId: string, analysis: import('./types').MistakeAnalysis, optimalMoves: number) {
   if (analysis.analyzedStates !== optimalMoves || analysis.states.length !== optimalMoves) {
     throw new Error(`Difficulty v2 state count mismatch: ${puzzleId}`)
   }
