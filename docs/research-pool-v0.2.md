@@ -108,3 +108,76 @@ Initial comparison set:
 - solver search metrics.
 
 The system must not combine these into one authoritative score before human calibration.
+
+
+## First fixed-scale result: 7 Types / 50 puzzles
+
+A deterministic pool of 50 unique 7-Type puzzles was generated with seed:
+
+```text
+water-sort-research-types7-v0.2
+```
+
+Generation accepted 50/50 scanned candidates. Minimum empty tubes:
+
+- 1 empty: 2 puzzles;
+- 2 empty: 48 puzzles.
+
+All Difficulty v2 alternate analyses completed with zero unknown alternatives.
+
+Selected within-scale distributions:
+
+| Metric | Min | p25 | p50 | p75 | Max |
+|---|---:|---:|---:|---:|---:|
+| optimalMoves | 19 | 21 | 22 | 23 | 24 |
+| averageChoices | 1.75 | 3.67 | 4.43 | 5.57 | 6.55 |
+| riskyDecisionRatio | 0.556 | 0.737 | 0.833 | 0.905 | 1.000 |
+| averageDecisionChoiceRisk | 0.278 | 0.352 | 0.412 | 0.467 | 0.701 |
+| optimalAlternativeRate | 0.132 | 0.305 | 0.390 | 0.482 | 0.672 |
+| deadEndRatioKnown | 0.000 | 0.000 | 0.000 | 0.098 | 0.773 |
+| averageRecoveryPenalty | 1.000 | 1.000 | 1.000 | 1.000 | 1.143 |
+| maxRecoveryPenalty | 1 | 1 | 1 | 1 | 2 |
+
+Important findings:
+
+1. **Fixed-scale decision risk has meaningful spread.**  
+   At the same 7-Type scale, average decision-choice risk ranges from about 0.28 to 0.70 and risky-decision ratio ranges from about 0.56 to 1.0.
+
+2. **Optimal path length is relatively narrow.**  
+   The pool spans only 19-24 optimal moves, so the decision-risk spread is not simply a proxy for solution length.
+
+3. **Recovery penalty remains weak.**  
+   Most recoverable mistakes cost only one extra move; maximum penalty is only 2 in this pool.
+
+4. **Dead-end density is sparse but highly variable.**  
+   Median dead-end ratio is 0, while a few puzzles reach 0.58-0.77.
+
+5. **Solver search effort is not a player-difficulty metric.**  
+   Explored states range from 42 to 4,289 and correlate strongly with visited states, but only weakly with several player-facing risk metrics.
+
+6. **The pool is suitable for human calibration.**  
+   There is enough within-scale spread to select contrasting puzzles without changing Type count.
+
+## Playtest selection strategy
+
+Do not rank the pool with one composite difficulty score.
+
+Instead select contrasting examples along independent axes:
+
+- low / high average decision-choice risk;
+- low / high risky-decision ratio;
+- low / high optimal-alternative rate;
+- low / high dead-end ratio;
+- low / high average choices;
+- short / long optimal solution.
+
+Selection should:
+
+1. keep Type count fixed;
+2. avoid duplicate puzzle IDs where possible;
+3. record exactly why each puzzle was selected;
+4. preserve the full source puzzle and optimal solution in the playtest artifact;
+5. randomize presentation colors and presentation order separately from level identity during actual playtests;
+6. collect human ratings before defining Easy / Medium / Hard thresholds.
+
+The selector is a sampling tool, not a classifier.
