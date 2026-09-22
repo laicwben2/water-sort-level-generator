@@ -35,8 +35,8 @@ export interface StructuralDifficultyMetrics {
   fragmentationExcess: number
   averageTypeTubeSpread: number
   maximumTypeTubeSpread: number
-  averageBuriedDepth: number
-  maximumBuriedDepth: number
+  averageBlockingDepth: number
+  maximumBlockingDepth: number
   mixedTubeCount: number
   monochromeFullTubeCount: number
 }
