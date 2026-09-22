@@ -141,3 +141,43 @@ export function selectPlaytestCases(
     cases: ordered,
   }
 }
+
+
+export interface BlindPlaytestLevel {
+  order: number
+  id: string
+  capacity: number
+  board: ResearchPuzzle['board']
+}
+
+export interface BlindPlaytestPack {
+  formatVersion: 1
+  rulesVersion: 'classic-v1'
+  kind: 'blind-playtest'
+  playtestId: string
+  types: number
+  levels: BlindPlaytestLevel[]
+}
+
+export function exportBlindPlaytestPack(
+  selection: PlaytestSelection,
+  playtestId: string,
+): BlindPlaytestPack {
+  if (!playtestId.trim()) throw new Error('playtestId must not be empty')
+
+  return {
+    formatVersion: 1,
+    rulesVersion: 'classic-v1',
+    kind: 'blind-playtest',
+    playtestId,
+    types: selection.types,
+    levels: [...selection.cases]
+      .sort((first, second) => first.order - second.order)
+      .map((entry) => ({
+        order: entry.order,
+        id: entry.id,
+        capacity: entry.puzzle.capacity,
+        board: entry.puzzle.board.map((tube) => [...tube]),
+      })),
+  }
+}
