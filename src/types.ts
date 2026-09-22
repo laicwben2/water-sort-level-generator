@@ -41,9 +41,11 @@ export interface EmptyTubeAnalysis {
 export interface AuditPuzzle {
   id: string
   difficulty: Difficulty
-  sourceSeed: string
+  candidateIndex: number
+  candidateSeed: string
   capacity: number
   emptyTubes: number
+  minimumRequiredEmptyTubes: number
   board: Board
   solution: Move[]
   canonicalKey: string
@@ -53,9 +55,17 @@ export interface AuditPuzzle {
 }
 
 export interface AuditCatalog {
-  version: string
+  version: 'audit-v2'
   generator: 'balanced-shuffle+bounded-a-star'
   profile: string
+  reproducibility: {
+    generatorVersion: string
+    rngVersion: string
+    canonicalVersion: string
+    encodingVersion: string
+    batchSeed: string
+    configFingerprint: string
+  }
   puzzles: AuditPuzzle[]
 }
 
