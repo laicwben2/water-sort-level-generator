@@ -1,6 +1,6 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
-import { generateResearchPool } from '../research'
+import { generateResearchPool, validateResearchPool } from '../research'
 import { positiveIntArg, stringArg } from './args'
 
 const types = positiveIntArg('types', 7)
@@ -27,6 +27,8 @@ const pool = generateResearchPool({
   mistakeMaxDepthExtra,
   batchSeed,
 })
+
+validateResearchPool(pool)
 
 await mkdir(dirname(outputPath), { recursive: true })
 await writeFile(outputPath, `${JSON.stringify(pool, null, 2)}\n`)
