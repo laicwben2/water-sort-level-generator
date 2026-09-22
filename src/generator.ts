@@ -4,13 +4,12 @@ import {
   canonicalPuzzleKeyFromSequence,
   canonicalPuzzleSequence,
 } from './canonical'
+import { generateBalancedFullTubes } from './candidate'
 import { CanonicalSequenceTrie } from './dedup'
 import { PROFILE_SETS, type DifficultyProfile, type ProfileName } from './profiles'
 import {
-  createRng,
   deriveCandidateSeed,
   fingerprintConfig,
-  shuffle,
 } from './rng'
 import { analyzeSolutionPath, solveBoard } from './solver'
 import type {
@@ -52,14 +51,6 @@ export type MinimumEmptySearchResult =
       reason: 'budget-exceeded' | 'max-empty-tubes-exhausted'
       analyses: EmptyTubeAnalysis[]
     }
-
-function balancedBoard(types: number, capacity: number, random: () => number): Board {
-  const layers = Array.from({ length: types }, (_, type) => Array(capacity).fill(type)).flat()
-  const shuffled = shuffle(layers, random)
-  return Array.from({ length: types }, (_, index) => (
-    shuffled.slice(index * capacity, (index + 1) * capacity)
-  ))
-}
 
 function summarizeResult(result: SolverResult, emptyTubes: number): EmptyTubeAnalysis {
   return {
@@ -148,7 +139,7 @@ export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalo
 
     for (let attempt = 0; attempt < maxAttempts && accepted < perDifficulty; attempt += 1) {
       const candidateSeed = deriveCandidateSeed(batchSeed, profileName, difficulty, attempt)
-      const fullTubes = balancedBoard(profile.colors, capacity, createRng(candidateSeed))
+      const fullTubes = generateBalancedFullTubes(profile.colors, capacity, candidateSeed)
 
       const minimum = findMinimumEmptyTubes(fullTubes, {
         capacity,
