@@ -63,6 +63,54 @@ describe('catalog validation and exports', () => {
     expect(runtime.levels[0]).not.toHaveProperty('optimalSolution')
   })
 
+  it('validates internally consistent Difficulty v2 aggregate metrics', () => {
+    const catalog = fixture()
+    catalog.puzzles[0].mistakeAnalysis = {
+      analyzedStates: 2,
+      decisionStates: 1,
+      alternatives: 4,
+      optimalEquivalentAlternatives: 1,
+      recoverableAlternatives: 1,
+      deadEndAlternatives: 1,
+      unknownAlternatives: 1,
+      analysisCoverage: 3 / 4,
+      alternativesPerAnalyzedState: 2,
+      wrongMoveDensity: 2 / 3,
+      deadEndDensity: 1 / 3,
+      deadEndRisk: 1 / 2,
+      averageRecoveryPenalty: 2,
+      p50RecoveryPenalty: 2,
+      p90RecoveryPenalty: 2,
+      maxRecoveryPenalty: 2,
+    }
+
+    expect(validateAuditCatalog(catalog).valid).toBe(true)
+  })
+
+  it('rejects inconsistent derived Difficulty v2 density metrics', () => {
+    const catalog = fixture()
+    catalog.puzzles[0].mistakeAnalysis = {
+      analyzedStates: 2,
+      decisionStates: 1,
+      alternatives: 4,
+      optimalEquivalentAlternatives: 1,
+      recoverableAlternatives: 1,
+      deadEndAlternatives: 1,
+      unknownAlternatives: 1,
+      analysisCoverage: 3 / 4,
+      alternativesPerAnalyzedState: 2,
+      wrongMoveDensity: 2 / 3,
+      deadEndDensity: 0.9,
+      deadEndRisk: 1 / 2,
+      averageRecoveryPenalty: 2,
+      p50RecoveryPenalty: 2,
+      p90RecoveryPenalty: 2,
+      maxRecoveryPenalty: 2,
+    }
+
+    expect(() => validateAuditCatalog(catalog)).toThrow(/Inconsistent deadEndDensity/)
+  })
+
   it('exports a separate exact solution artifact', () => {
     const catalog = fixture()
     const artifact = exportSolutionArtifact(catalog)
