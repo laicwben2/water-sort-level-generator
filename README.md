@@ -116,3 +116,7 @@ npm run build
 `water-sort-level-generator` is the producer. `water-sort` is a consumer.
 
 Official game releases should never run this solver on the player's device. Generation, solving, validation, and difficulty analysis happen before release; clients load the exported static pack.
+
+## Consumer repository
+
+The current web consumer is [laicwben2/water-sort](https://github.com/laicwben2/water-sort). Both projects share the versioned Level Pack contract in `spec/level-pack-v1.schema.json`.
