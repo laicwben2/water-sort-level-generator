@@ -53,6 +53,31 @@ describe('canonical representation', () => {
     expect(encodeCanonicalTube([0, 1, 0, 2])).toBeTypeOf('bigint')
   })
 
+  it('is invariant across all tube and type permutations of a small puzzle', () => {
+    const base = [
+      [0, 1, 2, 0],
+      [2, 0, 1, 1],
+      [2, 2, 0, 1],
+      [],
+    ]
+
+    function permutations<T>(items: readonly T[]): T[][] {
+      if (items.length <= 1) return [Array.from(items)]
+      return items.flatMap((item, index) =>
+        permutations(items.filter((_, other) => other !== index))
+          .map((suffix) => [item, ...suffix]))
+    }
+
+    const expected = canonicalPuzzleKey(base)
+    for (const tubeOrder of permutations([0, 1, 2, 3])) {
+      for (const typeOrder of permutations([0, 1, 2])) {
+        const renamed = tubeOrder.map((tubeIndex) =>
+          base[tubeIndex].map((type) => typeOrder[type] + 10))
+        expect(canonicalPuzzleKey(renamed)).toBe(expected)
+      }
+    }
+  })
+
   it('supports sixteen abstract types without factorial type permutations', () => {
     const board = [
       [0, 1, 2, 3],
