@@ -43,18 +43,18 @@ Aggregate:
 
 A solved board has one segment per Type.
 
-### Buried depth
+### Segment blocking depth
 
-For each cell, count how many cells are above it in the same tube.
+Measure contiguous Type segments rather than individual cells.
 
-For each Type, record the deepest occurrence that is not already part of a completed monochrome tube.
+For each segment in a non-completed tube, count how many cells are above the top of that segment. This is the number of cells that must be removed before that segment can become directly accessible.
 
 Aggregate:
 
-- average buried depth;
-- maximum buried depth.
+- average segment blocking depth;
+- maximum segment blocking depth.
 
-This is a structural obstruction signal, not a proof that a particular buried cell must be uncovered directly.
+Cell-level depth is intentionally not used because fully occupied capacity-4 starting tubes would make the average almost constant regardless of puzzle structure.
 
 ### Mixed-tube structure
 
