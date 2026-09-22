@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/laicwben2/water-sort-level-generator/spec/level-pack-v1.schema.json",
+  "title": "Water Sort Level Pack v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["formatVersion", "rulesVersion", "packId", "generatedBy", "levels"],
+  "properties": {
+    "formatVersion": { "const": 1 },
+    "rulesVersion": { "const": "classic-v1" },
+    "packId": { "type": "string", "minLength": 1 },
+    "generatedBy": { "const": "water-sort-level-generator" },
+    "levels": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/level" }
+    }
+  },
+  "$defs": {
+    "level": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "difficulty", "capacity", "board"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "difficulty": { "enum": ["easy", "medium", "hard"] },
+        "capacity": { "type": "integer", "minimum": 1 },
+        "board": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "array",
+            "items": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "optimalMoves": { "type": "integer", "minimum": 0 }
+          }
+        }
+      }
+    }
+  }
+}
