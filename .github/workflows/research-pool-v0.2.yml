@@ -41,6 +41,12 @@ jobs:
             --input=data/research/types7-v0.2.json \
             --output=data/output/types7-v0.2-playtest.json \
             --seed=water-sort-playtest-types7-v0.2
+      - name: Export blind player pack
+        run: |
+          npm run export:playtest -- \
+            --input=data/output/types7-v0.2-playtest.json \
+            --output=data/output/types7-v0.2-blind.json \
+            --playtest-id=types7-v0.2
       - uses: actions/upload-artifact@v4
         with:
           name: research-pool-types7-v0.2
@@ -48,3 +54,4 @@ jobs:
             data/research/types7-v0.2.json
             data/output/types7-v0.2-report.json
             data/output/types7-v0.2-playtest.json
+            data/output/types7-v0.2-blind.json
