@@ -10,6 +10,46 @@ export interface ValidationSummary {
   byDifficulty: Record<string, number>
 }
 
+function validateMistakeAnalysis(puzzleId: string, metrics: NonNullable<AuditCatalog['puzzles'][number]['mistakeAnalysis']>) {
+  const countedAlternatives = metrics.optimalEquivalentAlternatives
+    + metrics.recoverableAlternatives
+    + metrics.deadEndAlternatives
+    + metrics.unknownAlternatives
+
+  if (countedAlternatives !== metrics.alternatives) {
+    throw new Error(`Mistake-analysis alternative count mismatch: ${puzzleId}`)
+  }
+  if (metrics.decisionStates > metrics.analyzedStates) {
+    throw new Error(`Mistake-analysis decision count exceeds analyzed states: ${puzzleId}`)
+  }
+
+  for (const [name, value] of [
+    ['analysisCoverage', metrics.analysisCoverage],
+    ['wrongMoveDensity', metrics.wrongMoveDensity],
+    ['deadEndRisk', metrics.deadEndRisk],
+  ] as const) {
+    if (!Number.isFinite(value) || value < 0 || value > 1) {
+      throw new Error(`Invalid ${name} in mistake analysis: ${puzzleId}`)
+    }
+  }
+
+  for (const [name, value] of [
+    ['averageRecoveryPenalty', metrics.averageRecoveryPenalty],
+    ['p50RecoveryPenalty', metrics.p50RecoveryPenalty],
+    ['p90RecoveryPenalty', metrics.p90RecoveryPenalty],
+    ['maxRecoveryPenalty', metrics.maxRecoveryPenalty],
+  ] as const) {
+    if (!Number.isFinite(value) || value < 0) {
+      throw new Error(`Invalid ${name} in mistake analysis: ${puzzleId}`)
+    }
+  }
+
+  if (metrics.p50RecoveryPenalty > metrics.p90RecoveryPenalty
+    || metrics.p90RecoveryPenalty > metrics.maxRecoveryPenalty) {
+    throw new Error(`Recovery penalty percentiles are not monotonic: ${puzzleId}`)
+  }
+}
+
 export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
   if (catalog.version !== 'audit-v2') throw new Error(`Unsupported audit version: ${catalog.version}`)
   if (catalog.reproducibility.generatorVersion !== GENERATOR_VERSION) {
@@ -96,6 +136,10 @@ export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
     if (JSON.stringify(analyzeSolutionPath(puzzle.board, puzzle.optimalSolution, puzzle.capacity))
       !== JSON.stringify(puzzle.solutionPath)) {
       throw new Error(`Solution path metrics mismatch: ${puzzle.id}`)
+    }
+
+    if (puzzle.mistakeAnalysis) {
+      validateMistakeAnalysis(puzzle.id, puzzle.mistakeAnalysis)
     }
 
     byDifficulty[puzzle.difficulty] = (byDifficulty[puzzle.difficulty] ?? 0) + 1
