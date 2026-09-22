@@ -6,6 +6,7 @@ import {
 } from './canonical'
 import { generateBalancedFullTubes } from './candidate'
 import { CanonicalSequenceTrie } from './dedup'
+import { analyzeMistakesAlongOptimalPath } from './difficulty'
 import { PROFILE_SETS, type DifficultyProfile, type ProfileName } from './profiles'
 import {
   deriveCandidateSeed,
@@ -29,6 +30,10 @@ export interface GenerateOptions {
   capacity?: number
   maxEmptyTubes?: number
   batchSeed?: string
+  analyzeMistakes?: boolean
+  mistakeMaxVisitedStatesPerAlternative?: number
+  mistakeMaxDepthPerAlternative?: number
+  mistakeMaxPathStates?: number
 }
 
 export interface MinimumEmptySearchOptions {
@@ -132,6 +137,10 @@ export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalo
     capacity,
     maxEmptyTubes,
     profiles,
+    analyzeMistakes: options.analyzeMistakes ?? false,
+    mistakeMaxVisitedStatesPerAlternative: options.mistakeMaxVisitedStatesPerAlternative ?? 20_000,
+    mistakeMaxDepthPerAlternative: options.mistakeMaxDepthPerAlternative ?? 120,
+    mistakeMaxPathStates: options.mistakeMaxPathStates ?? null,
   })
 
   for (const [difficulty, profile] of Object.entries(profiles) as Array<[Difficulty, DifficultyProfile]>) {
@@ -151,6 +160,17 @@ export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalo
 
       const path = analyzeSolutionPath(minimum.board, minimum.result.solution, capacity)
       if (!matchesCurrentDifficultyWindow(minimum.result, profile)) continue
+
+      const mistakeAnalysis = options.analyzeMistakes
+        ? analyzeMistakesAlongOptimalPath(minimum.board, minimum.result.solution, {
+            capacity,
+            maxVisitedStatesPerAlternative: options.mistakeMaxVisitedStatesPerAlternative ?? 20_000,
+            maxDepthPerAlternative: options.mistakeMaxDepthPerAlternative ?? 120,
+            ...(options.mistakeMaxPathStates === undefined
+              ? {}
+              : { maxPathStates: options.mistakeMaxPathStates }),
+          })
+        : undefined
 
       const canonicalSequence = canonicalPuzzleSequence(minimum.board)
       if (!canonicalIndex.add(canonicalSequence)) continue
@@ -172,6 +192,7 @@ export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalo
           ...minimum.result.metrics,
         },
         solutionPath: path,
+        ...(mistakeAnalysis ? { mistakeAnalysis } : {}),
         emptyTubeAnalysis: minimum.analyses,
       })
     }
