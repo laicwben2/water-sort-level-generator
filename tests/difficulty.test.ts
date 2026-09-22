@@ -30,6 +30,13 @@ describe('Difficulty Model v2', () => {
       .toEqual(analyzeStructuralDifficulty(second, 4))
   })
 
+  it('varies blocking depth with segment structure', () => {
+    const fragmented = analyzeStructuralDifficulty([[0, 1, 2, 3]], 4)
+    const grouped = analyzeStructuralDifficulty([[0, 0, 1, 1]], 4)
+    expect(fragmented.averageBlockingDepth).toBeGreaterThan(grouped.averageBlockingDepth)
+    expect(fragmented.maximumBlockingDepth).toBeGreaterThan(grouped.maximumBlockingDepth)
+  })
+
   it('records staging and same-type joins along an optimal solution', () => {
     const board: Board = [[0, 1], [0, 1], [], []]
     const result = solveBoard(board, { capacity: 2 })
