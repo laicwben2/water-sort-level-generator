@@ -178,3 +178,21 @@ npm run benchmark -- \
 ```
 
 Each candidate runs in its own child process. The report records exact/unknown rates, minimum-empty distribution, elapsed time, explored/visited states, generated moves, and process `maxRSS`. This keeps concurrency at 1 and makes peak-memory measurements comparable across candidates.
+
+
+## Analyze Difficulty v2
+
+Cheap structural and optimal-path metrics are stored during generation. Mistake/recovery analysis is intentionally a separate bounded pass because it may require many additional optimal-solver calls.
+
+```bash
+npm run analyze:difficulty -- \
+  --input=data/audit/catalog-expanded.json \
+  --output=data/audit/catalog-expanded-difficulty-v2.json \
+  --max-states=25000 \
+  --max-depth=100 \
+  --max-steps=20 \
+  --max-alternatives=6 \
+  --severe-penalty=5
+```
+
+The analyzer records coverage explicitly. Budget-exceeded alternatives remain `unknown`; they are never counted as dead ends. Difficulty thresholds are not hard-coded yet. See [docs/difficulty-v2.md](docs/difficulty-v2.md).
