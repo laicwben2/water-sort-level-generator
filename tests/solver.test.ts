@@ -19,6 +19,16 @@ describe('bounded water sort solver', () => {
       .toBe('budget-exceeded')
   })
 
+  it('caps discovered visited states rather than only popped states', () => {
+    const result = solveBoard([[0, 1], [0, 1], [], []], {
+      capacity: 2,
+      maxVisitedStates: 2,
+      maxDepth: 20,
+    })
+    expect(result.status).toBe('budget-exceeded')
+    expect(result.metrics.visitedStates).toBeLessThanOrEqual(2)
+  })
+
   it('collapses symmetric moves and reports path choices', () => {
     const board: Board = [[0, 1], [0, 1], [], []]
     expect(listLegalMoves(board, 2)).toHaveLength(1)
