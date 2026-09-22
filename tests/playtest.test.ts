@@ -41,7 +41,7 @@ function fakePuzzle(index: number): ResearchPuzzle {
       decisionStates: 1,
       forcedStates: 0,
       totalAlternativeMoves: legalMoves - 1,
-      optimalAlternativeMoves,
+      optimalAlternativeMoves: optimalAlternatives,
       recoverableMistakes,
       deadEndMoves,
       unknownMoves: 0,
