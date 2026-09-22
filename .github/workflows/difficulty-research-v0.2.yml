@@ -6,6 +6,11 @@ on:
       - feat/difficulty-v0.2
     paths:
       - .github/workflows/difficulty-research-v0.2.yml
+      - src/difficulty.ts
+      - src/types.ts
+      - src/generator.ts
+      - src/cli/analyze-difficulty.ts
+      - docs/difficulty-v0.2.md
   workflow_dispatch:
 
 jobs:
