@@ -63,6 +63,7 @@ export interface AuditCatalog {
     rngVersion: string
     canonicalVersion: string
     encodingVersion: string
+    solverStateEncodingVersion: string
     batchSeed: string
     configFingerprint: string
   }
