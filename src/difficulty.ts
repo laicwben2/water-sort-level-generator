@@ -1,7 +1,7 @@
 import { applyMove } from './rules'
 import { listLegalMoves, solveBoard } from './solver'
 import { packBoard, packedStateKey } from './solver-state'
-import type { Board, Move, MistakeAnalysis, MistakeStateAnalysis, AlternativeMoveAnalysis } from './types'
+import type { Board, Move, MistakeAnalysis, MistakeStateAnalysis, AlternativeMoveAnalysis, MoveLocalFeatures } from './types'
 
 export interface MistakeAnalysisOptions {
   capacity?: number
@@ -14,6 +14,38 @@ type DistanceCacheEntry =
   | { status: 'solved'; distance: number }
   | { status: 'unsolvable' }
   | { status: 'unknown' }
+
+function segmentCount(board: Board): number {
+  let segments = 0
+  for (const tube of board) {
+    for (let index = 0; index < tube.length; index += 1) {
+      if (index === 0 || tube[index] !== tube[index - 1]) segments += 1
+    }
+  }
+  return segments
+}
+
+function localFeatures(
+  board: Board,
+  nextBoard: Board,
+  move: Move,
+  capacity: number,
+): MoveLocalFeatures {
+  const target = board[move.to]
+  const joinsSameType = target.length > 0 && target[target.length - 1] === move.color
+  const nextTarget = nextBoard[move.to]
+  const targetBecomesComplete = nextTarget.length === capacity
+    && nextTarget.every((type) => type === nextTarget[0])
+
+  return {
+    destination: target.length === 0 ? 'empty' : 'same-type',
+    joinsSameType,
+    movedAmount: move.amount,
+    sourceBecomesEmpty: nextBoard[move.from].length === 0,
+    targetBecomesComplete,
+    segmentDelta: segmentCount(nextBoard) - segmentCount(board),
+  }
+}
 
 function sameMove(first: Move, second: Move): boolean {
   return first.from === second.from
@@ -52,6 +84,7 @@ export function analyzeMistakes(
       if (sameMove(move, storedOptimalMove)) continue
 
       const nextBoard = applyMove(board, move)
+      const features = localFeatures(board, nextBoard, move, capacity)
       const key = packedStateKey(packBoard(nextBoard, capacity))
       let cached = distanceCache.get(key)
 
@@ -71,12 +104,12 @@ export function analyzeMistakes(
       }
 
       if (cached.status === 'unknown') {
-        alternatives.push({ move, status: 'unknown' })
+        alternatives.push({ move, features, status: 'unknown' })
         continue
       }
 
       if (cached.status === 'unsolvable') {
-        alternatives.push({ move, status: 'dead-end' })
+        alternatives.push({ move, features, status: 'dead-end' })
         continue
       }
 
@@ -91,6 +124,7 @@ export function analyzeMistakes(
       if (recoveryPenalty === 0) {
         alternatives.push({
           move,
+          features,
           status: 'optimal-alternative',
           nextOptimalMoves: cached.distance,
           recoveryPenalty: 0,
@@ -98,6 +132,7 @@ export function analyzeMistakes(
       } else {
         alternatives.push({
           move,
+          features,
           status: 'recoverable-mistake',
           nextOptimalMoves: cached.distance,
           recoveryPenalty,
