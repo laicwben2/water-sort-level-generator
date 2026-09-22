@@ -1,0 +1,35 @@
+name: Solver tail benchmark v0.2
+
+on:
+  push:
+    branches:
+      - feat/generator-v0.2-foundation
+    paths:
+      - .github/workflows/benchmark-tail-v0.2.yml
+  workflow_dispatch:
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - name: Run 14-16 type tail benchmark
+        run: |
+          npm run benchmark -- \
+            --min-types=14 \
+            --max-types=16 \
+            --samples=20 \
+            --max-states=200000 \
+            --max-empty=5 \
+            --max-depth=180 \
+            --seed=water-sort-benchmark-tail-v0.2 \
+            --output=data/output/solver-benchmark-tail-v0.2.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: solver-benchmark-tail-v0.2
+          path: data/output/solver-benchmark-tail-v0.2.json
