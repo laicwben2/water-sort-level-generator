@@ -1,5 +1,14 @@
-import { canonicalStateKey } from './canonical'
-import { applyMove, calculatePour, isSolved, topColor } from './rules'
+import {
+  applyPackedMove,
+  listPackedTransitions,
+  packBoard,
+  packedHeuristic,
+  packedIsSolved,
+  packedStateKey,
+  packedTypeCount,
+  type PackedBoard,
+} from './solver-state'
+import { applyMove } from './rules'
 import type { Board, Move, SolutionPathMetrics, SolverMetrics, SolverResult } from './types'
 
 export interface SolverOptions {
@@ -9,10 +18,10 @@ export interface SolverOptions {
 }
 
 interface SearchNode {
-  board: Board
+  board: PackedBoard
   depth: number
   estimate: number
-  key: string
+  key: bigint
   parentId?: number
   move?: Move
 }
@@ -62,45 +71,8 @@ class MinHeap {
   }
 }
 
-function heuristic(board: Board): number {
-  let segments = 0
-  for (const tube of board) {
-    for (let layer = 0; layer < tube.length; layer += 1) {
-      if (layer === 0 || tube[layer] !== tube[layer - 1]) segments += 1
-    }
-  }
-  return Math.max(0, segments - new Set(board.flat()).size)
-}
-
 export function listLegalMoves(board: Board, capacity = 4): Move[] {
-  const moves: Move[] = []
-  const currentKey = canonicalStateKey(board)
-  const seenNextStates = new Set<string>()
-
-  for (let from = 0; from < board.length; from += 1) {
-    if (board[from].length === 0) continue
-    const seenTargets = new Set<string>()
-    for (let to = 0; to < board.length; to += 1) {
-      const targetSignature = board[to].join(',')
-      if (seenTargets.has(targetSignature)) continue
-      const move = calculatePour(board, from, to, capacity)
-      if (!move) continue
-      seenTargets.add(targetSignature)
-      const nextKey = canonicalStateKey(applyMove(board, move))
-      if (nextKey === currentKey || seenNextStates.has(nextKey)) continue
-      seenNextStates.add(nextKey)
-      moves.push(move)
-    }
-  }
-
-  return moves.sort((first, second) => {
-    const firstJoinsColor = topColor(board[first.to]) === first.color ? 1 : 0
-    const secondJoinsColor = topColor(board[second.to]) === second.color ? 1 : 0
-    return secondJoinsColor - firstJoinsColor
-      || second.amount - first.amount
-      || first.from - second.from
-      || first.to - second.to
-  })
+  return listPackedTransitions(packBoard(board, capacity), capacity).map(({ move }) => move)
 }
 
 export function analyzeSolutionPath(initialBoard: Board, solution: readonly Move[], capacity = 4): SolutionPathMetrics {
@@ -153,11 +125,17 @@ export function solveBoard(board: Board, options: SolverOptions = {}): SolverRes
   const capacity = options.capacity ?? 4
   const maxVisitedStates = options.maxVisitedStates ?? 100_000
   const maxDepth = options.maxDepth ?? 100
-  const startBoard = board.map((tube) => [...tube])
-  const startKey = canonicalStateKey(startBoard)
-  const nodes: SearchNode[] = [{ board: startBoard, depth: 0, estimate: heuristic(startBoard), key: startKey }]
+  const startBoard = packBoard(board, capacity)
+  const typeCount = packedTypeCount(startBoard, capacity)
+  const startKey = packedStateKey(startBoard)
+  const nodes: SearchNode[] = [{
+    board: startBoard,
+    depth: 0,
+    estimate: packedHeuristic(startBoard, typeCount, capacity),
+    key: startKey,
+  }]
   const queue = new MinHeap()
-  const bestDepth = new Map([[startKey, 0]])
+  const bestDepth = new Map<bigint, number>([[startKey, 0]])
   queue.push({ nodeId: 0, priority: nodes[0].estimate, depth: 0 })
 
   let exploredStates = 0
@@ -167,7 +145,10 @@ export function solveBoard(board: Board, options: SolverOptions = {}): SolverRes
 
   while (queue.size > 0) {
     if (exploredStates >= maxVisitedStates) {
-      return { status: 'budget-exceeded', metrics: metrics(exploredStates, bestDepth.size, generatedMoves, maxDepthReached) }
+      return {
+        status: 'budget-exceeded',
+        metrics: metrics(exploredStates, bestDepth.size, generatedMoves, maxDepthReached),
+      }
     }
 
     const queued = queue.pop()!
@@ -176,7 +157,7 @@ export function solveBoard(board: Board, options: SolverOptions = {}): SolverRes
     exploredStates += 1
     maxDepthReached = Math.max(maxDepthReached, node.depth)
 
-    if (isSolved(node.board, capacity)) {
+    if (packedIsSolved(node.board, capacity)) {
       return {
         status: 'solved',
         solution: reconstructSolution(nodes, queued.nodeId),
@@ -189,21 +170,19 @@ export function solveBoard(board: Board, options: SolverOptions = {}): SolverRes
       continue
     }
 
-    const legalMoves = listLegalMoves(node.board, capacity)
-    generatedMoves += legalMoves.length
-    for (const move of legalMoves) {
-      const nextBoard = applyMove(node.board, move)
+    const transitions = listPackedTransitions(node.board, capacity)
+    generatedMoves += transitions.length
+    for (const transition of transitions) {
       const nextDepth = node.depth + 1
-      const key = canonicalStateKey(nextBoard)
-      if ((bestDepth.get(key) ?? Number.POSITIVE_INFINITY) <= nextDepth) continue
-      bestDepth.set(key, nextDepth)
+      if ((bestDepth.get(transition.key) ?? Number.POSITIVE_INFINITY) <= nextDepth) continue
+      bestDepth.set(transition.key, nextDepth)
       const next: SearchNode = {
-        board: nextBoard,
+        board: transition.board,
         depth: nextDepth,
-        estimate: nextDepth + heuristic(nextBoard),
-        key,
+        estimate: nextDepth + packedHeuristic(transition.board, typeCount, capacity),
+        key: transition.key,
         parentId: queued.nodeId,
-        move,
+        move: transition.move,
       }
       const nodeId = nodes.push(next) - 1
       queue.push({ nodeId, priority: next.estimate, depth: nextDepth })
