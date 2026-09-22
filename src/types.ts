@@ -31,25 +31,38 @@ export type SolverResult =
   | { status: 'unsolvable'; metrics: SolverMetrics }
   | { status: 'budget-exceeded'; metrics: SolverMetrics }
 
+export interface MoveLocalFeatures {
+  destination: 'empty' | 'same-type'
+  joinsSameType: boolean
+  movedAmount: number
+  sourceBecomesEmpty: boolean
+  targetBecomesComplete: boolean
+  segmentDelta: number
+}
+
 export type AlternativeMoveAnalysis =
   | {
       move: Move
+      features: MoveLocalFeatures
       status: 'optimal-alternative'
       nextOptimalMoves: number
       recoveryPenalty: 0
     }
   | {
       move: Move
+      features: MoveLocalFeatures
       status: 'recoverable-mistake'
       nextOptimalMoves: number
       recoveryPenalty: number
     }
   | {
       move: Move
+      features: MoveLocalFeatures
       status: 'dead-end'
     }
   | {
       move: Move
+      features: MoveLocalFeatures
       status: 'unknown'
     }
 
