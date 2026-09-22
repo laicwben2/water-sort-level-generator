@@ -20,7 +20,7 @@ import type {
   EmptyTubeAnalysis,
   SolverResult,
 } from './types'
-import { GENERATOR_VERSION, RNG_VERSION } from './version'
+import { GENERATOR_VERSION, RNG_VERSION, SOLVER_STATE_ENCODING_VERSION } from './version'
 
 export interface GenerateOptions {
   profileName?: ProfileName
@@ -190,6 +190,7 @@ export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalo
       rngVersion: RNG_VERSION,
       canonicalVersion: CANONICAL_VERSION,
       encodingVersion: ENCODING_VERSION,
+      solverStateEncodingVersion: SOLVER_STATE_ENCODING_VERSION,
       batchSeed,
       configFingerprint,
     },
