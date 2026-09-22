@@ -59,6 +59,18 @@ function puzzleMetrics(puzzle: AuditPuzzle) {
     ? 0
     : analysis.optimalAlternativeMoves / knownAlternatives
 
+  const decisionStates = analysis.states.filter((state) => state.legalMoves > 1)
+  const riskyDecisionStates = decisionStates.filter((state) =>
+    state.recoverableMistakes + state.deadEndMoves > 0).length
+  const safeDecisionStates = decisionStates.filter((state) =>
+    state.recoverableMistakes + state.deadEndMoves === 0 && state.unknownMoves === 0).length
+  const deadEndDecisionStates = decisionStates.filter((state) => state.deadEndMoves > 0).length
+  const decisionChoiceRisks = decisionStates.map((state) => {
+    const knownChoices = state.legalMoves - state.unknownMoves
+    const badChoices = state.recoverableMistakes + state.deadEndMoves
+    return knownChoices === 0 ? 0 : badChoices / knownChoices
+  })
+
   return {
     id: puzzle.id,
     difficulty: puzzle.difficulty,
@@ -77,6 +89,14 @@ function puzzleMetrics(puzzle: AuditPuzzle) {
     averageRecoveryPenalty: analysis.averageRecoveryPenalty,
     maxRecoveryPenalty: analysis.maxRecoveryPenalty,
     highPenaltyMistakes: analysis.highPenaltyMistakes,
+    riskyDecisionStates,
+    safeDecisionStates,
+    deadEndDecisionStates,
+    riskyDecisionRatio: decisionStates.length === 0 ? 0 : riskyDecisionStates / decisionStates.length,
+    averageDecisionChoiceRisk: decisionChoiceRisks.length === 0
+      ? 0
+      : decisionChoiceRisks.reduce((sum, value) => sum + value, 0) / decisionChoiceRisks.length,
+    maxDecisionChoiceRisk: decisionChoiceRisks.length === 0 ? 0 : Math.max(...decisionChoiceRisks),
   }
 }
 
@@ -105,6 +125,10 @@ const groups = difficultyNames.map((difficulty) => {
     averageRecoveryPenalty: distribution(group.map((puzzle) => puzzle.averageRecoveryPenalty)),
     maxRecoveryPenalty: distribution(group.map((puzzle) => puzzle.maxRecoveryPenalty)),
     highPenaltyMistakes: distribution(group.map((puzzle) => puzzle.highPenaltyMistakes)),
+    riskyDecisionStates: distribution(group.map((puzzle) => puzzle.riskyDecisionStates)),
+    riskyDecisionRatio: distribution(group.map((puzzle) => puzzle.riskyDecisionRatio)),
+    averageDecisionChoiceRisk: distribution(group.map((puzzle) => puzzle.averageDecisionChoiceRisk)),
+    maxDecisionChoiceRisk: distribution(group.map((puzzle) => puzzle.maxDecisionChoiceRisk)),
     cueRisk: {
       sameTypeJoin: cueRisk(
         catalog.puzzles.filter((puzzle) => puzzle.difficulty === difficulty),
