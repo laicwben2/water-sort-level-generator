@@ -91,7 +91,7 @@ export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
       throw new Error(`Solution length mismatch: ${puzzle.id}`)
     }
     if (JSON.stringify(analyzeSolutionPath(puzzle.board, puzzle.optimalSolution, puzzle.capacity))
-      !== JSON.stringify(puzzle.optimalSolutionPath)) {
+      !== JSON.stringify(puzzle.solutionPath)) {
       throw new Error(`Solution path metrics mismatch: ${puzzle.id}`)
     }
 
