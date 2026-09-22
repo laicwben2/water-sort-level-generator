@@ -34,7 +34,7 @@ export type SolverResult =
 export interface EmptyTubeAnalysis {
   emptyTubes: number
   status: SolverResult['status']
-  minimumMoves?: number
+  optimalMoves?: number
   metrics: SolverMetrics
 }
 
@@ -47,9 +47,9 @@ export interface AuditPuzzle {
   emptyTubes: number
   minimumRequiredEmptyTubes: number
   board: Board
-  solution: Move[]
+  optimalSolution: Move[]
   canonicalKey: string
-  solver: SolverMetrics & { minimumMoves: number }
+  solver: SolverMetrics & { optimalMoves: number }
   solutionPath: SolutionPathMetrics
   emptyTubeAnalysis: EmptyTubeAnalysis[]
 }
@@ -85,4 +85,17 @@ export interface RuntimeLevelPack {
   packId: string
   generatedBy: 'water-sort-level-generator'
   levels: RuntimeLevel[]
+}
+
+export interface SolutionArtifactEntry {
+  id: string
+  optimalMoves: number
+  optimalSolution: Move[]
+}
+
+export interface SolutionArtifact {
+  formatVersion: 1
+  rulesVersion: 'classic-v1'
+  generatedBy: 'water-sort-level-generator'
+  solutions: SolutionArtifactEntry[]
 }
