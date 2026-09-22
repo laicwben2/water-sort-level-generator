@@ -36,7 +36,7 @@ jobs:
             --max-steps=20 \
             --max-alternatives=6 \
             --severe-penalty=5
-      - run: npm run validate -- --file=data/audit/difficulty-v2-research-analyzed.json
+      - run: npm run validate -- --file=data/audit/difficulty-v2-research-analyzed-v2.json
       - uses: actions/upload-artifact@v4
         with:
           name: difficulty-v2-research-smoke-v2
