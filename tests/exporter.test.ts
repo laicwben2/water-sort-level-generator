@@ -4,7 +4,7 @@ import { exportRuntimePack, exportSolutionArtifact } from '../src/exporter'
 import { analyzeSolutionPath, solveBoard } from '../src/solver'
 import type { AuditCatalog } from '../src/types'
 import { validateAuditCatalog } from '../src/validator'
-import { GENERATOR_VERSION, RNG_VERSION } from '../src/version'
+import { GENERATOR_VERSION, RNG_VERSION, SOLVER_STATE_ENCODING_VERSION } from '../src/version'
 
 function fixture(): AuditCatalog {
   const board = [[0, 1], [0, 1], []]
@@ -19,6 +19,7 @@ function fixture(): AuditCatalog {
       rngVersion: RNG_VERSION,
       canonicalVersion: CANONICAL_VERSION,
       encodingVersion: ENCODING_VERSION,
+      solverStateEncodingVersion: SOLVER_STATE_ENCODING_VERSION,
       batchSeed: 'fixture-batch',
       configFingerprint: 'fixture',
     },
