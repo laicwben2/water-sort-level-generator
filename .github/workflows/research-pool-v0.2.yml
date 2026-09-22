@@ -1,0 +1,43 @@
+name: Fixed-scale research pool v0.2
+
+on:
+  push:
+    branches:
+      - feat/difficulty-v0.2
+    paths:
+      - .github/workflows/research-pool-v0.2.yml
+  workflow_dispatch:
+
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - name: Generate 7-Type research pool
+        run: |
+          npm run research:pool -- \
+            --types=7 \
+            --count=50 \
+            --max-attempts=5000 \
+            --max-states=100000 \
+            --mistake-max-states=50000 \
+            --max-empty=5 \
+            --seed=water-sort-research-types7-v0.2 \
+            --output=data/research/types7-v0.2.json
+      - name: Build research report
+        run: |
+          npm run report:research -- \
+            --input=data/research/types7-v0.2.json \
+            --output=data/output/types7-v0.2-report.json \
+            --extremes=5
+      - uses: actions/upload-artifact@v4
+        with:
+          name: research-pool-types7-v0.2
+          path: |
+            data/research/types7-v0.2.json
+            data/output/types7-v0.2-report.json
