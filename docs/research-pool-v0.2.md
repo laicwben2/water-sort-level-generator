@@ -181,3 +181,48 @@ Selection should:
 6. collect human ratings before defining Easy / Medium / Hard thresholds.
 
 The selector is a sampling tool, not a classifier.
+
+
+## Blind playtest artifact
+
+The researcher-facing selection file contains:
+
+- selection reason;
+- metric value;
+- rank within the selected metric;
+- full research puzzle;
+- optimal solution.
+
+That file must **not** be used directly as the player-facing test input because it can reveal why a puzzle was selected and expose the answer.
+
+A separate blind artifact is exported for actual play:
+
+```json
+{
+  "formatVersion": 1,
+  "rulesVersion": "classic-v1",
+  "kind": "blind-playtest",
+  "playtestId": "types7-v0.2",
+  "types": 7,
+  "levels": [
+    {
+      "order": 1,
+      "id": "ws-research-t07-c000045",
+      "capacity": 4,
+      "board": [[0, 1, 2, 3], ...]
+    }
+  ]
+}
+```
+
+The blind artifact intentionally omits:
+
+- difficulty label;
+- selection reason;
+- research metrics;
+- optimal move count;
+- optimal solution.
+
+This prevents the test artifact itself from priming the player.
+
+The researcher retains the separate selection/report artifacts and joins them with player ratings after the playtest.
