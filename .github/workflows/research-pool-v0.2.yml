@@ -35,9 +35,16 @@ jobs:
             --input=data/research/types7-v0.2.json \
             --output=data/output/types7-v0.2-report.json \
             --extremes=5
+      - name: Select blinded playtest cases
+        run: |
+          npm run select:playtest -- \
+            --input=data/research/types7-v0.2.json \
+            --output=data/output/types7-v0.2-playtest.json \
+            --seed=water-sort-playtest-types7-v0.2
       - uses: actions/upload-artifact@v4
         with:
           name: research-pool-types7-v0.2
           path: |
             data/research/types7-v0.2.json
             data/output/types7-v0.2-report.json
+            data/output/types7-v0.2-playtest.json
