@@ -17,6 +17,8 @@ jobs:
       - run: npm run build
       - run: npm run generate -- --profile=baseline --count=1 --max-attempts=1000 --output=data/audit/ci-smoke.json
       - run: npm run validate -- --file=data/audit/ci-smoke.json
-      - run: npm run export:runtime -- --input=data/audit/ci-smoke.json --output=data/output/ci-smoke.json --pack-id=ci-smoke
-      - run: npm run export:solutions -- --input=data/audit/ci-smoke.json --output=data/output/ci-solutions.json
+      - run: npm run analyze:difficulty -- --input=data/audit/ci-smoke.json --output=data/audit/ci-difficulty-v2.json --max-states=2000 --max-depth=40 --max-steps=2 --max-alternatives=2
+      - run: npm run validate -- --file=data/audit/ci-difficulty-v2.json
+      - run: npm run export:runtime -- --input=data/audit/ci-difficulty-v2.json --output=data/output/ci-smoke.json --pack-id=ci-smoke
+      - run: npm run export:solutions -- --input=data/audit/ci-difficulty-v2.json --output=data/output/ci-solutions.json
       - run: npm run benchmark -- --min-types=6 --max-types=6 --samples=1 --max-states=10000 --max-empty=3 --output=data/output/benchmark-smoke.json
