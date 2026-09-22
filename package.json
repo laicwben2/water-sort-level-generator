@@ -14,7 +14,8 @@
     "benchmark": "tsx src/cli/benchmark.ts",
     "report:difficulty": "tsx src/cli/analyze-difficulty.ts",
     "research:pool": "tsx src/cli/research-pool.ts",
-    "report:research": "tsx src/cli/report-research.ts"
+    "report:research": "tsx src/cli/report-research.ts",
+    "select:playtest": "tsx src/cli/select-playtest.ts"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
