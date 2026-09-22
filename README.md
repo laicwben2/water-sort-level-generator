@@ -178,3 +178,22 @@ npm run benchmark -- \
 ```
 
 Each candidate runs in its own child process. The report records exact/unknown rates, minimum-empty distribution, elapsed time, explored/visited states, generated moves, and process `maxRSS`. This keeps concurrency at 1 and makes peak-memory measurements comparable across candidates.
+
+
+## Difficulty v2 research
+
+Mistake/recovery analysis is optional because it may run many additional solver searches. Enable it only for research/audit generation:
+
+```bash
+npm run generate -- \
+  --profile=expanded \
+  --count=20 \
+  --seed=water-sort-difficulty-v2-research \
+  --analyze-mistakes \
+  --mistake-max-states=20000 \
+  --mistake-max-depth=120
+```
+
+Optional `--mistake-max-path-states=N` limits how many states along the stored optimal path are analyzed.
+
+The resulting audit entries may include aggregate metrics such as analysis coverage, wrong-move density, dead-end risk, and recovery penalties. These metrics are research signals only; they do not yet redefine Easy / Medium / Hard thresholds.
