@@ -11,10 +11,11 @@ if (!(profileName in PROFILE_SETS)) throw new Error('--profile must be baseline 
 const perDifficulty = positiveIntArg('count', 10)
 const maxAttempts = positiveIntArg('max-attempts', 2_000)
 const outputPath = resolve(stringArg('output', `data/audit/catalog-${profileName}.json`)!)
+const batchSeed = stringArg('seed', 'water-sort:generator:v0.2:default')!
 
-const catalog = generateAuditCatalog({ profileName, perDifficulty, maxAttempts })
+const catalog = generateAuditCatalog({ profileName, perDifficulty, maxAttempts, batchSeed })
 const summary = validateAuditCatalog(catalog)
 
 await mkdir(dirname(outputPath), { recursive: true })
 await writeFile(outputPath, `${JSON.stringify(catalog, null, 2)}\n`)
-console.log(JSON.stringify({ output: outputPath, profile: profileName, ...summary }, null, 2))
+console.log(JSON.stringify({ output: outputPath, profile: profileName, batchSeed, ...summary }, null, 2))
