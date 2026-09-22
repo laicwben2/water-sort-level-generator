@@ -26,6 +26,24 @@ export interface SolutionPathMetrics {
   maximumChoices: number
 }
 
+
+export interface MistakeAnalysisMetrics {
+  analyzedStates: number
+  decisionStates: number
+  alternatives: number
+  optimalEquivalentAlternatives: number
+  recoverableAlternatives: number
+  deadEndAlternatives: number
+  unknownAlternatives: number
+  analysisCoverage: number
+  wrongMoveDensity: number
+  deadEndRisk: number
+  averageRecoveryPenalty: number
+  p50RecoveryPenalty: number
+  p90RecoveryPenalty: number
+  maxRecoveryPenalty: number
+}
+
 export type SolverResult =
   | { status: 'solved'; solution: Move[]; metrics: SolverMetrics }
   | { status: 'unsolvable'; metrics: SolverMetrics }
@@ -51,6 +69,7 @@ export interface AuditPuzzle {
   canonicalKey: string
   solver: SolverMetrics & { optimalMoves: number }
   solutionPath: SolutionPathMetrics
+  mistakeAnalysis?: MistakeAnalysisMetrics
   emptyTubeAnalysis: EmptyTubeAnalysis[]
 }
 
