@@ -1,4 +1,4 @@
-name: Solver tail benchmark v0.2
+name: Solver tail benchmark v0.2 corrected
 
 on:
   push:
@@ -28,8 +28,8 @@ jobs:
             --max-empty=5 \
             --max-depth=180 \
             --seed=water-sort-benchmark-tail-v0.2 \
-            --output=data/output/solver-benchmark-tail-v0.2.json
+            --output=data/output/solver-benchmark-tail-v0.2-corrected.json
       - uses: actions/upload-artifact@v4
         with:
-          name: solver-benchmark-tail-v0.2
-          path: data/output/solver-benchmark-tail-v0.2.json
+          name: solver-benchmark-tail-v0.2-corrected
+          path: data/output/solver-benchmark-tail-v0.2-corrected.json
