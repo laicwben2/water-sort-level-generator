@@ -13,6 +13,11 @@ jobs:
         with:
           node-version: 22
       - run: npm install
+      - name: upload-lockfile
+        uses: actions/upload-artifact@v4
+        with:
+          name: package-lock
+          path: package-lock.json
       - run: npm test
       - run: npm run build
       - run: npm run generate -- --profile=baseline --count=1 --max-attempts=1000 --output=data/audit/ci-smoke.json
