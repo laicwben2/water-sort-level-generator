@@ -1,12 +1,14 @@
 import {
   CANONICAL_VERSION,
   ENCODING_VERSION,
+  canonicalPuzzleKey,
   canonicalPuzzleKeyFromSequence,
   canonicalPuzzleSequence,
 } from './canonical'
 import { generateBalancedFullTubes } from './candidate'
 import { CanonicalSequenceTrie } from './dedup'
 import { analyzeMistakes } from './difficulty'
+import { applyMove, calculatePour, isSolved } from './rules'
 import { findMinimumEmptyTubes } from './generator'
 import { deriveCandidateSeed, fingerprintConfig } from './rng'
 import { analyzeSolutionPath } from './solver'
@@ -18,6 +20,7 @@ import type {
   SolutionPathMetrics,
   SolverMetrics,
 } from './types'
+import { validateDifficultyV2 } from './validator'
 import { GENERATOR_VERSION, RNG_VERSION, SOLVER_STATE_ENCODING_VERSION } from './version'
 
 export interface ResearchPuzzle {
@@ -168,5 +171,111 @@ export function generateResearchPool(options: ResearchPoolOptions): ResearchPool
     },
     attemptsScanned,
     puzzles,
+  }
+}
+
+
+export interface ResearchValidationSummary {
+  valid: true
+  puzzles: number
+  types: number
+  minimumEmptyDistribution: Record<string, number>
+}
+
+export function validateResearchPool(pool: ResearchPool): ResearchValidationSummary {
+  if (pool.version !== 'research-pool-v1') {
+    throw new Error(`Unsupported research pool version: ${pool.version}`)
+  }
+  if (!Number.isInteger(pool.types) || pool.types < 1 || pool.types > 16) {
+    throw new Error('Invalid research pool type count')
+  }
+  if (!Number.isInteger(pool.capacity) || pool.capacity < 1 || pool.capacity > 4) {
+    throw new Error('Invalid research pool capacity')
+  }
+
+  const ids = new Set<string>()
+  const canonicalKeys = new Set<string>()
+  const minimumEmptyDistribution: Record<string, number> = {}
+
+  for (const puzzle of pool.puzzles) {
+    if (ids.has(puzzle.id)) throw new Error(`Duplicate research puzzle id: ${puzzle.id}`)
+    ids.add(puzzle.id)
+
+    if (canonicalKeys.has(puzzle.canonicalKey)) {
+      throw new Error(`Canonical research duplicate: ${puzzle.id}`)
+    }
+    canonicalKeys.add(puzzle.canonicalKey)
+
+    if (puzzle.types !== pool.types || puzzle.capacity !== pool.capacity) {
+      throw new Error(`Research puzzle scale mismatch: ${puzzle.id}`)
+    }
+    if (new Set(puzzle.board.flat()).size !== pool.types) {
+      throw new Error(`Research puzzle type-count mismatch: ${puzzle.id}`)
+    }
+    if (canonicalPuzzleKey(puzzle.board) !== puzzle.canonicalKey) {
+      throw new Error(`Invalid research canonical key: ${puzzle.id}`)
+    }
+    if (isSolved(puzzle.board, puzzle.capacity)) {
+      throw new Error(`Research puzzle starts solved: ${puzzle.id}`)
+    }
+
+    const emptyTubes = puzzle.board.filter((tube) => tube.length === 0).length
+    if (emptyTubes !== puzzle.emptyTubes
+      || puzzle.emptyTubes !== puzzle.minimumRequiredEmptyTubes) {
+      throw new Error(`Research minimum-empty mismatch: ${puzzle.id}`)
+    }
+
+    if (puzzle.emptyTubeAnalysis.length !== puzzle.minimumRequiredEmptyTubes) {
+      throw new Error(`Incomplete research minimum-empty proof: ${puzzle.id}`)
+    }
+    for (let index = 0; index < puzzle.emptyTubeAnalysis.length; index += 1) {
+      const analysis = puzzle.emptyTubeAnalysis[index]
+      const expectedEmptyTubes = index + 1
+      if (analysis.emptyTubes !== expectedEmptyTubes) {
+        throw new Error(`Non-sequential research empty proof: ${puzzle.id}`)
+      }
+      const isMinimum = expectedEmptyTubes === puzzle.minimumRequiredEmptyTubes
+      if (isMinimum ? analysis.status !== 'solved' : analysis.status !== 'unsolvable') {
+        throw new Error(`Invalid research empty proof status: ${puzzle.id}`)
+      }
+    }
+
+    const typeCounts = new Map<number, number>()
+    for (const type of puzzle.board.flat()) typeCounts.set(type, (typeCounts.get(type) ?? 0) + 1)
+    if ([...typeCounts.values()].some((count) => count !== puzzle.capacity)) {
+      throw new Error(`Research type conservation failure: ${puzzle.id}`)
+    }
+
+    let board = puzzle.board.map((tube) => [...tube])
+    for (const expectedMove of puzzle.optimalSolution) {
+      const move = calculatePour(board, expectedMove.from, expectedMove.to, puzzle.capacity)
+      if (JSON.stringify(move) !== JSON.stringify(expectedMove)) {
+        throw new Error(`Invalid research saved move: ${puzzle.id}`)
+      }
+      board = applyMove(board, expectedMove)
+    }
+
+    if (!isSolved(board, puzzle.capacity)) {
+      throw new Error(`Research solution does not finish: ${puzzle.id}`)
+    }
+    if (puzzle.optimalSolution.length !== puzzle.solver.optimalMoves) {
+      throw new Error(`Research solution length mismatch: ${puzzle.id}`)
+    }
+    if (JSON.stringify(analyzeSolutionPath(puzzle.board, puzzle.optimalSolution, puzzle.capacity))
+      !== JSON.stringify(puzzle.solutionPath)) {
+      throw new Error(`Research solution-path mismatch: ${puzzle.id}`)
+    }
+
+    validateDifficultyV2(puzzle.id, puzzle.difficultyV2, puzzle.solver.optimalMoves)
+
+    const key = String(puzzle.minimumRequiredEmptyTubes)
+    minimumEmptyDistribution[key] = (minimumEmptyDistribution[key] ?? 0) + 1
+  }
+
+  return {
+    valid: true,
+    puzzles: pool.puzzles.length,
+    types: pool.types,
+    minimumEmptyDistribution,
   }
 }
