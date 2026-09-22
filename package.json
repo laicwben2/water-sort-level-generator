@@ -9,7 +9,8 @@
     "test:watch": "vitest",
     "generate": "tsx src/cli/generate.ts",
     "validate": "tsx src/cli/validate.ts",
-    "export:runtime": "tsx src/cli/export-runtime.ts"
+    "export:runtime": "tsx src/cli/export-runtime.ts",
+    "export:solutions": "tsx src/cli/export-solutions.ts"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
