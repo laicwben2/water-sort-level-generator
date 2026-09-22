@@ -160,3 +160,21 @@ npm run generate -- \
 ```
 
 The audit catalog records generator, RNG, canonicalization, encoding, batch-seed, candidate-seed, and config-fingerprint metadata needed to reproduce accepted candidates.
+
+
+## Benchmark solver scaling
+
+Benchmark type-count scaling with one candidate process at a time:
+
+```bash
+npm run benchmark -- \
+  --min-types=6 \
+  --max-types=16 \
+  --samples=10 \
+  --max-states=100000 \
+  --max-empty=5 \
+  --seed=water-sort-benchmark-v0.2 \
+  --output=data/output/solver-benchmark.json
+```
+
+Each candidate runs in its own child process. The report records exact/unknown rates, minimum-empty distribution, elapsed time, explored/visited states, generated moves, and process `maxRSS`. This keeps concurrency at 1 and makes peak-memory measurements comparable across candidates.
