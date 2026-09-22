@@ -90,7 +90,9 @@ describe('Difficulty v2 mistake analysis', () => {
       analyzedStates: 0,
       alternatives: 0,
       analysisCoverage: 1,
+      alternativesPerAnalyzedState: 0,
       wrongMoveDensity: 0,
+      deadEndDensity: 0,
       deadEndRisk: 0,
       averageRecoveryPenalty: 0,
     })
