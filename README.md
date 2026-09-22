@@ -93,6 +93,18 @@ npm run export:runtime -- \
 
 The output contract is defined by `spec/level-pack-v1.schema.json`.
 
+## Export optimal solutions
+
+The normal Runtime Level Pack exposes the proven optimal move count but deliberately omits the full answer. Applications that need hints, replay, challenge verification, or research data can export the separate solution artifact:
+
+```bash
+npm run export:solutions -- \
+  --input=data/audit/catalog-expanded.json \
+  --output=data/output/solutions-v1.json
+```
+
+Each solution entry is keyed by level ID and contains both `optimalMoves` and `optimalSolution`.
+
 ## Contract
 
 Current contract values:
