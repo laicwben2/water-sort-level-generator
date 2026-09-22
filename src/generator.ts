@@ -6,12 +6,13 @@ import {
 } from './canonical'
 import { generateBalancedFullTubes } from './candidate'
 import { CanonicalSequenceTrie } from './dedup'
+import { analyzeOptimalPathDifficulty, analyzeStructuralDifficulty } from './difficulty'
 import { PROFILE_SETS, type DifficultyProfile, type ProfileName } from './profiles'
 import {
   deriveCandidateSeed,
   fingerprintConfig,
 } from './rng'
-import { analyzeSolutionPath, solveBoard } from './solver'
+import { solveBoard } from './solver'
 import type {
   AuditCatalog,
   AuditPuzzle,
@@ -149,7 +150,14 @@ export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalo
       })
       if (minimum.status !== 'exact') continue
 
-      const path = analyzeSolutionPath(minimum.board, minimum.result.solution, capacity)
+      const optimalPath = analyzeOptimalPathDifficulty(minimum.board, minimum.result.solution, capacity)
+      const path = {
+        decisionSteps: optimalPath.decisionSteps,
+        forcedSteps: optimalPath.forcedSteps,
+        totalAlternativeMoves: optimalPath.totalAlternativeMoves,
+        averageChoices: optimalPath.averageChoices,
+        maximumChoices: optimalPath.maximumChoices,
+      }
       if (!matchesCurrentDifficultyWindow(minimum.result, profile)) continue
 
       const canonicalSequence = canonicalPuzzleSequence(minimum.board)
@@ -173,6 +181,10 @@ export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalo
         },
         solutionPath: path,
         emptyTubeAnalysis: minimum.analyses,
+        difficultyV2: {
+          structural: analyzeStructuralDifficulty(minimum.board, capacity),
+          optimalPath,
+        },
       })
     }
 
