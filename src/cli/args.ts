@@ -11,3 +11,14 @@ export function positiveIntArg(name: string, fallback: number): number {
   if (!Number.isInteger(value) || value < 1) throw new Error(`--${name} must be a positive integer`)
   return value
 }
+
+
+export function booleanArg(name: string, fallback = false): boolean {
+  const bare = `--${name}`
+  if (process.argv.includes(bare)) return true
+  const raw = stringArg(name)
+  if (raw === undefined) return fallback
+  if (raw === 'true' || raw === '1') return true
+  if (raw === 'false' || raw === '0') return false
+  throw new Error(`--${name} must be true or false`)
+}
