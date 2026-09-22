@@ -1,65 +1,13 @@
 import { applyMove } from './rules'
 import { listLegalMoves, solveBoard } from './solver'
 import { packBoard, packedStateKey } from './solver-state'
-import type { Board, Move } from './types'
+import type { Board, Move, MistakeAnalysis, MistakeStateAnalysis, AlternativeMoveAnalysis } from './types'
 
 export interface MistakeAnalysisOptions {
   capacity?: number
   maxVisitedStates?: number
   maxDepthExtra?: number
   highPenaltyThreshold?: number
-}
-
-export type AlternativeMoveAnalysis =
-  | {
-      move: Move
-      status: 'optimal-alternative'
-      nextOptimalMoves: number
-      recoveryPenalty: 0
-    }
-  | {
-      move: Move
-      status: 'recoverable-mistake'
-      nextOptimalMoves: number
-      recoveryPenalty: number
-    }
-  | {
-      move: Move
-      status: 'dead-end'
-    }
-  | {
-      move: Move
-      status: 'unknown'
-    }
-
-export interface MistakeStateAnalysis {
-  pathIndex: number
-  remainingOptimalMoves: number
-  legalMoves: number
-  optimalAlternatives: number
-  recoverableMistakes: number
-  deadEndMoves: number
-  unknownMoves: number
-  recoveryPenalties: number[]
-  maxRecoveryPenalty: number
-  alternatives: AlternativeMoveAnalysis[]
-}
-
-export interface MistakeAnalysis {
-  analyzedStates: number
-  decisionStates: number
-  forcedStates: number
-  totalAlternativeMoves: number
-  optimalAlternativeMoves: number
-  recoverableMistakes: number
-  deadEndMoves: number
-  unknownMoves: number
-  knownNonOptimalMoves: number
-  deadEndRatioKnown: number
-  averageRecoveryPenalty: number
-  maxRecoveryPenalty: number
-  highPenaltyMistakes: number
-  states: MistakeStateAnalysis[]
 }
 
 type DistanceCacheEntry =
