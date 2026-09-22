@@ -40,7 +40,7 @@ export function analyzeStructuralDifficulty(
   let initialSegments = 0
   let mixedTubeCount = 0
   let monochromeFullTubeCount = 0
-  const buriedDepths: number[] = []
+  const blockingDepths: number[] = []
 
   for (let tubeIndex = 0; tubeIndex < board.length; tubeIndex += 1) {
     const tube = board[tubeIndex]
@@ -61,8 +61,14 @@ export function analyzeStructuralDifficulty(
     }
 
     if (!completed) {
-      for (let layer = 0; layer < tube.length; layer += 1) {
-        buriedDepths.push(tube.length - 1 - layer)
+      let segmentStart = 0
+      while (segmentStart < tube.length) {
+        let segmentEnd = segmentStart
+        while (segmentEnd + 1 < tube.length && tube[segmentEnd + 1] === tube[segmentStart]) {
+          segmentEnd += 1
+        }
+        blockingDepths.push(tube.length - 1 - segmentEnd)
+        segmentStart = segmentEnd + 1
       }
     }
   }
@@ -78,8 +84,8 @@ export function analyzeStructuralDifficulty(
     fragmentationExcess: Math.max(0, initialSegments - typeCount),
     averageTypeTubeSpread: average(spreads),
     maximumTypeTubeSpread: spreads.length === 0 ? 0 : Math.max(...spreads),
-    averageBuriedDepth: average(buriedDepths),
-    maximumBuriedDepth: buriedDepths.length === 0 ? 0 : Math.max(...buriedDepths),
+    averageBlockingDepth: average(blockingDepths),
+    maximumBlockingDepth: blockingDepths.length === 0 ? 0 : Math.max(...blockingDepths),
     mixedTubeCount,
     monochromeFullTubeCount,
   }
