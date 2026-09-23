@@ -19,6 +19,19 @@ describe('bounded water sort solver', () => {
       .toBe('budget-exceeded')
   })
 
+  it('rejects invalid solver resource budgets instead of disabling guards', () => {
+    const board: Board = [[0, 1], [0, 1], [], []]
+
+    expect(() => solveBoard(board, { capacity: 2, maxVisitedStates: Number.NaN }))
+      .toThrow(/maxVisitedStates must be a non-negative safe integer/)
+    expect(() => solveBoard(board, { capacity: 2, maxVisitedStates: 1.5 }))
+      .toThrow(/maxVisitedStates must be a non-negative safe integer/)
+    expect(() => solveBoard(board, { capacity: 2, maxDepth: Number.NaN }))
+      .toThrow(/maxDepth must be a non-negative safe integer/)
+    expect(() => solveBoard(board, { capacity: 2, maxDepth: -1 }))
+      .toThrow(/maxDepth must be a non-negative safe integer/)
+  })
+
   it('caps discovered visited states rather than only popped states', () => {
     const result = solveBoard([[0, 1], [0, 1], [], []], {
       capacity: 2,
