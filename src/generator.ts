@@ -120,6 +120,12 @@ function matchesCurrentDifficultyWindow(
     && result.solution.length <= profile.maxMoves
 }
 
+function assertPositiveSafeInteger(value: number, name: string): void {
+  if (!Number.isSafeInteger(value) || value < 1) {
+    throw new Error(`${name} must be a positive integer`)
+  }
+}
+
 export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalog {
   const profileName = options.profileName ?? 'expanded'
   if (!Object.hasOwn(PROFILE_SETS, profileName)) {
@@ -130,6 +136,18 @@ export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalo
   const capacity = options.capacity ?? 4
   const maxEmptyTubes = options.maxEmptyTubes ?? 5
   const batchSeed = options.batchSeed ?? 'water-sort:generator:v0.2:default'
+  assertPositiveSafeInteger(perDifficulty, 'perDifficulty')
+  assertPositiveSafeInteger(maxAttempts, 'maxAttempts')
+  assertPositiveSafeInteger(maxEmptyTubes, 'maxEmptyTubes')
+  if (options.mistakeMaxVisitedStatesPerAlternative !== undefined) {
+    assertPositiveSafeInteger(options.mistakeMaxVisitedStatesPerAlternative, 'mistakeMaxVisitedStatesPerAlternative')
+  }
+  if (options.mistakeMaxDepthPerAlternative !== undefined) {
+    assertPositiveSafeInteger(options.mistakeMaxDepthPerAlternative, 'mistakeMaxDepthPerAlternative')
+  }
+  if (options.mistakeMaxPathStates !== undefined) {
+    assertPositiveSafeInteger(options.mistakeMaxPathStates, 'mistakeMaxPathStates')
+  }
   const profiles = PROFILE_SETS[profileName]
   const puzzles: AuditPuzzle[] = []
   const canonicalIndex = new CanonicalSequenceTrie()

@@ -12,6 +12,15 @@ describe('deterministic generation foundation', () => {
       .toThrow(/Unknown profile: toString/)
   })
 
+  it('rejects counts that would return an empty or partial catalog', () => {
+    expect(() => generateAuditCatalog({ perDifficulty: 0 })).toThrow(/perDifficulty must be a positive integer/)
+    expect(() => generateAuditCatalog({ perDifficulty: 0.5 })).toThrow(/perDifficulty must be a positive integer/)
+    expect(() => generateAuditCatalog({ maxAttempts: 0 })).toThrow(/maxAttempts must be a positive integer/)
+    expect(() => generateAuditCatalog({ maxEmptyTubes: 0 })).toThrow(/maxEmptyTubes must be a positive integer/)
+    expect(() => generateAuditCatalog({ analyzeMistakes: true, mistakeMaxPathStates: 0 }))
+      .toThrow(/mistakeMaxPathStates must be a positive integer/)
+  })
+
   it('derives candidate RNG independently from previous candidates', () => {
     const seed7 = deriveCandidateSeed('batch-A', 'expanded', 'hard', 7)
     const seed8 = deriveCandidateSeed('batch-A', 'expanded', 'hard', 8)
