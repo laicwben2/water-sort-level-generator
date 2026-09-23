@@ -165,7 +165,7 @@ export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
     if (ids.has(puzzle.id)) throw new Error(`Duplicate puzzle id: ${puzzle.id}`)
     ids.add(puzzle.id)
 
-    if (!Number.isInteger(puzzle.candidateIndex) || puzzle.candidateIndex < 0) {
+    if (!Number.isSafeInteger(puzzle.candidateIndex) || puzzle.candidateIndex < 0) {
       throw new Error(`Invalid candidate index: ${puzzle.id}`)
     }
     if (puzzle.candidateSeed !== deriveCandidateSeed(

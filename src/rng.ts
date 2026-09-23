@@ -28,8 +28,8 @@ export function deriveCandidateSeed(
   difficulty: string,
   candidateIndex: number,
 ): string {
-  if (!Number.isInteger(candidateIndex) || candidateIndex < 0) {
-    throw new Error('candidateIndex must be a non-negative integer')
+  if (!Number.isSafeInteger(candidateIndex) || candidateIndex < 0) {
+    throw new Error('candidateIndex must be a non-negative safe integer')
   }
   return [
     'water-sort',

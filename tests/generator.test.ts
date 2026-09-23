@@ -37,6 +37,11 @@ describe('deterministic generation foundation', () => {
     expect(deriveCandidateSeed('batch-A', 'expanded', 'hard', 8)).toBe(seed8)
   })
 
+  it('rejects candidate indices outside the safe integer range', () => {
+    expect(() => deriveCandidateSeed('batch-A', 'expanded', 'easy', Number.MAX_SAFE_INTEGER + 1))
+      .toThrow(/non-negative safe integer/)
+  })
+
   it('gives different batches and capacities distinct stable level IDs', () => {
     const first = generateAuditCatalog({
       profileName: 'baseline',
