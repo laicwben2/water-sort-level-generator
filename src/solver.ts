@@ -110,6 +110,12 @@ function metrics(exploredStates: number, visitedStates: number, generatedMoves: 
   }
 }
 
+function assertNonNegativeSafeInteger(value: number, name: string): void {
+  if (!Number.isSafeInteger(value) || value < 0) {
+    throw new Error(`${name} must be a non-negative safe integer`)
+  }
+}
+
 function reconstructSolution(nodes: SearchNode[], solvedNodeId: number): Move[] {
   const solution: Move[] = []
   let nodeId: number | undefined = solvedNodeId
@@ -125,6 +131,8 @@ export function solveBoard(board: Board, options: SolverOptions = {}): SolverRes
   const capacity = options.capacity ?? 4
   const maxVisitedStates = options.maxVisitedStates ?? 100_000
   const maxDepth = options.maxDepth ?? 100
+  assertNonNegativeSafeInteger(maxVisitedStates, 'maxVisitedStates')
+  assertNonNegativeSafeInteger(maxDepth, 'maxDepth')
   const startBoard = packBoard(board, capacity)
   const typeCount = packedTypeCount(startBoard, capacity)
   const startKey = packedStateKey(startBoard)
