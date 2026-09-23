@@ -91,6 +91,22 @@ function validateMistakeAnalysis(puzzleId: string, metrics: NonNullable<AuditCat
     || metrics.p90RecoveryPenalty > metrics.maxRecoveryPenalty) {
     throw new Error(`Recovery penalty percentiles are not monotonic: ${puzzleId}`)
   }
+  const penalties = [
+    metrics.averageRecoveryPenalty,
+    metrics.p50RecoveryPenalty,
+    metrics.p90RecoveryPenalty,
+    metrics.maxRecoveryPenalty,
+  ]
+  const invalidPenalties = metrics.recoverableAlternatives === 0
+    ? penalties.some((value) => value !== 0)
+    : penalties.some((value) => value < 1)
+      || !Number.isSafeInteger(metrics.p50RecoveryPenalty)
+      || !Number.isSafeInteger(metrics.p90RecoveryPenalty)
+      || !Number.isSafeInteger(metrics.maxRecoveryPenalty)
+      || metrics.averageRecoveryPenalty > metrics.maxRecoveryPenalty
+  if (invalidPenalties) {
+    throw new Error(`Recovery penalty metrics disagree with recoverable count: ${puzzleId}`)
+  }
 }
 
 export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {

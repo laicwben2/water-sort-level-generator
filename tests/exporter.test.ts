@@ -88,6 +88,40 @@ describe('catalog validation and exports', () => {
     expect(validateAuditCatalog(catalog).valid).toBe(true)
   })
 
+  it('rejects recovery penalties that disagree with recoverable counts', () => {
+    const catalog = fixture()
+    const metrics: NonNullable<AuditCatalog['puzzles'][number]['mistakeAnalysis']> = {
+      analyzedStates: 1,
+      decisionStates: 1,
+      alternatives: 1,
+      optimalEquivalentAlternatives: 0,
+      recoverableAlternatives: 1,
+      deadEndAlternatives: 0,
+      unknownAlternatives: 0,
+      analysisCoverage: 1,
+      alternativesPerAnalyzedState: 1,
+      wrongMoveDensity: 1,
+      deadEndDensity: 0,
+      deadEndRisk: 0,
+      averageRecoveryPenalty: 1,
+      p50RecoveryPenalty: 1,
+      p90RecoveryPenalty: 1,
+      maxRecoveryPenalty: 1,
+    }
+    catalog.puzzles[0].mistakeAnalysis = metrics
+    expect(validateAuditCatalog(catalog).valid).toBe(true)
+
+    metrics.recoverableAlternatives = 0
+    metrics.optimalEquivalentAlternatives = 1
+    metrics.wrongMoveDensity = 0
+    expect(() => validateAuditCatalog(catalog)).toThrow(/Recovery penalty metrics disagree/)
+
+    metrics.recoverableAlternatives = 1
+    metrics.optimalEquivalentAlternatives = 0
+    metrics.wrongMoveDensity = 1
+    metrics.averageRecoveryPenalty = 2
+    expect(() => validateAuditCatalog(catalog)).toThrow(/Recovery penalty metrics disagree/)
+  })
   it('rejects inconsistent derived Difficulty v2 density metrics', () => {
     const catalog = fixture()
     catalog.puzzles[0].mistakeAnalysis = {
