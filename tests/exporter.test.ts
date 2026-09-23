@@ -203,6 +203,25 @@ describe('catalog validation and exports', () => {
     wrongType.puzzles[0].board[0][0] = 16
     expect(() => validateAuditCatalog(wrongType)).toThrow(/Invalid Type ID/)
   })
+
+  it('rejects inconsistent solver metrics in minimum-empty proofs', () => {
+    const mismatched = fixture()
+    mismatched.puzzles[0].solver.visitedStates += 1
+    expect(() => validateAuditCatalog(mismatched)).toThrow(/solver metrics mismatch/)
+
+    const invalidAverage = fixture()
+    invalidAverage.puzzles[0].emptyTubeAnalysis[0].metrics.averageBranching += 1
+    expect(() => validateAuditCatalog(invalidAverage)).toThrow(/Inconsistent solver averageBranching/)
+
+    const negativeCount = fixture()
+    negativeCount.puzzles[0].solver.exploredStates = -1
+    expect(() => validateAuditCatalog(negativeCount)).toThrow(/Invalid solver exploredStates/)
+
+    const zeroStates = fixture()
+    zeroStates.puzzles[0].solver.visitedStates = 0
+    expect(() => validateAuditCatalog(zeroStates)).toThrow(/Exact solver proof has no visited states/)
+  })
+
   it('rejects an inconsistent minimum-empty optimal move count', () => {
     const catalog = fixture()
     catalog.puzzles[0].emptyTubeAnalysis[0].optimalMoves = 99

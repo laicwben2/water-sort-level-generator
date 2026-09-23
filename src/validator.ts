@@ -3,7 +3,7 @@ import { generateBalancedFullTubes } from './candidate'
 import { applyMove, calculatePour, isSolved } from './rules'
 import { deriveCandidateSeed, deriveLevelId } from './rng'
 import { analyzeSolutionPath } from './solver'
-import type { AuditCatalog } from './types'
+import type { AuditCatalog, SolverMetrics } from './types'
 import { GENERATOR_VERSION, RNG_VERSION, SOLVER_STATE_ENCODING_VERSION } from './version'
 
 export interface ValidationSummary {
@@ -14,6 +14,32 @@ export interface ValidationSummary {
 
 function approximatelyEqual(first: number, second: number): boolean {
   return Math.abs(first - second) <= 1e-12
+}
+
+const solverCountNames = [
+  'exploredStates',
+  'visitedStates',
+  'generatedMoves',
+  'maxDepthReached',
+] as const
+const solverMetricNames = [...solverCountNames, 'averageBranching'] as const
+
+function validateSolverMetrics(puzzleId: string, metrics: SolverMetrics) {
+  for (const name of solverCountNames) {
+    const value = metrics[name]
+    if (!Number.isSafeInteger(value) || value < 0) {
+      throw new Error(`Invalid solver ${name}: ${puzzleId}`)
+    }
+  }
+  if (metrics.exploredStates === 0 || metrics.visitedStates === 0) {
+    throw new Error(`Exact solver proof has no visited states: ${puzzleId}`)
+  }
+  const expectedBranching = metrics.generatedMoves / metrics.exploredStates
+  if (!Number.isFinite(metrics.averageBranching)
+    || metrics.averageBranching < 0
+    || !approximatelyEqual(metrics.averageBranching, expectedBranching)) {
+    throw new Error(`Inconsistent solver averageBranching: ${puzzleId}`)
+  }
 }
 
 function validateMistakeAnalysis(puzzleId: string, metrics: NonNullable<AuditCatalog['puzzles'][number]['mistakeAnalysis']>) {
@@ -198,11 +224,13 @@ export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
       throw new Error(`Non-classic occupancy: ${puzzle.id}`)
     }
 
+    validateSolverMetrics(puzzle.id, puzzle.solver)
     if (puzzle.emptyTubeAnalysis.length !== puzzle.minimumRequiredEmptyTubes) {
       throw new Error(`Incomplete minimum-empty proof: ${puzzle.id}`)
     }
     for (let index = 0; index < puzzle.emptyTubeAnalysis.length; index += 1) {
       const analysis = puzzle.emptyTubeAnalysis[index]
+      validateSolverMetrics(puzzle.id, analysis.metrics)
       const expectedEmptyTubes = index + 1
       if (analysis.emptyTubes !== expectedEmptyTubes) {
         throw new Error(`Non-sequential empty-tube proof: ${puzzle.id}`)
@@ -216,6 +244,10 @@ export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
       }
       if (isMinimum && analysis.optimalMoves !== puzzle.solver.optimalMoves) {
         throw new Error(`Minimum empty-tube optimal moves mismatch: ${puzzle.id}`)
+      }
+      if (isMinimum && solverMetricNames.some((name) =>
+        analysis.metrics[name] !== puzzle.solver[name])) {
+        throw new Error(`Minimum empty-tube solver metrics mismatch: ${puzzle.id}`)
       }
       if (!isMinimum && analysis.optimalMoves !== undefined) {
         throw new Error(`Unsolvable empty-tube result has optimal moves: ${puzzle.id}`)
