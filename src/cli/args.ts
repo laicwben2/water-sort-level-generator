@@ -7,8 +7,9 @@ export function stringArg(name: string, fallback?: string): string | undefined {
 export function positiveIntArg(name: string, fallback: number): number {
   const raw = stringArg(name)
   if (raw === undefined) return fallback
-  const value = Number.parseInt(raw, 10)
-  if (!Number.isInteger(value) || value < 1) throw new Error(`--${name} must be a positive integer`)
+  if (!/^[1-9]\d*$/.test(raw)) throw new Error(`--${name} must be a positive integer`)
+  const value = Number(raw)
+  if (!Number.isSafeInteger(value)) throw new Error(`--${name} must be a positive integer`)
   return value
 }
 
