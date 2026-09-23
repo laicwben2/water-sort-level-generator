@@ -27,8 +27,8 @@ function fixture(): AuditCatalog {
     puzzles: [{
       id: 'fixture-1',
       difficulty: 'easy',
-      candidateIndex: 0,
-      candidateSeed: deriveCandidateSeed('fixture-batch', 'test', 'easy', 0),
+      candidateIndex: 1,
+      candidateSeed: deriveCandidateSeed('fixture-batch', 'test', 'easy', 1),
       capacity: 2,
       emptyTubes: 1,
       minimumRequiredEmptyTubes: 1,
@@ -112,6 +112,11 @@ describe('catalog validation and exports', () => {
     expect(() => validateAuditCatalog(catalog)).toThrow(/Inconsistent deadEndDensity/)
   })
 
+  it('rejects a board that does not reproduce from its candidate seed', () => {
+    const catalog = fixture()
+    catalog.puzzles[0].board = [[0, 1], [1, 0], []]
+    expect(() => validateAuditCatalog(catalog)).toThrow(/Candidate board mismatch/)
+  })
   it('rejects unsupported capacities and Type IDs before export', () => {
     const wrongCapacity = fixture()
     wrongCapacity.puzzles[0].capacity = 5

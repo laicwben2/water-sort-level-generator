@@ -1,4 +1,5 @@
 import { CANONICAL_VERSION, ENCODING_VERSION, canonicalPuzzleKey } from './canonical'
+import { generateBalancedFullTubes } from './candidate'
 import { applyMove, calculatePour, isSolved } from './rules'
 import { deriveCandidateSeed } from './rng'
 import { analyzeSolutionPath } from './solver'
@@ -137,6 +138,20 @@ export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
     if (puzzle.board.some((tube) => tube.some((type) =>
       !Number.isInteger(type) || type < 0 || type >= 16))) {
       throw new Error(`Invalid Type ID: ${puzzle.id}`)
+    }
+    if (!Number.isSafeInteger(puzzle.emptyTubes)
+      || puzzle.emptyTubes < 1
+      || puzzle.emptyTubes > puzzle.board.length) {
+      throw new Error(`Invalid empty tube count: ${puzzle.id}`)
+    }
+    const typeCount = new Set(puzzle.board.flat()).size
+    if (typeCount < 1) throw new Error(`Puzzle has no Types: ${puzzle.id}`)
+    const reconstructedBoard = [
+      ...generateBalancedFullTubes(typeCount, puzzle.capacity, puzzle.candidateSeed),
+      ...Array.from({ length: puzzle.emptyTubes }, () => []),
+    ]
+    if (JSON.stringify(puzzle.board) !== JSON.stringify(reconstructedBoard)) {
+      throw new Error(`Candidate board mismatch: ${puzzle.id}`)
     }
     if (canonicalPuzzleKey(puzzle.board) !== puzzle.canonicalKey) {
       throw new Error(`Invalid canonical key: ${puzzle.id}`)
