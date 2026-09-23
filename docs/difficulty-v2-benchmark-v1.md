@@ -72,6 +72,32 @@ Committed artifacts:
 
 The blind manifest intentionally omits source difficulty, selection role, optimal moves, and all solver-derived metrics.
 
+
+## Local blind playtest
+
+Run:
+
+```bash
+npm run playtest:benchmark
+```
+
+Then open:
+
+```text
+http://127.0.0.1:4174
+```
+
+The playtest page:
+
+- hides the board until Start is pressed;
+- uses classic-v1 pour rules;
+- records elapsed time, move count, and restarts;
+- supports solved / gave-up outcomes;
+- requires a 1–5 perceived-difficulty rating;
+- optionally records confidence and frustration;
+- exports the current session as `difficulty-v2-playtest-results.json`;
+- reads only the blind benchmark manifest and does not expose source difficulty or solver metadata.
+
 ## Selected coverage
 
 The set deliberately includes contrasting structures such as:
