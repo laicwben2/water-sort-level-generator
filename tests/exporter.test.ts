@@ -222,6 +222,13 @@ describe('catalog validation and exports', () => {
     expect(() => validateAuditCatalog(zeroStates)).toThrow(/Exact solver proof has no visited states/)
   })
 
+  it('rejects a solved proof whose recorded search depth is shorter than its optimal path', () => {
+    const catalog = fixture()
+    catalog.puzzles[0].solver.maxDepthReached = 0
+    catalog.puzzles[0].emptyTubeAnalysis[0].metrics.maxDepthReached = 0
+    expect(() => validateAuditCatalog(catalog)).toThrow(/Solver proof depth shorter than optimal solution/)
+  })
+
   it('rejects an inconsistent minimum-empty optimal move count', () => {
     const catalog = fixture()
     catalog.puzzles[0].emptyTubeAnalysis[0].optimalMoves = 99

@@ -225,6 +225,9 @@ export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
     }
 
     validateSolverMetrics(puzzle.id, puzzle.solver)
+    if (puzzle.solver.maxDepthReached < puzzle.solver.optimalMoves) {
+      throw new Error(`Solver proof depth shorter than optimal solution: ${puzzle.id}`)
+    }
     if (puzzle.emptyTubeAnalysis.length !== puzzle.minimumRequiredEmptyTubes) {
       throw new Error(`Incomplete minimum-empty proof: ${puzzle.id}`)
     }
