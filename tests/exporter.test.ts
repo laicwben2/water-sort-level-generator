@@ -176,6 +176,12 @@ describe('catalog validation and exports', () => {
     expect(() => validateAuditCatalog(catalog)).toThrow(/Unsupported generator/)
   })
 
+  it('rejects non-string audit profiles instead of coercing them', () => {
+    const catalog = fixture()
+    ;(catalog as unknown as { profile: unknown }).profile = ['test']
+    expect(() => validateAuditCatalog(catalog)).toThrow(/profile must be a non-empty string/)
+  })
+
   it('rejects a level ID that disagrees with candidate metadata', () => {
     const catalog = fixture()
     catalog.puzzles[0].id = 'old-colliding-id'
