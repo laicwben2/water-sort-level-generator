@@ -112,6 +112,15 @@ describe('catalog validation and exports', () => {
     expect(() => validateAuditCatalog(catalog)).toThrow(/Inconsistent deadEndDensity/)
   })
 
+  it('rejects catalogs that cannot satisfy the runtime pack contract', () => {
+    const empty = fixture()
+    empty.puzzles = []
+    expect(() => validateAuditCatalog(empty)).toThrow(/must contain puzzles/)
+
+    const wrongDifficulty = fixture()
+    wrongDifficulty.puzzles[0].difficulty = 'expert' as AuditCatalog['puzzles'][number]['difficulty']
+    expect(() => validateAuditCatalog(wrongDifficulty)).toThrow(/Invalid difficulty/)
+  })
   it('rejects a board that does not reproduce from its candidate seed', () => {
     const catalog = fixture()
     catalog.puzzles[0].board = [[0, 1], [1, 0], []]

@@ -109,11 +109,16 @@ export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
     throw new Error('Solver state encoding version mismatch')
   }
 
+  if (catalog.puzzles.length === 0) throw new Error('Audit catalog must contain puzzles')
+
   const ids = new Set<string>()
   const canonicalKeys = new Set<string>()
   const byDifficulty: Record<string, number> = {}
 
   for (const puzzle of catalog.puzzles) {
+    if (!['easy', 'medium', 'hard'].includes(puzzle.difficulty)) {
+      throw new Error(`Invalid difficulty: ${puzzle.id}`)
+    }
     if (ids.has(puzzle.id)) throw new Error(`Duplicate puzzle id: ${puzzle.id}`)
     ids.add(puzzle.id)
 
