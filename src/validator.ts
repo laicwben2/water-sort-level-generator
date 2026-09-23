@@ -140,6 +140,9 @@ export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
   if (catalog.generator !== 'balanced-shuffle+bounded-a-star') {
     throw new Error(`Unsupported generator: ${catalog.generator}`)
   }
+  if (typeof catalog.profile !== 'string' || !catalog.profile.trim()) {
+    throw new Error('Audit profile must be a non-empty string')
+  }
   if (catalog.reproducibility.generatorVersion !== GENERATOR_VERSION) {
     throw new Error('Generator version mismatch')
   }
