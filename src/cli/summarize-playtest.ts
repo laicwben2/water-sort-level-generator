@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import type { PlaytestResultEntry, PlaytestResults } from '../playtest'
-import { validatePlaytestResults } from '../playtest'
+import { GIVE_UP_REASONS, validatePlaytestResults } from '../playtest'
 import { stringArg } from './args'
 
 interface BlindBenchmark {
@@ -51,6 +51,13 @@ const [data, benchmark] = await Promise.all([
 const allowedIds = new Set(benchmark.puzzles.map((puzzle) => puzzle.benchmarkId))
 const validation = validatePlaytestResults(data, benchmark.benchmark, allowedIds)
 
+const giveUpReasonCounts = Object.fromEntries(
+  GIVE_UP_REASONS.map((reason) => [
+    reason,
+    data.results.filter((result) => result.giveUpReasons?.includes(reason)).length,
+  ]),
+)
+
 const report = {
   version: 'difficulty-v2-playtest-summary-v1',
   source: inputPath,
@@ -68,6 +75,7 @@ const report = {
   perceivedDifficulty: distribution(data.results.map((result) => result.perceivedDifficulty)),
   confidence: optionalRatings(data.results, 'confidence'),
   frustration: optionalRatings(data.results, 'frustration'),
+  giveUpReasonCounts,
   byPuzzle: [...data.results]
     .sort((a, b) => a.benchmarkId.localeCompare(b.benchmarkId))
     .map((result) => ({
@@ -79,6 +87,8 @@ const report = {
       perceivedDifficulty: result.perceivedDifficulty,
       ...(result.confidence !== undefined ? { confidence: result.confidence } : {}),
       ...(result.frustration !== undefined ? { frustration: result.frustration } : {}),
+      ...(result.giveUpReasons !== undefined ? { giveUpReasons: result.giveUpReasons } : {}),
+      ...(result.giveUpNote !== undefined ? { giveUpNote: result.giveUpNote } : {}),
     })),
 }
 
