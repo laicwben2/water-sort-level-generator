@@ -24,28 +24,49 @@ export interface PlaytestValidationSummary {
   gaveUp: number
 }
 
-function assertNonNegativeSafeInteger(value: number, name: string): void {
-  if (!Number.isSafeInteger(value) || value < 0) {
+function assertRecord(value: unknown, name: string): asserts value is Record<string, unknown> {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    throw new Error(`${name} must be an object`)
+  }
+}
+
+function assertExactKeys(
+  value: Record<string, unknown>,
+  allowed: readonly string[],
+  name: string,
+): void {
+  const allowedSet = new Set(allowed)
+  const unexpected = Object.keys(value).find((key) => !allowedSet.has(key))
+  if (unexpected !== undefined) {
+    throw new Error(`Unexpected ${name} field: ${unexpected}`)
+  }
+}
+
+function assertNonNegativeSafeInteger(value: unknown, name: string): asserts value is number {
+  if (typeof value !== 'number' || !Number.isSafeInteger(value) || value < 0) {
     throw new Error(`${name} must be a non-negative safe integer`)
   }
 }
 
-function assertRating(value: number, name: string): void {
-  if (!Number.isSafeInteger(value) || value < 1 || value > 5) {
+function assertRating(value: unknown, name: string): asserts value is number {
+  if (typeof value !== 'number' || !Number.isSafeInteger(value) || value < 1 || value > 5) {
     throw new Error(`${name} must be an integer from 1 to 5`)
   }
 }
 
 export function validatePlaytestResults(
-  data: PlaytestResults,
+  data: unknown,
   expectedBenchmark: string,
   allowedBenchmarkIds: ReadonlySet<string>,
 ): PlaytestValidationSummary {
+  assertRecord(data, 'Playtest results')
+  assertExactKeys(data, ['version', 'benchmark', 'exportedAt', 'results'], 'playtest results')
+
   if (data.version !== 'difficulty-v2-playtest-results-v1') {
-    throw new Error(`Unsupported playtest results version: ${data.version}`)
+    throw new Error(`Unsupported playtest results version: ${String(data.version)}`)
   }
   if (data.benchmark !== expectedBenchmark) {
-    throw new Error(`Unexpected benchmark: ${data.benchmark}`)
+    throw new Error(`Unexpected benchmark: ${String(data.benchmark)}`)
   }
   if (typeof data.exportedAt !== 'string'
     || data.exportedAt.trim() === ''
@@ -60,37 +81,54 @@ export function validatePlaytestResults(
   let solved = 0
   let gaveUp = 0
 
-  for (const result of data.results) {
-    if (typeof result.benchmarkId !== 'string' || !allowedBenchmarkIds.has(result.benchmarkId)) {
-      throw new Error(`Unknown benchmarkId: ${String(result.benchmarkId)}`)
-    }
-    if (seen.has(result.benchmarkId)) {
-      throw new Error(`Duplicate benchmarkId: ${result.benchmarkId}`)
-    }
-    seen.add(result.benchmarkId)
+  for (const [index, rawResult] of data.results.entries()) {
+    assertRecord(rawResult, `Result ${index}`)
+    assertExactKeys(
+      rawResult,
+      [
+        'benchmarkId',
+        'outcome',
+        'elapsedMs',
+        'moves',
+        'restarts',
+        'perceivedDifficulty',
+        'confidence',
+        'frustration',
+      ],
+      `result ${index}`,
+    )
 
-    if (result.outcome !== 'solved' && result.outcome !== 'gave-up') {
-      throw new Error(`Invalid outcome: ${result.benchmarkId}`)
+    const benchmarkId = rawResult.benchmarkId
+    if (typeof benchmarkId !== 'string' || !allowedBenchmarkIds.has(benchmarkId)) {
+      throw new Error(`Unknown benchmarkId: ${String(benchmarkId)}`)
     }
-    assertNonNegativeSafeInteger(result.elapsedMs, `elapsedMs for ${result.benchmarkId}`)
-    assertNonNegativeSafeInteger(result.moves, `moves for ${result.benchmarkId}`)
-    assertNonNegativeSafeInteger(result.restarts, `restarts for ${result.benchmarkId}`)
-    assertRating(result.perceivedDifficulty, `perceivedDifficulty for ${result.benchmarkId}`)
+    if (seen.has(benchmarkId)) {
+      throw new Error(`Duplicate benchmarkId: ${benchmarkId}`)
+    }
+    seen.add(benchmarkId)
 
-    if (result.confidence !== undefined) {
-      assertRating(result.confidence, `confidence for ${result.benchmarkId}`)
+    if (rawResult.outcome !== 'solved' && rawResult.outcome !== 'gave-up') {
+      throw new Error(`Invalid outcome: ${benchmarkId}`)
     }
-    if (result.frustration !== undefined) {
-      assertRating(result.frustration, `frustration for ${result.benchmarkId}`)
+    assertNonNegativeSafeInteger(rawResult.elapsedMs, `elapsedMs for ${benchmarkId}`)
+    assertNonNegativeSafeInteger(rawResult.moves, `moves for ${benchmarkId}`)
+    assertNonNegativeSafeInteger(rawResult.restarts, `restarts for ${benchmarkId}`)
+    assertRating(rawResult.perceivedDifficulty, `perceivedDifficulty for ${benchmarkId}`)
+
+    if (rawResult.confidence !== undefined) {
+      assertRating(rawResult.confidence, `confidence for ${benchmarkId}`)
+    }
+    if (rawResult.frustration !== undefined) {
+      assertRating(rawResult.frustration, `frustration for ${benchmarkId}`)
     }
 
-    if (result.outcome === 'solved') solved += 1
+    if (rawResult.outcome === 'solved') solved += 1
     else gaveUp += 1
   }
 
   return {
     valid: true,
-    benchmark: data.benchmark,
+    benchmark: expectedBenchmark,
     results: data.results.length,
     solved,
     gaveUp,
