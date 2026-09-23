@@ -15,7 +15,8 @@
     "summarize:difficulty": "tsx src/cli/summarize-difficulty.ts",
     "playtest:benchmark": "tsx src/cli/playtest-benchmark.ts",
     "validate:playtest": "tsx src/cli/validate-playtest.ts",
-    "summarize:playtest": "tsx src/cli/summarize-playtest.ts"
+    "summarize:playtest": "tsx src/cli/summarize-playtest.ts",
+    "correlate:playtest": "tsx src/cli/correlate-playtest.ts"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
