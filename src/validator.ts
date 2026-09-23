@@ -1,5 +1,6 @@
 import { CANONICAL_VERSION, ENCODING_VERSION, canonicalPuzzleKey } from './canonical'
 import { applyMove, calculatePour, isSolved } from './rules'
+import { deriveCandidateSeed } from './rng'
 import { analyzeSolutionPath } from './solver'
 import type { AuditCatalog } from './types'
 import { GENERATOR_VERSION, RNG_VERSION, SOLVER_STATE_ENCODING_VERSION } from './version'
@@ -114,7 +115,14 @@ export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
     if (!Number.isInteger(puzzle.candidateIndex) || puzzle.candidateIndex < 0) {
       throw new Error(`Invalid candidate index: ${puzzle.id}`)
     }
-    if (!puzzle.candidateSeed) throw new Error(`Missing candidate seed: ${puzzle.id}`)
+    if (puzzle.candidateSeed !== deriveCandidateSeed(
+      catalog.reproducibility.batchSeed,
+      catalog.profile,
+      puzzle.difficulty,
+      puzzle.candidateIndex,
+    )) {
+      throw new Error(`Candidate seed mismatch: ${puzzle.id}`)
+    }
 
     if (canonicalKeys.has(puzzle.canonicalKey)) throw new Error(`Canonical duplicate: ${puzzle.id}`)
     canonicalKeys.add(puzzle.canonicalKey)

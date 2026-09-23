@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { CANONICAL_VERSION, ENCODING_VERSION, canonicalPuzzleKey } from '../src/canonical'
 import { exportRuntimePack, exportSolutionArtifact } from '../src/exporter'
+import { deriveCandidateSeed } from '../src/rng'
 import { analyzeSolutionPath, solveBoard } from '../src/solver'
 import type { AuditCatalog } from '../src/types'
 import { validateAuditCatalog } from '../src/validator'
@@ -27,7 +28,7 @@ function fixture(): AuditCatalog {
       id: 'fixture-1',
       difficulty: 'easy',
       candidateIndex: 0,
-      candidateSeed: 'fixture-candidate',
+      candidateSeed: deriveCandidateSeed('fixture-batch', 'test', 'easy', 0),
       capacity: 2,
       emptyTubes: 1,
       minimumRequiredEmptyTubes: 1,
@@ -111,6 +112,11 @@ describe('catalog validation and exports', () => {
     expect(() => validateAuditCatalog(catalog)).toThrow(/Inconsistent deadEndDensity/)
   })
 
+  it('rejects a candidate seed that disagrees with batch metadata', () => {
+    const catalog = fixture()
+    catalog.puzzles[0].candidateSeed = 'wrong-seed'
+    expect(() => validateAuditCatalog(catalog)).toThrow(/Candidate seed mismatch/)
+  })
   it('rejects impossible Difficulty v2 raw counts', () => {
     const invalidCounts = [
       { analyzedStates: -1, alternatives: 0 },
