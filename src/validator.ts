@@ -231,7 +231,11 @@ export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
     let board = puzzle.board.map((tube) => [...tube])
     for (const expectedMove of puzzle.optimalSolution) {
       const move = calculatePour(board, expectedMove.from, expectedMove.to, puzzle.capacity)
-      if (JSON.stringify(move) !== JSON.stringify(expectedMove)) {
+      if (!move
+        || move.from !== expectedMove.from
+        || move.to !== expectedMove.to
+        || move.color !== expectedMove.color
+        || move.amount !== expectedMove.amount) {
         throw new Error(`Invalid saved move: ${puzzle.id}`)
       }
       board = applyMove(board, expectedMove)
@@ -241,8 +245,12 @@ export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
     if (puzzle.optimalSolution.length !== puzzle.solver.optimalMoves) {
       throw new Error(`Solution length mismatch: ${puzzle.id}`)
     }
-    if (JSON.stringify(analyzeSolutionPath(puzzle.board, puzzle.optimalSolution, puzzle.capacity))
-      !== JSON.stringify(puzzle.solutionPath)) {
+    const solutionPath = analyzeSolutionPath(puzzle.board, puzzle.optimalSolution, puzzle.capacity)
+    if (solutionPath.decisionSteps !== puzzle.solutionPath.decisionSteps
+      || solutionPath.forcedSteps !== puzzle.solutionPath.forcedSteps
+      || solutionPath.totalAlternativeMoves !== puzzle.solutionPath.totalAlternativeMoves
+      || solutionPath.averageChoices !== puzzle.solutionPath.averageChoices
+      || solutionPath.maximumChoices !== puzzle.solutionPath.maximumChoices) {
       throw new Error(`Solution path metrics mismatch: ${puzzle.id}`)
     }
 

@@ -66,6 +66,28 @@ describe('catalog validation and exports', () => {
     expect(runtime.levels[0]).not.toHaveProperty('optimalSolution')
   })
 
+  it('accepts reordered JSON fields while rejecting changed move and path values', () => {
+    const catalog = fixture()
+    const move = catalog.puzzles[0].optimalSolution[0]
+    catalog.puzzles[0].optimalSolution[0] = {
+      amount: move.amount,
+      color: move.color,
+      to: move.to,
+      from: move.from,
+    }
+    const path = catalog.puzzles[0].solutionPath
+    catalog.puzzles[0].solutionPath = Object.fromEntries(
+      Object.entries(path).reverse(),
+    ) as typeof path
+    expect(validateAuditCatalog(catalog).valid).toBe(true)
+
+    catalog.puzzles[0].optimalSolution[0].amount += 1
+    expect(() => validateAuditCatalog(catalog)).toThrow(/Invalid saved move/)
+
+    catalog.puzzles[0].optimalSolution[0].amount = move.amount
+    catalog.puzzles[0].solutionPath.decisionSteps += 1
+    expect(() => validateAuditCatalog(catalog)).toThrow(/Solution path metrics mismatch/)
+  })
   it('validates internally consistent Difficulty v2 aggregate metrics', () => {
     const catalog = fixture()
     catalog.puzzles[0].mistakeAnalysis = {
