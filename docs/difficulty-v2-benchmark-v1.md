@@ -93,6 +93,9 @@ The playtest page:
 - uses classic-v1 pour rules;
 - records elapsed time, move count, and restarts;
 - supports solved / gave-up outcomes;
+- asks for confirmation before giving up;
+- requires at least one structured give-up reason for gave-up outcomes;
+- preserves full legal-move/restart history and the final board state;
 - requires a 1–5 perceived-difficulty rating;
 - optionally records confidence and frustration;
 - exports the current session as `difficulty-v2-playtest-results.json`;
@@ -108,6 +111,9 @@ npm run validate:playtest -- --file=difficulty-v2-playtest-results.json
 Validation checks:
 
 - results format version;
+- complete ordered action history for legal moves and restarts;
+- move/restart counts against the action history;
+- the final board state at solve/give-up time;
 - benchmark identity;
 - valid export timestamp;
 - benchmark IDs against the blind manifest;
@@ -122,7 +128,7 @@ Partial sessions are valid; a tester does not need to finish all 12 puzzles befo
 The JSON contract is documented in:
 
 ```text
-spec/difficulty-v2-playtest-results-v1.schema.json
+spec/difficulty-v2-playtest-results-v2.schema.json
 ```
 
 ### Summarize exported results
@@ -142,6 +148,8 @@ The summary validates the source first, then reports:
 - restart distribution;
 - perceived-difficulty distribution;
 - optional confidence / frustration distributions;
+- aggregate give-up reason counts;
+- per-puzzle give-up reasons / optional free-text note;
 - normalized per-puzzle records.
 
 This summary is descriptive only. It does not derive or change production Easy / Medium / Hard thresholds.
