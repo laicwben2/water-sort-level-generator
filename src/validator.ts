@@ -15,6 +15,22 @@ function approximatelyEqual(first: number, second: number): boolean {
 }
 
 function validateMistakeAnalysis(puzzleId: string, metrics: NonNullable<AuditCatalog['puzzles'][number]['mistakeAnalysis']>) {
+  for (const [name, value] of [
+    ['analyzedStates', metrics.analyzedStates],
+    ['decisionStates', metrics.decisionStates],
+    ['alternatives', metrics.alternatives],
+    ['optimalEquivalentAlternatives', metrics.optimalEquivalentAlternatives],
+    ['recoverableAlternatives', metrics.recoverableAlternatives],
+    ['deadEndAlternatives', metrics.deadEndAlternatives],
+    ['unknownAlternatives', metrics.unknownAlternatives],
+  ] as const) {
+    if (!Number.isSafeInteger(value) || value < 0) {
+      throw new Error(`Invalid ${name} in mistake analysis: ${puzzleId}`)
+    }
+  }
+  if (metrics.analyzedStates === 0 && metrics.alternatives !== 0) {
+    throw new Error(`Mistake-analysis alternatives without analyzed states: ${puzzleId}`)
+  }
   const countedAlternatives = metrics.optimalEquivalentAlternatives
     + metrics.recoverableAlternatives
     + metrics.deadEndAlternatives

@@ -111,6 +111,37 @@ describe('catalog validation and exports', () => {
     expect(() => validateAuditCatalog(catalog)).toThrow(/Inconsistent deadEndDensity/)
   })
 
+  it('rejects impossible Difficulty v2 raw counts', () => {
+    const invalidCounts = [
+      { analyzedStates: -1, alternatives: 0 },
+      { analyzedStates: 0.5, alternatives: 0 },
+      { analyzedStates: 0, alternatives: 1 },
+    ]
+
+    for (const counts of invalidCounts) {
+      const catalog = fixture()
+      catalog.puzzles[0].mistakeAnalysis = {
+        analyzedStates: counts.analyzedStates,
+        decisionStates: 0,
+        alternatives: counts.alternatives,
+        optimalEquivalentAlternatives: counts.alternatives,
+        recoverableAlternatives: 0,
+        deadEndAlternatives: 0,
+        unknownAlternatives: 0,
+        analysisCoverage: 1,
+        alternativesPerAnalyzedState: 0,
+        wrongMoveDensity: 0,
+        deadEndDensity: 0,
+        deadEndRisk: 0,
+        averageRecoveryPenalty: 0,
+        p50RecoveryPenalty: 0,
+        p90RecoveryPenalty: 0,
+        maxRecoveryPenalty: 0,
+      }
+      expect(() => validateAuditCatalog(catalog)).toThrow(/Invalid analyzedStates|alternatives without analyzed states/)
+    }
+  })
+
   it('exports a separate exact solution artifact', () => {
     const catalog = fixture()
     const artifact = exportSolutionArtifact(catalog)
