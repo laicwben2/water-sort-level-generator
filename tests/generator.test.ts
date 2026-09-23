@@ -37,6 +37,15 @@ describe('deterministic generation foundation', () => {
     expect(deriveCandidateSeed('batch-A', 'expanded', 'hard', 8)).toBe(seed8)
   })
 
+  it('rejects ambiguous candidate seed tuple labels', () => {
+    expect(deriveCandidateSeed('a:b', 'c', 'easy', 0))
+      .toBe(deriveCandidateSeed('a:b', 'c', 'easy', 0))
+    expect(() => deriveCandidateSeed('a', 'b:c', 'easy', 0))
+      .toThrow(/profile must not contain ':'/)
+    expect(() => deriveCandidateSeed('a', 'baseline', 'easy:hard', 0))
+      .toThrow(/difficulty must not contain ':'/)
+  })
+
   it('rejects candidate indices outside the safe integer range', () => {
     expect(() => deriveCandidateSeed('batch-A', 'expanded', 'easy', Number.MAX_SAFE_INTEGER + 1))
       .toThrow(/non-negative safe integer/)
