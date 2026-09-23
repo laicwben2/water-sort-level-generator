@@ -112,11 +112,17 @@ describe('catalog validation and exports', () => {
     expect(() => validateAuditCatalog(catalog)).toThrow(/Inconsistent deadEndDensity/)
   })
 
+  it('rejects an inconsistent minimum-empty optimal move count', () => {
+    const catalog = fixture()
+    catalog.puzzles[0].emptyTubeAnalysis[0].optimalMoves = 99
+    expect(() => validateAuditCatalog(catalog)).toThrow(/Minimum empty-tube optimal moves mismatch/)
+  })
   it('rejects a candidate seed that disagrees with batch metadata', () => {
     const catalog = fixture()
     catalog.puzzles[0].candidateSeed = 'wrong-seed'
     expect(() => validateAuditCatalog(catalog)).toThrow(/Candidate seed mismatch/)
   })
+
   it('rejects impossible Difficulty v2 raw counts', () => {
     const invalidCounts = [
       { analyzedStates: -1, alternatives: 0 },

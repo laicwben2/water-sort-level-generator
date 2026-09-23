@@ -157,6 +157,12 @@ export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
       if (!isMinimum && analysis.status !== 'unsolvable') {
         throw new Error(`Smaller empty-tube count must be proven unsolvable: ${puzzle.id}`)
       }
+      if (isMinimum && analysis.optimalMoves !== puzzle.solver.optimalMoves) {
+        throw new Error(`Minimum empty-tube optimal moves mismatch: ${puzzle.id}`)
+      }
+      if (!isMinimum && analysis.optimalMoves !== undefined) {
+        throw new Error(`Unsolvable empty-tube result has optimal moves: ${puzzle.id}`)
+      }
     }
 
     const colorCounts = new Map<number, number>()
