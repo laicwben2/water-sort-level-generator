@@ -78,6 +78,53 @@ describe('canonical representation', () => {
     }
   })
 
+  it('matches exhaustive tube-order search on every small three-tube board', () => {
+    const orders = [
+      [0, 1, 2], [0, 2, 1], [1, 0, 2],
+      [1, 2, 0], [2, 0, 1], [2, 1, 0],
+    ]
+
+    function exhaustiveSequence(board: number[][]): bigint[] {
+      let best: bigint[] | undefined
+      for (const order of orders) {
+        const mapping = new Map<number, number>()
+        const sequence = order.map((tubeIndex) => {
+          const normalized = board[tubeIndex].map((type) => {
+            let canonical = mapping.get(type)
+            if (canonical === undefined) {
+              canonical = mapping.size
+              mapping.set(type, canonical)
+            }
+            return canonical
+          })
+          return encodeCanonicalTube(normalized)
+        })
+        if (!best) {
+          best = sequence
+          continue
+        }
+        for (let index = 0; index < sequence.length; index += 1) {
+          if (sequence[index] < best[index]) {
+            best = sequence
+            break
+          }
+          if (sequence[index] > best[index]) break
+        }
+      }
+      return best!
+    }
+
+    for (let code = 0; code < 3 ** 6; code += 1) {
+      let digits = code
+      const cells = Array.from({ length: 6 }, () => {
+        const type = digits % 3
+        digits = Math.floor(digits / 3)
+        return type
+      })
+      const board = [cells.slice(0, 2), cells.slice(2, 4), cells.slice(4, 6)]
+      expect(canonicalPuzzleSequence(board)).toEqual(exhaustiveSequence(board))
+    }
+  })
   it('supports sixteen abstract types without factorial type permutations', () => {
     const board = [
       [0, 1, 2, 3],
