@@ -65,6 +65,13 @@ ascending.
 
 The internal manifest keeps provenance and metrics for later analysis. A playtest surface should expose only the blind ID and board.
 
+Committed artifacts:
+
+- internal research manifest: `data/benchmarks/difficulty-v2-benchmark-v1.json`;
+- blind playtest manifest: `data/benchmarks/difficulty-v2-benchmark-v1-blind.json`.
+
+The blind manifest intentionally omits source difficulty, selection role, optimal moves, and all solver-derived metrics.
+
 ## Selected coverage
 
 The set deliberately includes contrasting structures such as:
