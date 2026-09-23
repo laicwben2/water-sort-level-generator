@@ -100,6 +100,30 @@ describe('playtest result validation', () => {
     )).toThrow(/Invalid outcome/)
   })
 
+  it('rejects non-object roots and unknown fields', () => {
+    expect(() => validatePlaytestResults(
+      null,
+      'difficulty-v2-benchmark-v1',
+      allowedIds,
+    )).toThrow(/must be an object/)
+
+    const extraRoot = fixture() as PlaytestResults & { sourceDifficulty?: string }
+    extraRoot.sourceDifficulty = 'easy'
+    expect(() => validatePlaytestResults(
+      extraRoot,
+      'difficulty-v2-benchmark-v1',
+      allowedIds,
+    )).toThrow(/Unexpected playtest results field/)
+
+    const extraResult = fixture()
+    ;(extraResult.results[0] as PlaytestResults['results'][number] & { optimalMoves?: number }).optimalMoves = 12
+    expect(() => validatePlaytestResults(
+      extraResult,
+      'difficulty-v2-benchmark-v1',
+      allowedIds,
+    )).toThrow(/Unexpected result 0 field/)
+  })
+
   it('rejects mismatched metadata', () => {
     const wrongBenchmark = fixture()
     wrongBenchmark.benchmark = 'other-benchmark'
