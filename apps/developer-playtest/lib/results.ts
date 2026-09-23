@@ -61,17 +61,46 @@ export function loadResults(benchmark: string, sessionId: string): PlaytestResul
   }
 }
 
-export function saveResults(
+export function buildResultsDocument(
   benchmark: string,
-  sessionId: string,
   results: readonly PlaytestResult[],
-): void {
-  const document: PlaytestResultsDocument = {
+): PlaytestResultsDocument {
+  return {
     version: 'difficulty-v2-playtest-results-v2',
     benchmark,
     exportedAt: new Date().toISOString(),
     results: [...results],
   }
+}
+
+export async function submitResults(
+  sessionId: string,
+  document: PlaytestResultsDocument,
+): Promise<void> {
+  const response = await fetch('/api/submissions', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ sessionId, document }),
+  })
+
+  if (!response.ok) {
+    let message = 'Submission failed (' + response.status + ')'
+    try {
+      const body = await response.json() as { error?: string }
+      if (body.error) message = body.error
+    } catch {
+      // Keep the status-based fallback.
+    }
+    throw new Error(message)
+  }
+}
+
+export function saveResults(
+  benchmark: string,
+  sessionId: string,
+  results: readonly PlaytestResult[],
+): void {
+  const document = buildResultsDocument(benchmark, results)
   window.localStorage.setItem(
     resultsStorageKey(benchmark, sessionId),
     JSON.stringify(document),

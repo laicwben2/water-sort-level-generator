@@ -4,8 +4,10 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { applyMove, calculatePour, isSolved, type Board } from '../lib/game'
 import {
   GIVE_UP_REASONS,
+  buildResultsDocument,
   loadResults,
   saveResults,
+  submitResults,
   type GiveUpReason,
   type PlaytestAction,
   type PlaytestResult,
@@ -74,6 +76,7 @@ export function PlaytestShell() {
   const [frustration, setFrustration] = useState('')
   const [giveUpReasons, setGiveUpReasons] = useState<GiveUpReason[]>([])
   const [giveUpNote, setGiveUpNote] = useState('')
+  const [submitting, setSubmitting] = useState(false)
 
   const startedAtRef = useRef<number | null>(null)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -103,6 +106,13 @@ export function PlaytestShell() {
     if (!benchmark || !sessionId || orderedPuzzles.length === 0) return
     const stored = loadResults(benchmark.benchmark, sessionId)
     setResults(stored)
+
+    if (stored.length > 0) {
+      submitResults(sessionId, buildResultsDocument(benchmark.benchmark, stored))
+        .catch((error) => {
+          console.warn('Background playtest sync failed', error)
+        })
+    }
 
     const completedIds = new Set(stored.map((result) => result.benchmarkId))
     const firstPending = orderedPuzzles.findIndex(
@@ -248,7 +258,7 @@ export function PlaytestShell() {
     )
   }
 
-  function saveFeedback(): void {
+  async function saveFeedback(): Promise<void> {
     if (!benchmark || !sessionId || !currentPuzzle || !outcome) return
 
     const difficulty = Number(perceivedDifficulty)
@@ -293,6 +303,20 @@ export function PlaytestShell() {
     setResults(nextResults)
     saveResults(benchmark.benchmark, sessionId, nextResults)
 
+    setSubmitting(true)
+    let syncWarning = ''
+    try {
+      await submitResults(
+        sessionId,
+        buildResultsDocument(benchmark.benchmark, nextResults),
+      )
+    } catch (error) {
+      console.warn('Playtest sync failed', error)
+      syncWarning = '；已保存在本機，但伺服器提交失敗，之後會自動重試'
+    } finally {
+      setSubmitting(false)
+    }
+
     const nextPending = orderedPuzzles.findIndex(
       (puzzle, index) =>
         index > currentIndex &&
@@ -306,7 +330,7 @@ export function PlaytestShell() {
       )
       if (anyPending === -1) {
         setPhase('complete')
-        setMessage('本次盲測已完成。')
+        setMessage('本次盲測已完成' + syncWarning + '。')
         return
       }
       setCurrentIndex(anyPending)
@@ -317,7 +341,7 @@ export function PlaytestShell() {
     setPhase('ready')
     setBoard([])
     setOutcome(null)
-    setMessage(`${currentPuzzle.benchmarkId} 已儲存。`)
+    setMessage(currentPuzzle.benchmarkId + ' 已儲存' + syncWarning + '。')
   }
 
   if (!benchmark || !sessionId) {
@@ -518,8 +542,8 @@ export function PlaytestShell() {
               </fieldset>
             )}
 
-            <button className="primary" onClick={saveFeedback}>
-              儲存並繼續
+            <button className="primary" onClick={saveFeedback} disabled={submitting}>
+              {submitting ? '提交中…' : '儲存並繼續'}
             </button>
           </section>
         )}
@@ -527,8 +551,8 @@ export function PlaytestShell() {
         {phase === 'complete' && (
           <section className="complete-panel">
             <h2>本次盲測完成</h2>
-            <p>共完成 {results.length} 題。結果目前保存在這個瀏覽器。</p>
-            <p className="muted">下一階段會把這些結果接到多人提交後端。</p>
+            <p>共完成 {results.length} 題。結果已保存在這個瀏覽器，並會同步到匿名研究資料庫。</p>
+            <p className="muted">若暫時同步失敗，重新開啟頁面時會自動重送本機已完成結果。</p>
           </section>
         )}
       </section>
