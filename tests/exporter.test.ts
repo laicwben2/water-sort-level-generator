@@ -170,6 +170,12 @@ describe('catalog validation and exports', () => {
     expect(() => validateAuditCatalog(catalog)).toThrow(/Inconsistent deadEndDensity/)
   })
 
+  it('rejects audit catalogs that claim an unsupported generator', () => {
+    const catalog = fixture()
+    ;(catalog as unknown as { generator: string }).generator = 'different-generator'
+    expect(() => validateAuditCatalog(catalog)).toThrow(/Unsupported generator/)
+  })
+
   it('rejects a level ID that disagrees with candidate metadata', () => {
     const catalog = fixture()
     catalog.puzzles[0].id = 'old-colliding-id'
