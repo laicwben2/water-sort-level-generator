@@ -54,7 +54,7 @@ describe('playtest solver correlation', () => {
     }
 
     const playtest: PlaytestResults = {
-      version: 'difficulty-v2-playtest-results-v1',
+      version: 'difficulty-v2-playtest-results-v2',
       benchmark: 'difficulty-v2-benchmark-v1',
       exportedAt: '2026-09-23T05:20:00.000Z',
       results: [
@@ -64,6 +64,8 @@ describe('playtest solver correlation', () => {
           elapsedMs: 10_000,
           moves: 10,
           restarts: 0,
+          actions: [],
+          finalBoard: [],
           perceivedDifficulty: 1,
         },
         {
@@ -72,6 +74,8 @@ describe('playtest solver correlation', () => {
           elapsedMs: 20_000,
           moves: 20,
           restarts: 0,
+          actions: [],
+          finalBoard: [],
           perceivedDifficulty: 3,
         },
         {
@@ -80,7 +84,10 @@ describe('playtest solver correlation', () => {
           elapsedMs: 30_000,
           moves: 30,
           restarts: 1,
+          actions: [{ type: 'restart', atMs: 10_000 }],
+          finalBoard: [],
           perceivedDifficulty: 5,
+          giveUpReasons: ['no-next-move'],
         },
       ],
     }
@@ -102,7 +109,7 @@ describe('playtest solver correlation', () => {
 
   it('rejects internal benchmark provenance mismatches', () => {
     const playtest: PlaytestResults = {
-      version: 'difficulty-v2-playtest-results-v1',
+      version: 'difficulty-v2-playtest-results-v2',
       benchmark: 'difficulty-v2-benchmark-v1',
       exportedAt: '2026-09-23T05:20:00.000Z',
       results: [],
