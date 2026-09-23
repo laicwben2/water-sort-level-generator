@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "difficulty-v2-playtest-results-v2.schema.json",
+  "title": "Difficulty v2 Playtest Results v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "benchmark", "exportedAt", "results"],
+  "properties": {
+    "version": { "const": "difficulty-v2-playtest-results-v2" },
+    "benchmark": { "type": "string", "minLength": 1 },
+    "exportedAt": { "type": "string", "format": "date-time" },
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "benchmarkId", "outcome", "elapsedMs", "moves", "restarts",
+          "actions", "finalBoard", "perceivedDifficulty"
+        ],
+        "properties": {
+          "benchmarkId": { "type": "string", "minLength": 1 },
+          "outcome": { "enum": ["solved", "gave-up"] },
+          "elapsedMs": { "type": "integer", "minimum": 0 },
+          "moves": { "type": "integer", "minimum": 0 },
+          "restarts": { "type": "integer", "minimum": 0 },
+          "actions": {
+            "type": "array",
+            "items": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["type", "atMs", "from", "to", "color", "amount"],
+                  "properties": {
+                    "type": { "const": "move" },
+                    "atMs": { "type": "integer", "minimum": 0 },
+                    "from": { "type": "integer", "minimum": 0 },
+                    "to": { "type": "integer", "minimum": 0 },
+                    "color": { "type": "integer", "minimum": 0 },
+                    "amount": { "type": "integer", "minimum": 1 }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["type", "atMs"],
+                  "properties": {
+                    "type": { "const": "restart" },
+                    "atMs": { "type": "integer", "minimum": 0 }
+                  }
+                }
+              ]
+            }
+          },
+          "finalBoard": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": { "type": "integer", "minimum": 0 }
+            }
+          },
+          "perceivedDifficulty": { "type": "integer", "minimum": 1, "maximum": 5 },
+          "confidence": { "type": "integer", "minimum": 1, "maximum": 5 },
+          "frustration": { "type": "integer", "minimum": 1, "maximum": 5 },
+          "giveUpReasons": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "enum": [
+                "no-next-move", "likely-dead-end", "repeated-restarts",
+                "too-many-choices", "taking-too-long", "no-longer-fun", "other"
+              ]
+            }
+          },
+          "giveUpNote": { "type": "string", "minLength": 1 }
+        },
+        "allOf": [
+          {
+            "if": { "properties": { "outcome": { "const": "gave-up" } } },
+            "then": { "required": ["giveUpReasons"] }
+          },
+          {
+            "if": {
+              "properties": {
+                "giveUpReasons": { "contains": { "const": "other" } }
+              },
+              "required": ["giveUpReasons"]
+            },
+            "then": { "required": ["giveUpNote"] }
+          }
+        ]
+      }
+    }
+  }
+}
