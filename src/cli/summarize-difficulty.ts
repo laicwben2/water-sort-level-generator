@@ -1,6 +1,7 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import type { AuditCatalog, MistakeAnalysisMetrics } from '../types'
+import { validateAuditCatalog } from '../validator'
 import { stringArg } from './args'
 
 function percentile(values: readonly number[], fraction: number): number {
@@ -25,6 +26,7 @@ const outputPath = stringArg('output')
   : undefined
 
 const catalog = JSON.parse(await readFile(inputPath, 'utf8')) as AuditCatalog
+validateAuditCatalog(catalog)
 const difficulties = ['easy', 'medium', 'hard'] as const
 
 const summaries = difficulties.map((difficulty) => {
