@@ -122,6 +122,9 @@ function matchesCurrentDifficultyWindow(
 
 export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalog {
   const profileName = options.profileName ?? 'expanded'
+  if (!Object.hasOwn(PROFILE_SETS, profileName)) {
+    throw new Error(`Unknown profile: ${profileName}`)
+  }
   const perDifficulty = options.perDifficulty ?? 10
   const maxAttempts = options.maxAttempts ?? 2_000
   const capacity = options.capacity ?? 4

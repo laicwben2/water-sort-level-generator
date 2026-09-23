@@ -2,10 +2,16 @@ import { describe, expect, it } from 'vitest'
 import { generateBalancedFullTubes } from '../src/candidate'
 import { findMinimumEmptyTubes, generateAuditCatalog } from '../src/generator'
 import { createRng, deriveCandidateSeed, deriveLevelId, shuffle } from '../src/rng'
+import type { ProfileName } from '../src/profiles'
 import { applyMove, calculatePour, isSolved } from '../src/rules'
 import type { Board } from '../src/types'
 
 describe('deterministic generation foundation', () => {
+  it('rejects inherited object property names as unsupported profiles', () => {
+    expect(() => generateAuditCatalog({ profileName: 'toString' as ProfileName }))
+      .toThrow(/Unknown profile: toString/)
+  })
+
   it('derives candidate RNG independently from previous candidates', () => {
     const seed7 = deriveCandidateSeed('batch-A', 'expanded', 'hard', 7)
     const seed8 = deriveCandidateSeed('batch-A', 'expanded', 'hard', 8)

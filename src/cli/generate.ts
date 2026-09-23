@@ -6,7 +6,7 @@ import { validateAuditCatalog } from '../validator'
 import { booleanArg, positiveIntArg, stringArg } from './args'
 
 const profileName = (stringArg('profile', 'expanded') ?? 'expanded') as ProfileName
-if (!(profileName in PROFILE_SETS)) throw new Error('--profile must be baseline or expanded')
+if (!Object.hasOwn(PROFILE_SETS, profileName)) throw new Error('--profile must be baseline or expanded')
 
 const perDifficulty = positiveIntArg('count', 10)
 const maxAttempts = positiveIntArg('max-attempts', 2_000)
