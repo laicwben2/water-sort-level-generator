@@ -1,5 +1,6 @@
 import { CANONICAL_VERSION, ENCODING_VERSION, canonicalPuzzleKey } from './canonical'
 import { generateBalancedFullTubes } from './candidate'
+import { PROFILE_SETS, type ProfileName } from './profiles'
 import { applyMove, calculatePour, isSolved } from './rules'
 import { deriveCandidateSeed, deriveLevelId } from './rng'
 import { analyzeSolutionPath } from './solver'
@@ -209,6 +210,12 @@ export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
     }
     const typeCount = new Set(puzzle.board.flat()).size
     if (typeCount < 1) throw new Error(`Puzzle has no Types: ${puzzle.id}`)
+    if (Object.hasOwn(PROFILE_SETS, catalog.profile)) {
+      const profile = PROFILE_SETS[catalog.profile as ProfileName][puzzle.difficulty]
+      if (typeCount !== profile.colors) {
+        throw new Error(`Profile Type count mismatch: ${puzzle.id}`)
+      }
+    }
     const reconstructedBoard = [
       ...generateBalancedFullTubes(typeCount, puzzle.capacity, puzzle.candidateSeed),
       ...Array.from({ length: puzzle.emptyTubes }, () => []),
