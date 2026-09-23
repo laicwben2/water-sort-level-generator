@@ -137,6 +137,9 @@ function validateMistakeAnalysis(puzzleId: string, metrics: NonNullable<AuditCat
 
 export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
   if (catalog.version !== 'audit-v2') throw new Error(`Unsupported audit version: ${catalog.version}`)
+  if (catalog.generator !== 'balanced-shuffle+bounded-a-star') {
+    throw new Error(`Unsupported generator: ${catalog.generator}`)
+  }
   if (catalog.reproducibility.generatorVersion !== GENERATOR_VERSION) {
     throw new Error('Generator version mismatch')
   }
