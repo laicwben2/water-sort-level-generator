@@ -23,3 +23,6 @@ jobs:
       - run: npm run generate -- --profile=baseline --count=1 --max-attempts=1000 --analyze-mistakes --mistake-max-states=5000 --mistake-max-path-states=3 --output=data/audit/difficulty-v2-smoke.json
       - run: npm run validate -- --file=data/audit/difficulty-v2-smoke.json
       - run: npm run summarize:difficulty -- --input=data/audit/difficulty-v2-smoke.json --output=data/output/difficulty-v2-summary-smoke.json
+      - run: npm run generate -- --profile=expanded --count=1 --max-attempts=1000 --seed=expanded-smoke-2026-09-23 --analyze-mistakes --mistake-max-states=10000 --mistake-max-path-states=8 --output=data/audit/expanded-smoke.json
+      - run: npm run validate -- --file=data/audit/expanded-smoke.json
+      - run: npm run summarize:difficulty -- --input=data/audit/expanded-smoke.json --output=data/output/expanded-summary-smoke.json
