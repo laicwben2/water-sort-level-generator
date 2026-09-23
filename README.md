@@ -114,7 +114,13 @@ Current contract values:
 
 Changing JSON structure requires a new `formatVersion`. Changing legal-pour or solved-state semantics requires a new `rulesVersion`.
 
-Level IDs are derived from deterministic candidate indices rather than accepted-list position. This keeps a candidate's identity stable when acceptance thresholds change.
+Level IDs include the generator, RNG, and rules versions; the batch seed in
+reversible base64url UTF-16LE form; profile, difficulty, capacity; and the
+deterministic candidate index. They do not depend on accepted-list position.
+The same candidate keeps its ID when acceptance thresholds change, while
+different batches or capacities cannot assign the same ID to different boards.
+Audit catalogs created with the earlier index-only ID scheme must be
+regenerated before validation or export.
 
 ## Tests
 

@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { CANONICAL_VERSION, ENCODING_VERSION, canonicalPuzzleKey } from '../src/canonical'
 import { exportRuntimePack, exportSolutionArtifact } from '../src/exporter'
-import { deriveCandidateSeed } from '../src/rng'
+import { deriveCandidateSeed, deriveLevelId } from '../src/rng'
 import { analyzeSolutionPath, solveBoard } from '../src/solver'
 import type { AuditCatalog } from '../src/types'
 import { validateAuditCatalog } from '../src/validator'
 import { GENERATOR_VERSION, RNG_VERSION, SOLVER_STATE_ENCODING_VERSION } from '../src/version'
+
+const fixtureId = deriveLevelId('fixture-batch', 'test', 'easy', 2, 1)
 
 function fixture(): AuditCatalog {
   const board = [[0, 1], [0, 1], []]
@@ -25,7 +27,7 @@ function fixture(): AuditCatalog {
       configFingerprint: 'fixture',
     },
     puzzles: [{
-      id: 'fixture-1',
+      id: fixtureId,
       difficulty: 'easy',
       candidateIndex: 1,
       candidateSeed: deriveCandidateSeed('fixture-batch', 'test', 'easy', 1),
@@ -55,7 +57,7 @@ describe('catalog validation and exports', () => {
     const runtime = exportRuntimePack(catalog, 'test-pack')
     expect(runtime.rulesVersion).toBe('classic-v1')
     expect(runtime.levels[0]).toEqual({
-      id: 'fixture-1',
+      id: fixtureId,
       difficulty: 'easy',
       capacity: 2,
       board: [[0, 1], [0, 1], []],
@@ -144,6 +146,12 @@ describe('catalog validation and exports', () => {
     }
 
     expect(() => validateAuditCatalog(catalog)).toThrow(/Inconsistent deadEndDensity/)
+  })
+
+  it('rejects a level ID that disagrees with candidate metadata', () => {
+    const catalog = fixture()
+    catalog.puzzles[0].id = 'old-colliding-id'
+    expect(() => validateAuditCatalog(catalog)).toThrow(/Level ID mismatch/)
   })
 
   it('rejects catalogs that cannot satisfy the runtime pack contract', () => {
@@ -247,7 +255,7 @@ describe('catalog validation and exports', () => {
     const catalog = fixture()
     const artifact = exportSolutionArtifact(catalog)
     expect(artifact.solutions[0]).toEqual({
-      id: 'fixture-1',
+      id: fixtureId,
       optimalMoves: catalog.puzzles[0].solver.optimalMoves,
       optimalSolution: catalog.puzzles[0].optimalSolution,
     })

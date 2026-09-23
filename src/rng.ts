@@ -1,4 +1,4 @@
-import { RNG_VERSION } from './version'
+import { GENERATOR_VERSION, RNG_VERSION, RULES_VERSION } from './version'
 
 export { RNG_VERSION }
 
@@ -40,6 +40,27 @@ export function deriveCandidateSeed(
     difficulty,
     String(candidateIndex),
   ].join(':')
+}
+
+export function deriveLevelId(
+  batchSeed: string,
+  profile: string,
+  difficulty: string,
+  capacity: number,
+  candidateIndex: number,
+): string {
+  if (!Number.isSafeInteger(candidateIndex) || candidateIndex < 0) {
+    throw new Error('candidateIndex must be a non-negative safe integer')
+  }
+  const encodedBatchSeed = Buffer.from(batchSeed, 'utf16le').toString('base64url')
+  return [
+    `ws-g${GENERATOR_VERSION}-r${RNG_VERSION}-u${RULES_VERSION}`,
+    `b${encodedBatchSeed}`,
+    profile,
+    difficulty,
+    `k${capacity}`,
+    `c${String(candidateIndex).padStart(6, '0')}`,
+  ].join('.')
 }
 
 export function fingerprintConfig(config: unknown): string {

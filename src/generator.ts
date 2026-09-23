@@ -10,6 +10,7 @@ import { analyzeMistakesAlongOptimalPath } from './difficulty'
 import { PROFILE_SETS, type DifficultyProfile, type ProfileName } from './profiles'
 import {
   deriveCandidateSeed,
+  deriveLevelId,
   fingerprintConfig,
 } from './rng'
 import { analyzeSolutionPath, solveBoard } from './solver'
@@ -177,7 +178,7 @@ export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalo
       const canonicalKey = canonicalPuzzleKeyFromSequence(canonicalSequence)
       accepted += 1
       puzzles.push({
-        id: `ws-${profileName}-${difficulty}-c${String(attempt).padStart(6, '0')}`,
+        id: deriveLevelId(batchSeed, profileName, difficulty, capacity, attempt),
         difficulty,
         candidateIndex: attempt,
         candidateSeed,

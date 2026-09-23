@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { generateBalancedFullTubes } from '../src/candidate'
 import { findMinimumEmptyTubes, generateAuditCatalog } from '../src/generator'
-import { createRng, deriveCandidateSeed, shuffle } from '../src/rng'
+import { createRng, deriveCandidateSeed, deriveLevelId, shuffle } from '../src/rng'
 import { applyMove, calculatePour, isSolved } from '../src/rules'
 import type { Board } from '../src/types'
 
@@ -20,6 +20,37 @@ describe('deterministic generation foundation', () => {
 
     expect(afterPrevious).toEqual(direct)
     expect(deriveCandidateSeed('batch-A', 'expanded', 'hard', 8)).toBe(seed8)
+  })
+
+  it('gives different batches and capacities distinct stable level IDs', () => {
+    const first = generateAuditCatalog({
+      profileName: 'baseline',
+      perDifficulty: 1,
+      maxAttempts: 1_000,
+      batchSeed: 'id-collision-A',
+    })
+    const second = generateAuditCatalog({
+      profileName: 'baseline',
+      perDifficulty: 1,
+      maxAttempts: 1_000,
+      batchSeed: 'id-collision-B',
+    })
+
+    const firstIds = new Set(first.puzzles.map((puzzle) => puzzle.id))
+    expect(second.puzzles.every((puzzle) => !firstIds.has(puzzle.id))).toBe(true)
+    for (const puzzle of first.puzzles) {
+      expect(puzzle.id).toBe(deriveLevelId(
+        first.reproducibility.batchSeed,
+        first.profile,
+        puzzle.difficulty,
+        puzzle.capacity,
+        puzzle.candidateIndex,
+      ))
+    }
+    expect(deriveLevelId('a.b', 'baseline', 'easy', 4, 0))
+      .not.toBe(deriveLevelId('a', 'baseline', 'easy', 4, 0))
+    expect(deriveLevelId('a', 'baseline', 'easy', 4, 0))
+      .not.toBe(deriveLevelId('a', 'baseline', 'easy', 3, 0))
   })
 
   it('reconstructs every accepted board from its candidate seed', () => {

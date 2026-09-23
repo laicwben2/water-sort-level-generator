@@ -1,7 +1,7 @@
 import { CANONICAL_VERSION, ENCODING_VERSION, canonicalPuzzleKey } from './canonical'
 import { generateBalancedFullTubes } from './candidate'
 import { applyMove, calculatePour, isSolved } from './rules'
-import { deriveCandidateSeed } from './rng'
+import { deriveCandidateSeed, deriveLevelId } from './rng'
 import { analyzeSolutionPath } from './solver'
 import type { AuditCatalog } from './types'
 import { GENERATOR_VERSION, RNG_VERSION, SOLVER_STATE_ENCODING_VERSION } from './version'
@@ -156,6 +156,15 @@ export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
 
     if (!Number.isInteger(puzzle.capacity) || puzzle.capacity < 1 || puzzle.capacity > 4) {
       throw new Error(`Unsupported capacity: ${puzzle.id}`)
+    }
+    if (puzzle.id !== deriveLevelId(
+      catalog.reproducibility.batchSeed,
+      catalog.profile,
+      puzzle.difficulty,
+      puzzle.capacity,
+      puzzle.candidateIndex,
+    )) {
+      throw new Error(`Level ID mismatch: ${puzzle.id}`)
     }
     if (puzzle.board.some((tube) => tube.some((type) =>
       !Number.isInteger(type) || type < 0 || type >= 16))) {
