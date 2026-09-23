@@ -2,6 +2,12 @@ import { GENERATOR_VERSION, RNG_VERSION, RULES_VERSION } from './version'
 
 export { RNG_VERSION }
 
+function assertSeedTupleLabel(value: string, name: string): void {
+  if (value.includes(':')) {
+    throw new Error(`${name} must not contain ':'`)
+  }
+}
+
 export function hashSeed(input: string): number {
   let hash = 2166136261
   for (let index = 0; index < input.length; index += 1) {
@@ -31,6 +37,8 @@ export function deriveCandidateSeed(
   if (!Number.isSafeInteger(candidateIndex) || candidateIndex < 0) {
     throw new Error('candidateIndex must be a non-negative safe integer')
   }
+  assertSeedTupleLabel(profile, 'profile')
+  assertSeedTupleLabel(difficulty, 'difficulty')
   return [
     'water-sort',
     'candidate',
