@@ -21,7 +21,7 @@
       display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
     }
     .toolbar { margin: 20px 0 12px; }
-    button, select, input {
+    button, select, input, textarea {
       font: inherit; min-height: 40px; padding: 8px 12px; border: 1px solid var(--border);
       border-radius: 9px; background: var(--panel); color: inherit;
     }
@@ -52,6 +52,11 @@
     .rating-card, .results-card { margin-top: 20px; padding: 16px; border: 1px solid var(--border); border-radius: 14px; }
     .rating-card[hidden], .results-card[hidden] { display: none; }
     .rating label { display: grid; gap: 4px; }
+    .give-up-feedback { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 10px; }
+    .give-up-feedback[hidden] { display: none; }
+    .give-up-options { display: grid; gap: 7px; margin: 8px 0 10px; }
+    .give-up-options label { display: flex; gap: 8px; align-items: center; }
+    textarea { width: min(560px, 100%); min-height: 72px; resize: vertical; }
     table { width: 100%; border-collapse: collapse; margin-top: 12px; }
     th, td { padding: 8px; text-align: left; border-bottom: 1px solid var(--border); }
     @media (max-width: 600px) {
@@ -114,6 +119,21 @@
           <option value="4">4</option><option value="5">5</option>
         </select>
       </label>
+      <fieldset id="give-up-feedback" class="give-up-feedback" hidden>
+        <legend>為什麼放棄？（可複選，至少一項）</legend>
+        <div class="give-up-options">
+          <label><input type="checkbox" name="give-up-reason" value="no-next-move">不知道下一步怎麼走</label>
+          <label><input type="checkbox" name="give-up-reason" value="likely-dead-end">感覺已經走進死路</label>
+          <label><input type="checkbox" name="give-up-reason" value="repeated-restarts">重開多次仍無法完成</label>
+          <label><input type="checkbox" name="give-up-reason" value="too-many-choices">選擇太多，不知道哪個較好</label>
+          <label><input type="checkbox" name="give-up-reason" value="taking-too-long">題目太耗時間</label>
+          <label><input type="checkbox" name="give-up-reason" value="no-longer-fun">覺得這題不想繼續玩</label>
+          <label><input type="checkbox" name="give-up-reason" value="other">其他</label>
+        </div>
+        <label>其他說明
+          <textarea id="give-up-note" placeholder="選擇「其他」時必填；否則可留白"></textarea>
+        </label>
+      </fieldset>
       <button id="save-result" class="primary">儲存本題結果</button>
     </div>
   </section>
@@ -148,6 +168,7 @@ let moves = 0
 let restarts = 0
 let timerHandle
 let outcome = null
+let actions = []
 const results = []
 
 const select = document.querySelector('#puzzle-select')
@@ -164,6 +185,8 @@ const ratingCard = document.querySelector('#rating-card')
 const difficultyRating = document.querySelector('#difficulty-rating')
 const confidenceRating = document.querySelector('#confidence-rating')
 const frustrationRating = document.querySelector('#frustration-rating')
+const giveUpFeedback = document.querySelector('#give-up-feedback')
+const giveUpNote = document.querySelector('#give-up-note')
 const saveResultButton = document.querySelector('#save-result')
 const resultsCard = document.querySelector('#results-card')
 const resultsBody = document.querySelector('#results-body')
@@ -291,6 +314,14 @@ function handleTubeClick(index) {
 
   applyMove(move)
   moves += 1
+  actions.push({
+    type: 'move',
+    atMs: Math.round(performance.now() - startedAt),
+    from: move.from,
+    to: move.to,
+    color: move.color,
+    amount: move.amount,
+  })
   renderBoard()
   refreshStats()
 
@@ -309,8 +340,12 @@ function resetForSelectedPuzzle() {
   moves = 0
   restarts = 0
   outcome = null
+  actions = []
   message.textContent = ''
   ratingCard.hidden = true
+  giveUpFeedback.hidden = true
+  giveUpNote.value = ''
+  document.querySelectorAll('input[name="give-up-reason"]').forEach(input => { input.checked = false })
   difficultyRating.value = ''
   confidenceRating.value = ''
   frustrationRating.value = ''
@@ -328,6 +363,7 @@ function beginPuzzle() {
   selected = null
   phase = 'running'
   outcome = null
+  actions = []
   startedAt = performance.now()
   elapsedMs = 0
   moves = 0
@@ -347,8 +383,11 @@ function restartPuzzle() {
   if (phase !== 'running') return
   board = cloneBoard(initialBoard)
   selected = null
-  moves = 0
   restarts += 1
+  actions.push({
+    type: 'restart',
+    atMs: Math.round(performance.now() - startedAt),
+  })
   message.textContent = '已重開本題；計時持續。'
   renderBoard()
   refreshStats()
@@ -363,7 +402,10 @@ function finishPuzzle(nextOutcome) {
   restartButton.disabled = true
   giveUpButton.disabled = true
   ratingCard.hidden = false
-  message.textContent = nextOutcome === 'solved' ? '完成。請先評分，再儲存結果。' : '已記為放棄。請先評分，再儲存結果。'
+  giveUpFeedback.hidden = nextOutcome !== 'gave-up'
+  message.textContent = nextOutcome === 'solved'
+    ? '完成。請先評分，再儲存結果。'
+    : '已記為放棄。請告訴我們卡住的原因，再評分。'
   renderBoard()
   refreshStats()
 }
@@ -397,15 +439,32 @@ function saveResult() {
   }
 
   const benchmarkId = currentPuzzle().benchmarkId
+  const giveUpReasons = [...document.querySelectorAll('input[name="give-up-reason"]:checked')]
+    .map(input => input.value)
+  const trimmedGiveUpNote = giveUpNote.value.trim()
+
+  if (outcome === 'gave-up' && giveUpReasons.length === 0) {
+    message.textContent = '放棄的題目請至少選擇一個原因。'
+    return
+  }
+  if (outcome === 'gave-up' && giveUpReasons.includes('other') && !trimmedGiveUpNote) {
+    message.textContent = '選擇「其他」時請填寫說明。'
+    return
+  }
+
   const record = {
     benchmarkId,
     outcome,
     elapsedMs: Math.round(elapsedMs),
     moves,
     restarts,
+    actions: actions.map(action => ({ ...action })),
+    finalBoard: cloneBoard(board),
     perceivedDifficulty,
     ...(confidenceRating.value ? { confidence: Number(confidenceRating.value) } : {}),
     ...(frustrationRating.value ? { frustration: Number(frustrationRating.value) } : {}),
+    ...(outcome === 'gave-up' ? { giveUpReasons } : {}),
+    ...(outcome === 'gave-up' && trimmedGiveUpNote ? { giveUpNote: trimmedGiveUpNote } : {}),
   }
 
   const existing = results.findIndex(result => result.benchmarkId === benchmarkId)
@@ -424,7 +483,7 @@ function saveResult() {
 
 function exportResults() {
   const payload = {
-    version: 'difficulty-v2-playtest-results-v1',
+    version: 'difficulty-v2-playtest-results-v2',
     benchmark: manifest.benchmark,
     exportedAt: new Date().toISOString(),
     results,
@@ -455,7 +514,11 @@ async function main() {
   })
   startButton.addEventListener('click', beginPuzzle)
   restartButton.addEventListener('click', restartPuzzle)
-  giveUpButton.addEventListener('click', () => finishPuzzle('gave-up'))
+  giveUpButton.addEventListener('click', () => {
+    if (window.confirm('確定要放棄這一題嗎？目前時間、步數、重開與操作紀錄都會保留。')) {
+      finishPuzzle('gave-up')
+    }
+  })
   saveResultButton.addEventListener('click', saveResult)
   document.querySelector('#export-results').addEventListener('click', exportResults)
 
