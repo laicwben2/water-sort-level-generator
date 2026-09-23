@@ -22,22 +22,22 @@ jobs:
         run: |
           npm run generate -- \
             --profile=expanded \
-            --count=5 \
+            --count=10 \
             --max-attempts=5000 \
             --seed=water-sort:difficulty-v2:research-3 \
             --analyze-mistakes \
             --mistake-max-states=10000 \
             --mistake-max-depth=120 \
-            --output=data/audit/difficulty-v2-fullpath-1.json
-      - run: npm run validate -- --file=data/audit/difficulty-v2-fullpath-1.json
+            --output=data/audit/difficulty-v2-fullpath-2.json
+      - run: npm run validate -- --file=data/audit/difficulty-v2-fullpath-2.json
       - name: Summarize Difficulty v2 metrics
         run: |
           npm run summarize:difficulty -- \
-            --input=data/audit/difficulty-v2-fullpath-1.json \
-            --output=data/output/difficulty-v2-fullpath-summary-1.json
+            --input=data/audit/difficulty-v2-fullpath-2.json \
+            --output=data/output/difficulty-v2-fullpath-summary-2.json
       - uses: actions/upload-artifact@v4
         with:
-          name: difficulty-v2-fullpath-1
+          name: difficulty-v2-fullpath-2
           path: |
-            data/audit/difficulty-v2-fullpath-1.json
-            data/output/difficulty-v2-fullpath-summary-1.json
+            data/audit/difficulty-v2-fullpath-2.json
+            data/output/difficulty-v2-fullpath-summary-2.json
