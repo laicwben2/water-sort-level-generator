@@ -91,6 +91,7 @@ describe('bounded water sort solver', () => {
 
     checkLayouts(3, 2, 90)
     checkLayouts(2, 3, 20)
+    checkLayouts(2, 4, 70)
   })
 
   it('collapses symmetric moves and reports path choices', () => {
