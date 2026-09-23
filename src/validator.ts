@@ -116,6 +116,7 @@ export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
   const byDifficulty: Record<string, number> = {}
 
   for (const puzzle of catalog.puzzles) {
+    if (!puzzle.id.trim()) throw new Error('Puzzle id must not be empty')
     if (!['easy', 'medium', 'hard'].includes(puzzle.difficulty)) {
       throw new Error(`Invalid difficulty: ${puzzle.id}`)
     }

@@ -117,6 +117,10 @@ describe('catalog validation and exports', () => {
     empty.puzzles = []
     expect(() => validateAuditCatalog(empty)).toThrow(/must contain puzzles/)
 
+    const emptyId = fixture()
+    emptyId.puzzles[0].id = ' '
+    expect(() => validateAuditCatalog(emptyId)).toThrow(/id must not be empty/)
+
     const wrongDifficulty = fixture()
     wrongDifficulty.puzzles[0].difficulty = 'expert' as AuditCatalog['puzzles'][number]['difficulty']
     expect(() => validateAuditCatalog(wrongDifficulty)).toThrow(/Invalid difficulty/)
