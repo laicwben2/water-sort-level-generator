@@ -146,6 +146,33 @@ The summary validates the source first, then reports:
 
 This summary is descriptive only. It does not derive or change production Easy / Medium / Hard thresholds.
 
+
+### Correlate human ratings with solver metrics
+
+After collecting a real playtest export:
+
+```bash
+npm run correlate:playtest -- \
+  --input=difficulty-v2-playtest-results.json \
+  --benchmark=data/benchmarks/difficulty-v2-benchmark-v1.json \
+  --output=data/output/difficulty-v2-playtest-correlation.json
+```
+
+The correlation report joins blind playtest IDs back to the internal benchmark manifest only after ratings have been collected.
+
+It currently computes Spearman rank correlation between perceived difficulty and:
+
+- optimal move count;
+- full-path decision states;
+- alternatives per analyzed state;
+- wrong-move density;
+- dead-end density;
+- maximum recovery penalty.
+
+Spearman correlation is used because perceived difficulty is an ordinal 1–5 rating. Ties use average ranks. A correlation is reported as `null` when fewer than two samples are available or either variable has no rank variance.
+
+These correlations are descriptive research signals. They do not produce a difficulty score, fit weights, define thresholds, or prove causality. The first version analyzes one exported playtest session at a time; multi-tester aggregation is a later step.
+
 ## Selected coverage
 
 The set deliberately includes contrasting structures such as:
