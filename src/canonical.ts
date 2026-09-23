@@ -123,6 +123,13 @@ export function canonicalPuzzleSequence(board: Board): bigint[] {
     // merely encode to the same value must still branch because they can
     // establish different global type mappings for later tubes.
     const seenRawTubes = new Set<string>()
+    const typeTubeCounts = new Map<number, number>()
+    for (const tube of remaining) {
+      for (const type of new Set(tube)) {
+        typeTubeCounts.set(type, (typeTubeCounts.get(type) ?? 0) + 1)
+      }
+    }
+    let privateBranchChosen = false
     let best: bigint[] | undefined
 
     for (const candidate of candidates) {
@@ -130,6 +137,13 @@ export function canonicalPuzzleSequence(board: Board): bigint[] {
       const rawKey = rawTubeKey(candidate.tube)
       if (seenRawTubes.has(rawKey)) continue
       seenRawTubes.add(rawKey)
+
+      // Unmapped types confined to one tube cannot affect any later tube.
+      // Tied private tubes differ only by raw Type names, so one branch is exact.
+      const privateUnmapped = candidate.tube.every((type) =>
+        !mapping.has(type) && typeTubeCounts.get(type) === 1)
+      if (privateUnmapped && privateBranchChosen) continue
+      if (privateUnmapped) privateBranchChosen = true
 
       const nextRemaining = remaining.filter((_, index) => index !== candidate.index)
       const suffix = search(nextRemaining, candidate.mapping, candidate.nextType)

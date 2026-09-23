@@ -125,6 +125,17 @@ describe('canonical representation', () => {
       expect(canonicalPuzzleSequence(board)).toEqual(exhaustiveSequence(board))
     }
   })
+  it('handles sixteen isolated Types without exploring equivalent branches', () => {
+    const board = [
+      ...Array.from({ length: 16 }, (_, type) => [type, type, type, type]),
+      [],
+      [],
+    ]
+    const reordered = board.slice().reverse().map((tube) =>
+      tube.map((type) => 100 + 15 - type))
+
+    expect(canonicalPuzzleKey(board)).toBe(canonicalPuzzleKey(reordered))
+  })
   it('supports sixteen abstract types without factorial type permutations', () => {
     const board = [
       [0, 1, 2, 3],
