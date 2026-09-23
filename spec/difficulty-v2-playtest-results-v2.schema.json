@@ -89,6 +89,20 @@
               "required": ["giveUpReasons"]
             },
             "then": { "required": ["giveUpNote"] }
+          },
+          {
+            "if": {
+              "properties": { "outcome": { "const": "solved" } },
+              "required": ["outcome"]
+            },
+            "then": {
+              "not": {
+                "anyOf": [
+                  { "required": ["giveUpReasons"] },
+                  { "required": ["giveUpNote"] }
+                ]
+              }
+            }
           }
         ]
       }
