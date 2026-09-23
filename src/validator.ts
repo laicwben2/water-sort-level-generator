@@ -43,6 +43,10 @@ function validateMistakeAnalysis(puzzleId: string, metrics: NonNullable<AuditCat
   if (metrics.decisionStates > metrics.analyzedStates) {
     throw new Error(`Mistake-analysis decision count exceeds analyzed states: ${puzzleId}`)
   }
+  if (metrics.decisionStates > metrics.alternatives
+    || (metrics.decisionStates === 0) !== (metrics.alternatives === 0)) {
+    throw new Error(`Mistake-analysis decision count disagrees with alternatives: ${puzzleId}`)
+  }
 
   const knownAlternatives = metrics.alternatives - metrics.unknownAlternatives
   const knownWrongAlternatives = metrics.recoverableAlternatives + metrics.deadEndAlternatives
@@ -190,6 +194,9 @@ export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
     }
 
     if (puzzle.mistakeAnalysis) {
+      if (puzzle.mistakeAnalysis.analyzedStates > puzzle.optimalSolution.length) {
+        throw new Error(`Mistake-analysis states exceed optimal path: ${puzzle.id}`)
+      }
       validateMistakeAnalysis(puzzle.id, puzzle.mistakeAnalysis)
     }
 

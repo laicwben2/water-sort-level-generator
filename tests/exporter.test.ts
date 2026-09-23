@@ -123,6 +123,34 @@ describe('catalog validation and exports', () => {
     expect(() => validateAuditCatalog(catalog)).toThrow(/Candidate seed mismatch/)
   })
 
+  it('rejects Difficulty v2 counts that cannot fit the analyzed path', () => {
+    const catalog = fixture()
+    catalog.puzzles[0].mistakeAnalysis = {
+      analyzedStates: 1,
+      decisionStates: 0,
+      alternatives: 1,
+      optimalEquivalentAlternatives: 1,
+      recoverableAlternatives: 0,
+      deadEndAlternatives: 0,
+      unknownAlternatives: 0,
+      analysisCoverage: 1,
+      alternativesPerAnalyzedState: 1,
+      wrongMoveDensity: 0,
+      deadEndDensity: 0,
+      deadEndRisk: 0,
+      averageRecoveryPenalty: 0,
+      p50RecoveryPenalty: 0,
+      p90RecoveryPenalty: 0,
+      maxRecoveryPenalty: 0,
+    }
+    expect(() => validateAuditCatalog(catalog)).toThrow(/decision count disagrees with alternatives/)
+
+    catalog.puzzles[0].mistakeAnalysis.analyzedStates = catalog.puzzles[0].optimalSolution.length + 1
+    catalog.puzzles[0].mistakeAnalysis.decisionStates = 1
+    catalog.puzzles[0].mistakeAnalysis.alternativesPerAnalyzedState =
+      1 / catalog.puzzles[0].mistakeAnalysis.analyzedStates
+    expect(() => validateAuditCatalog(catalog)).toThrow(/states exceed optimal path/)
+  })
   it('rejects impossible Difficulty v2 raw counts', () => {
     const invalidCounts = [
       { analyzedStates: -1, alternatives: 0 },
