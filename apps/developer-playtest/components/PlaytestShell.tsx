@@ -4,14 +4,16 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { applyMove, calculatePour, isSolved, type Board } from '../lib/game'
 import {
   GIVE_UP_REASONS,
-  buildResultsDocument,
-  loadResults,
-  saveResults,
-  submitResults,
   type GiveUpReason,
   type PlaytestAction,
   type PlaytestResult,
 } from '../lib/results'
+import {
+  buildResultsDocument,
+  loadResults,
+  saveResults,
+  submitResults,
+} from '../lib/result-storage'
 import { deterministicShuffle, getOrCreateSessionId } from '../lib/session'
 
 interface Puzzle {
