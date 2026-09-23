@@ -1,8 +1,28 @@
-import { canonicalPuzzleKey } from './canonical'
+import {
+  CANONICAL_VERSION,
+  ENCODING_VERSION,
+  canonicalPuzzleKeyFromSequence,
+  canonicalPuzzleSequence,
+} from './canonical'
+import { generateBalancedFullTubes } from './candidate'
+import { CanonicalSequenceTrie } from './dedup'
+import { analyzeMistakesAlongOptimalPath } from './difficulty'
 import { PROFILE_SETS, type DifficultyProfile, type ProfileName } from './profiles'
-import { createRng, shuffle } from './rng'
+import {
+  deriveCandidateSeed,
+  deriveLevelId,
+  fingerprintConfig,
+} from './rng'
 import { analyzeSolutionPath, solveBoard } from './solver'
-import type { AuditCatalog, AuditPuzzle, Board, Difficulty, EmptyTubeAnalysis, SolverResult } from './types'
+import type {
+  AuditCatalog,
+  AuditPuzzle,
+  Board,
+  Difficulty,
+  EmptyTubeAnalysis,
+  SolverResult,
+} from './types'
+import { GENERATOR_VERSION, RNG_VERSION, SOLVER_STATE_ENCODING_VERSION } from './version'
 
 export interface GenerateOptions {
   profileName?: ProfileName
@@ -10,119 +30,192 @@ export interface GenerateOptions {
   maxAttempts?: number
   capacity?: number
   maxEmptyTubes?: number
+  batchSeed?: string
+  analyzeMistakes?: boolean
+  mistakeMaxVisitedStatesPerAlternative?: number
+  mistakeMaxDepthPerAlternative?: number
+  mistakeMaxPathStates?: number
 }
 
-function balancedBoard(colors: number, capacity: number, random: () => number): Board {
-  const layers = Array.from({ length: colors }, (_, color) => Array(capacity).fill(color)).flat()
-  const shuffled = shuffle(layers, random)
-  return Array.from({ length: colors }, (_, index) => (
-    shuffled.slice(index * capacity, (index + 1) * capacity)
-  ))
+export interface MinimumEmptySearchOptions {
+  capacity: number
+  maxEmptyTubes: number
+  maxDepth: number
+  maxVisitedStates: number
 }
+
+export type MinimumEmptySearchResult =
+  | {
+      status: 'exact'
+      minimumRequiredEmptyTubes: number
+      board: Board
+      result: Extract<SolverResult, { status: 'solved' }>
+      analyses: EmptyTubeAnalysis[]
+    }
+  | {
+      status: 'unknown'
+      reason: 'budget-exceeded' | 'max-empty-tubes-exhausted'
+      analyses: EmptyTubeAnalysis[]
+    }
 
 function summarizeResult(result: SolverResult, emptyTubes: number): EmptyTubeAnalysis {
   return {
     emptyTubes,
     status: result.status,
-    ...(result.status === 'solved' ? { minimumMoves: result.solution.length } : {}),
+    ...(result.status === 'solved' ? { optimalMoves: result.solution.length } : {}),
     metrics: result.metrics,
   }
 }
 
-function selectDifficultyMatch(
-  solvedResults: Array<{
-    board: Board
-    emptyTubes: number
-    result: Extract<SolverResult, { status: 'solved' }>
-    path: ReturnType<typeof analyzeSolutionPath>
-  }>,
-  profile: DifficultyProfile,
-) {
-  return solvedResults
-    .filter(({ result }) => result.solution.length >= profile.minMoves && result.solution.length <= profile.maxMoves)
-    .map((entry) => {
-      const decisionRatio = entry.result.solution.length === 0
-        ? 0
-        : entry.path.decisionSteps / entry.result.solution.length
-      return {
-        ...entry,
-        score: Math.abs(entry.result.solution.length - profile.targetMoves)
-          + Math.abs(decisionRatio - profile.targetDecisionRatio) * 4
-          + Math.abs(entry.emptyTubes - 2) * 1.5,
-      }
+export function findMinimumEmptyTubes(
+  fullTubes: Board,
+  options: MinimumEmptySearchOptions,
+): MinimumEmptySearchResult {
+  const analyses: EmptyTubeAnalysis[] = []
+
+  for (let emptyTubes = 1; emptyTubes <= options.maxEmptyTubes; emptyTubes += 1) {
+    const board = [
+      ...fullTubes.map((tube) => [...tube]),
+      ...Array.from({ length: emptyTubes }, () => [] as number[]),
+    ]
+
+    const result = solveBoard(board, {
+      capacity: options.capacity,
+      maxDepth: options.maxDepth,
+      maxVisitedStates: options.maxVisitedStates,
     })
-    .sort((first, second) => first.score - second.score
-      || first.emptyTubes - second.emptyTubes
-      || second.result.metrics.exploredStates - first.result.metrics.exploredStates)[0]
+    analyses.push(summarizeResult(result, emptyTubes))
+
+    if (result.status === 'budget-exceeded') {
+      return {
+        status: 'unknown',
+        reason: 'budget-exceeded',
+        analyses,
+      }
+    }
+
+    if (result.status === 'solved') {
+      return {
+        status: 'exact',
+        minimumRequiredEmptyTubes: emptyTubes,
+        board,
+        result,
+        analyses,
+      }
+    }
+  }
+
+  return {
+    status: 'unknown',
+    reason: 'max-empty-tubes-exhausted',
+    analyses,
+  }
+}
+
+function matchesCurrentDifficultyWindow(
+  result: Extract<SolverResult, { status: 'solved' }>,
+  profile: DifficultyProfile,
+): boolean {
+  return result.solution.length >= profile.minMoves
+    && result.solution.length <= profile.maxMoves
+}
+
+function assertPositiveSafeInteger(value: number, name: string): void {
+  if (!Number.isSafeInteger(value) || value < 1) {
+    throw new Error(`${name} must be a positive integer`)
+  }
 }
 
 export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalog {
   const profileName = options.profileName ?? 'expanded'
+  if (!Object.hasOwn(PROFILE_SETS, profileName)) {
+    throw new Error(`Unknown profile: ${profileName}`)
+  }
   const perDifficulty = options.perDifficulty ?? 10
   const maxAttempts = options.maxAttempts ?? 2_000
   const capacity = options.capacity ?? 4
-  const maxEmptyTubes = options.maxEmptyTubes ?? 3
+  const maxEmptyTubes = options.maxEmptyTubes ?? 5
+  const batchSeed = options.batchSeed ?? 'water-sort:generator:v0.2:default'
+  assertPositiveSafeInteger(perDifficulty, 'perDifficulty')
+  assertPositiveSafeInteger(maxAttempts, 'maxAttempts')
+  assertPositiveSafeInteger(maxEmptyTubes, 'maxEmptyTubes')
+  if (options.mistakeMaxVisitedStatesPerAlternative !== undefined) {
+    assertPositiveSafeInteger(options.mistakeMaxVisitedStatesPerAlternative, 'mistakeMaxVisitedStatesPerAlternative')
+  }
+  if (options.mistakeMaxDepthPerAlternative !== undefined) {
+    assertPositiveSafeInteger(options.mistakeMaxDepthPerAlternative, 'mistakeMaxDepthPerAlternative')
+  }
+  if (options.mistakeMaxPathStates !== undefined) {
+    assertPositiveSafeInteger(options.mistakeMaxPathStates, 'mistakeMaxPathStates')
+  }
   const profiles = PROFILE_SETS[profileName]
   const puzzles: AuditPuzzle[] = []
-  const canonicalKeys = new Set<string>()
+  const canonicalIndex = new CanonicalSequenceTrie()
+
+  const configFingerprint = fingerprintConfig({
+    profileName,
+    perDifficulty,
+    maxAttempts,
+    capacity,
+    maxEmptyTubes,
+    profiles,
+    analyzeMistakes: options.analyzeMistakes ?? false,
+    mistakeMaxVisitedStatesPerAlternative: options.mistakeMaxVisitedStatesPerAlternative ?? 20_000,
+    mistakeMaxDepthPerAlternative: options.mistakeMaxDepthPerAlternative ?? 120,
+    mistakeMaxPathStates: options.mistakeMaxPathStates ?? null,
+  })
 
   for (const [difficulty, profile] of Object.entries(profiles) as Array<[Difficulty, DifficultyProfile]>) {
     let accepted = 0
 
     for (let attempt = 0; attempt < maxAttempts && accepted < perDifficulty; attempt += 1) {
-      const sourceSeed = `water-sort:generator:v1:${profileName}:${difficulty}:candidate:${attempt}`
-      const fullTubes = balancedBoard(profile.colors, capacity, createRng(sourceSeed))
-      const analyses: EmptyTubeAnalysis[] = []
-      const solvedResults: Array<{
-        board: Board
-        emptyTubes: number
-        result: Extract<SolverResult, { status: 'solved' }>
-        path: ReturnType<typeof analyzeSolutionPath>
-      }> = []
+      const candidateSeed = deriveCandidateSeed(batchSeed, profileName, difficulty, attempt)
+      const fullTubes = generateBalancedFullTubes(profile.colors, capacity, candidateSeed)
 
-      for (let emptyTubes = 1; emptyTubes <= maxEmptyTubes; emptyTubes += 1) {
-        const board = [
-          ...fullTubes.map((tube) => [...tube]),
-          ...Array.from({ length: emptyTubes }, () => [] as number[]),
-        ]
-        const result = solveBoard(board, {
-          capacity,
-          maxDepth: profile.maxMoves + 12,
-          maxVisitedStates: profile.maxVisitedStates,
-        })
-        analyses.push(summarizeResult(result, emptyTubes))
-        if (result.status === 'solved') {
-          solvedResults.push({
-            board,
-            emptyTubes,
-            result,
-            path: analyzeSolutionPath(board, result.solution, capacity),
+      const minimum = findMinimumEmptyTubes(fullTubes, {
+        capacity,
+        maxEmptyTubes,
+        maxDepth: profile.maxMoves + 12,
+        maxVisitedStates: profile.maxVisitedStates,
+      })
+      if (minimum.status !== 'exact') continue
+
+      const path = analyzeSolutionPath(minimum.board, minimum.result.solution, capacity)
+      if (!matchesCurrentDifficultyWindow(minimum.result, profile)) continue
+
+      const mistakeAnalysis = options.analyzeMistakes
+        ? analyzeMistakesAlongOptimalPath(minimum.board, minimum.result.solution, {
+            capacity,
+            maxVisitedStatesPerAlternative: options.mistakeMaxVisitedStatesPerAlternative ?? 20_000,
+            maxDepthPerAlternative: options.mistakeMaxDepthPerAlternative ?? 120,
+            ...(options.mistakeMaxPathStates === undefined
+              ? {}
+              : { maxPathStates: options.mistakeMaxPathStates }),
           })
-        }
-      }
+        : undefined
 
-      const selected = selectDifficultyMatch(solvedResults, profile)
-      if (!selected) continue
-      const canonicalKey = canonicalPuzzleKey(selected.board)
-      if (canonicalKeys.has(canonicalKey)) continue
-
-      canonicalKeys.add(canonicalKey)
+      const canonicalSequence = canonicalPuzzleSequence(minimum.board)
+      if (!canonicalIndex.add(canonicalSequence)) continue
+      const canonicalKey = canonicalPuzzleKeyFromSequence(canonicalSequence)
       accepted += 1
       puzzles.push({
-        id: `ws-${profileName}-${difficulty}-c${String(attempt).padStart(6, '0')}`,
+        id: deriveLevelId(batchSeed, profileName, difficulty, capacity, attempt),
         difficulty,
-        sourceSeed,
+        candidateIndex: attempt,
+        candidateSeed,
         capacity,
-        emptyTubes: selected.emptyTubes,
-        board: selected.board,
-        solution: selected.result.solution,
+        emptyTubes: minimum.minimumRequiredEmptyTubes,
+        minimumRequiredEmptyTubes: minimum.minimumRequiredEmptyTubes,
+        board: minimum.board,
+        optimalSolution: minimum.result.solution,
         canonicalKey,
         solver: {
-          minimumMoves: selected.result.solution.length,
-          ...selected.result.metrics,
+          optimalMoves: minimum.result.solution.length,
+          ...minimum.result.metrics,
         },
-        solutionPath: selected.path,
-        emptyTubeAnalysis: analyses,
+        solutionPath: path,
+        ...(mistakeAnalysis ? { mistakeAnalysis } : {}),
+        emptyTubeAnalysis: minimum.analyses,
       })
     }
 
@@ -132,9 +225,18 @@ export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalo
   }
 
   return {
-    version: 'audit-v1',
+    version: 'audit-v2',
     generator: 'balanced-shuffle+bounded-a-star',
     profile: profileName,
+    reproducibility: {
+      generatorVersion: GENERATOR_VERSION,
+      rngVersion: RNG_VERSION,
+      canonicalVersion: CANONICAL_VERSION,
+      encodingVersion: ENCODING_VERSION,
+      solverStateEncodingVersion: SOLVER_STATE_ENCODING_VERSION,
+      batchSeed,
+      configFingerprint,
+    },
     puzzles,
   }
 }

@@ -1,0 +1,43 @@
+name: Difficulty v2 research sample
+
+on:
+  push:
+    branches:
+      - feat/generator-v0.2-foundation
+    paths:
+      - .github/workflows/difficulty-v2-research.yml
+  workflow_dispatch:
+
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - name: Generate deterministic Difficulty v2 sample
+        run: |
+          npm run generate -- \
+            --profile=expanded \
+            --count=10 \
+            --max-attempts=5000 \
+            --seed=water-sort:difficulty-v2:research-3 \
+            --analyze-mistakes \
+            --mistake-max-states=10000 \
+            --mistake-max-depth=120 \
+            --output=data/audit/difficulty-v2-fullpath-2.json
+      - run: npm run validate -- --file=data/audit/difficulty-v2-fullpath-2.json
+      - name: Summarize Difficulty v2 metrics
+        run: |
+          npm run summarize:difficulty -- \
+            --input=data/audit/difficulty-v2-fullpath-2.json \
+            --output=data/output/difficulty-v2-fullpath-summary-2.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: difficulty-v2-fullpath-2
+          path: |
+            data/audit/difficulty-v2-fullpath-2.json
+            data/output/difficulty-v2-fullpath-summary-2.json

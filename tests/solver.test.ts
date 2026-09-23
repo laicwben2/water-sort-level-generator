@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { applyMove, isSolved } from '../src/rules'
+import { applyMove, calculatePour, isSolved } from '../src/rules'
 import { analyzeSolutionPath, listLegalMoves, solveBoard } from '../src/solver'
 import type { Board } from '../src/types'
 
@@ -17,6 +17,100 @@ describe('bounded water sort solver', () => {
     expect(solveBoard([[0, 1], [1, 0]], { capacity: 2 }).status).toBe('unsolvable')
     expect(solveBoard([[0, 1], [1, 0], [], []], { capacity: 2, maxVisitedStates: 0 }).status)
       .toBe('budget-exceeded')
+  })
+
+  it('rejects invalid solver resource budgets instead of disabling guards', () => {
+    const board: Board = [[0, 1], [0, 1], [], []]
+
+    expect(() => solveBoard(board, { capacity: 2, maxVisitedStates: Number.NaN }))
+      .toThrow(/maxVisitedStates must be a non-negative safe integer/)
+    expect(() => solveBoard(board, { capacity: 2, maxVisitedStates: 1.5 }))
+      .toThrow(/maxVisitedStates must be a non-negative safe integer/)
+    expect(() => solveBoard(board, { capacity: 2, maxDepth: Number.NaN }))
+      .toThrow(/maxDepth must be a non-negative safe integer/)
+    expect(() => solveBoard(board, { capacity: 2, maxDepth: -1 }))
+      .toThrow(/maxDepth must be a non-negative safe integer/)
+  })
+
+  it('caps discovered visited states rather than only popped states', () => {
+    const result = solveBoard([[0, 1], [0, 1], [], []], {
+      capacity: 2,
+      maxVisitedStates: 2,
+      maxDepth: 20,
+    })
+    expect(result.status).toBe('budget-exceeded')
+    expect(result.metrics.visitedStates).toBeLessThanOrEqual(2)
+  })
+
+  it('matches independent breadth-first shortest paths on small balanced layouts', () => {
+    function checkLayouts(
+      types: number,
+      capacity: number,
+      expectedLayouts: number,
+      sampleIndices?: readonly number[],
+    ) {
+      const layouts: Board[] = []
+      const counts = Array.from({ length: types }, () => 0)
+      const cells: number[] = []
+
+      function enumerate() {
+        if (cells.length === types * capacity) {
+          layouts.push([
+            ...Array.from({ length: types }, (_, index) =>
+              cells.slice(index * capacity, (index + 1) * capacity)),
+            [],
+          ])
+          return
+        }
+        for (let type = 0; type < types; type += 1) {
+          if (counts[type] === capacity) continue
+          counts[type] += 1
+          cells.push(type)
+          enumerate()
+          cells.pop()
+          counts[type] -= 1
+        }
+      }
+
+      function shortestByBfs(start: Board): number | undefined {
+        const queue: Array<{ board: Board; depth: number }> = [{ board: start, depth: 0 }]
+        const visited = new Set([JSON.stringify(start)])
+        for (let index = 0; index < queue.length; index += 1) {
+          const { board, depth } = queue[index]
+          if (isSolved(board, capacity)) return depth
+          for (let from = 0; from < board.length; from += 1) {
+            for (let to = 0; to < board.length; to += 1) {
+              const move = calculatePour(board, from, to, capacity)
+              if (!move) continue
+              const next = applyMove(board, move)
+              const key = JSON.stringify(next)
+              if (visited.has(key)) continue
+              visited.add(key)
+              queue.push({ board: next, depth: depth + 1 })
+            }
+          }
+        }
+        return undefined
+      }
+
+      enumerate()
+      expect(layouts).toHaveLength(expectedLayouts)
+      for (const board of sampleIndices ? sampleIndices.map((index) => layouts[index]) : layouts) {
+        const shortest = shortestByBfs(board)
+        const result = solveBoard(board, { capacity, maxDepth: 50, maxVisitedStates: 100_000 })
+        if (shortest === undefined) {
+          expect(result.status).toBe('unsolvable')
+        } else {
+          expect(result.status).toBe('solved')
+          if (result.status === 'solved') expect(result.solution).toHaveLength(shortest)
+        }
+      }
+    }
+
+    checkLayouts(3, 2, 90)
+    checkLayouts(2, 3, 20)
+    checkLayouts(2, 4, 70)
+    checkLayouts(3, 4, 34_650, Array.from({ length: 30 }, (_, index) => (index * 997) % 34_650))
   })
 
   it('collapses symmetric moves and reports path choices', () => {

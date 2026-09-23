@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "difficulty-v2-playtest-results-v1.schema.json",
+  "title": "Difficulty v2 Playtest Results v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "benchmark", "exportedAt", "results"],
+  "properties": {
+    "version": {
+      "const": "difficulty-v2-playtest-results-v1"
+    },
+    "benchmark": {
+      "type": "string",
+      "minLength": 1
+    },
+    "exportedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "benchmarkId",
+          "outcome",
+          "elapsedMs",
+          "moves",
+          "restarts",
+          "perceivedDifficulty"
+        ],
+        "properties": {
+          "benchmarkId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "outcome": {
+            "enum": ["solved", "gave-up"]
+          },
+          "elapsedMs": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "moves": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "restarts": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "perceivedDifficulty": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "confidence": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "frustration": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          }
+        }
+      }
+    }
+  }
+}

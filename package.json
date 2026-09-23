@@ -1,6 +1,6 @@
 {
   "name": "water-sort-level-generator",
-  "version": "0.1.0",
+  "version": "0.2.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,7 +9,14 @@
     "test:watch": "vitest",
     "generate": "tsx src/cli/generate.ts",
     "validate": "tsx src/cli/validate.ts",
-    "export:runtime": "tsx src/cli/export-runtime.ts"
+    "export:runtime": "tsx src/cli/export-runtime.ts",
+    "export:solutions": "tsx src/cli/export-solutions.ts",
+    "benchmark": "tsx src/cli/benchmark.ts",
+    "summarize:difficulty": "tsx src/cli/summarize-difficulty.ts",
+    "playtest:benchmark": "tsx src/cli/playtest-benchmark.ts",
+    "validate:playtest": "tsx src/cli/validate-playtest.ts",
+    "summarize:playtest": "tsx src/cli/summarize-playtest.ts",
+    "correlate:playtest": "tsx src/cli/correlate-playtest.ts"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",

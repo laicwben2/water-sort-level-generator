@@ -93,6 +93,18 @@ npm run export:runtime -- \
 
 The output contract is defined by `spec/level-pack-v1.schema.json`.
 
+## Export optimal solutions
+
+The normal Runtime Level Pack exposes the proven optimal move count but deliberately omits the full answer. Applications that need hints, replay, challenge verification, or research data can export the separate solution artifact:
+
+```bash
+npm run export:solutions -- \
+  --input=data/audit/catalog-expanded.json \
+  --output=data/output/solutions-v1.json
+```
+
+Each solution entry is keyed by level ID and contains both `optimalMoves` and `optimalSolution`.
+
 ## Contract
 
 Current contract values:
@@ -102,7 +114,13 @@ Current contract values:
 
 Changing JSON structure requires a new `formatVersion`. Changing legal-pour or solved-state semantics requires a new `rulesVersion`.
 
-Level IDs are derived from deterministic candidate indices rather than accepted-list position. This keeps a candidate's identity stable when acceptance thresholds change.
+Level IDs include the generator, RNG, and rules versions; the batch seed in
+reversible base64url UTF-16LE form; profile, difficulty, capacity; and the
+deterministic candidate index. They do not depend on accepted-list position.
+The same candidate keeps its ID when acceptance thresholds change, while
+different batches or capacities cannot assign the same ID to different boards.
+Audit catalogs created with the earlier index-only ID scheme must be
+regenerated before validation or export.
 
 ## Tests
 
@@ -120,3 +138,68 @@ Official game releases should never run this solver on the player's device. Gene
 ## Consumer repository
 
 The current web consumer is [laicwben2/water-sort](https://github.com/laicwben2/water-sort). Both projects share the versioned Level Pack contract in `spec/level-pack-v1.schema.json`.
+
+
+## Generator v0.2 foundation
+
+The v0.2 foundation is documented in [docs/v0.2-foundation.md](docs/v0.2-foundation.md).
+
+Key invariants:
+
+- puzzle identity uses abstract types, not presentation colors;
+- type renaming and tube order do not change puzzle identity;
+- canonicalization uses a shared global type mapping and exact tube-order search;
+- generation uses an explicit versioned PRNG and independently derived candidate seeds;
+- the CLI accepts an explicit batch seed with `--seed=...`;
+- empty tubes are searched from 1 upward and are only declared minimal when every smaller count is proven unsolvable;
+- `budget-exceeded` means unknown and causes that candidate to be rejected;
+- generation is sequential by default so solver memory does not multiply by worker count.
+
+Example reproducible generation:
+
+```bash
+npm run generate -- \
+  --profile=expanded \
+  --count=20 \
+  --max-attempts=5000 \
+  --seed=water-sort-research-2026-09
+```
+
+The audit catalog records generator, RNG, canonicalization, encoding, batch-seed, candidate-seed, and config-fingerprint metadata needed to reproduce accepted candidates.
+
+
+## Benchmark solver scaling
+
+Benchmark type-count scaling with one candidate process at a time:
+
+```bash
+npm run benchmark -- \
+  --min-types=6 \
+  --max-types=16 \
+  --samples=10 \
+  --max-states=100000 \
+  --max-empty=5 \
+  --seed=water-sort-benchmark-v0.2 \
+  --output=data/output/solver-benchmark.json
+```
+
+Each candidate runs in its own child process. The report records exact/unknown rates, minimum-empty distribution, elapsed time, explored/visited states, generated moves, and process `maxRSS`. This keeps concurrency at 1 and makes peak-memory measurements comparable across candidates.
+
+
+## Difficulty v2 research
+
+Mistake/recovery analysis is optional because it may run many additional solver searches. Enable it only for research/audit generation:
+
+```bash
+npm run generate -- \
+  --profile=expanded \
+  --count=20 \
+  --seed=water-sort-difficulty-v2-research \
+  --analyze-mistakes \
+  --mistake-max-states=20000 \
+  --mistake-max-depth=120
+```
+
+Optional `--mistake-max-path-states=N` limits how many states along the stored optimal path are analyzed.
+
+The resulting audit entries may include aggregate metrics such as analysis coverage, wrong-move density, dead-end risk, and recovery penalties. These metrics are research signals only; they do not yet redefine Easy / Medium / Hard thresholds.

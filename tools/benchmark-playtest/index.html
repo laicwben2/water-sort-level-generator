@@ -1,0 +1,534 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Difficulty v2 Blind Benchmark</title>
+  <style>
+    :root {
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color-scheme: light dark;
+      --panel: color-mix(in srgb, Canvas 94%, CanvasText 6%);
+      --border: color-mix(in srgb, CanvasText 22%, transparent);
+      --accent: #4f7cff;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: Canvas; color: CanvasText; }
+    main { width: min(980px, 100%); margin: 0 auto; padding: 24px 18px 48px; }
+    h1 { margin: 0 0 6px; font-size: clamp(24px, 4vw, 34px); }
+    .muted { opacity: .72; }
+    .toolbar, .stats, .rating, .results-actions {
+      display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+    }
+    .toolbar { margin: 20px 0 12px; }
+    button, select, input, textarea {
+      font: inherit; min-height: 40px; padding: 8px 12px; border: 1px solid var(--border);
+      border-radius: 9px; background: var(--panel); color: inherit;
+    }
+    button { cursor: pointer; }
+    button.primary { background: var(--accent); color: white; border-color: transparent; }
+    button:disabled { opacity: .45; cursor: not-allowed; }
+    .stats { padding: 12px 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--panel); }
+    .stat { min-width: 110px; }
+    .stat strong { display: block; font-size: 20px; }
+    #board-wrap { margin-top: 20px; min-height: 350px; display: grid; place-items: center; }
+    #board { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; align-items: flex-end; }
+    .tube {
+      width: 58px; height: 198px; padding: 6px 5px 12px;
+      border: 3px solid color-mix(in srgb, CanvasText 62%, transparent);
+      border-top-color: transparent; border-radius: 0 0 18px 18px;
+      display: flex; flex-direction: column-reverse; gap: 3px;
+      background: color-mix(in srgb, Canvas 90%, CanvasText 10%);
+      transition: transform .12s ease, box-shadow .12s ease;
+    }
+    .tube:hover { transform: translateY(-3px); }
+    .tube.selected { transform: translateY(-12px); box-shadow: 0 8px 18px color-mix(in srgb, var(--accent) 35%, transparent); }
+    .cell { width: 100%; height: 38px; border-radius: 8px; border: 1px solid rgba(0,0,0,.18); }
+    .hidden-board {
+      width: min(560px, 100%); min-height: 260px; display: grid; place-items: center;
+      border: 1px dashed var(--border); border-radius: 16px; text-align: center; padding: 24px;
+    }
+    #message { min-height: 24px; margin: 10px 0; font-weight: 600; }
+    .rating-card, .results-card { margin-top: 20px; padding: 16px; border: 1px solid var(--border); border-radius: 14px; }
+    .rating-card[hidden], .results-card[hidden] { display: none; }
+    .rating label { display: grid; gap: 4px; }
+    .give-up-feedback { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 10px; }
+    .give-up-feedback[hidden] { display: none; }
+    .give-up-options { display: grid; gap: 7px; margin: 8px 0 10px; }
+    .give-up-options label { display: flex; gap: 8px; align-items: center; }
+    textarea { width: min(560px, 100%); min-height: 72px; resize: vertical; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    th, td { padding: 8px; text-align: left; border-bottom: 1px solid var(--border); }
+    @media (max-width: 600px) {
+      main { padding-inline: 12px; }
+      .tube { width: 48px; height: 170px; }
+      .cell { height: 32px; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Difficulty v2 Blind Benchmark</h1>
+  <div class="muted">只顯示盲測編號與盤面；不顯示原始難度、solver 指標或最佳步數。</div>
+
+  <div class="toolbar">
+    <label>題目
+      <select id="puzzle-select" aria-label="Benchmark puzzle"></select>
+    </label>
+    <button id="start" class="primary">開始</button>
+    <button id="restart" disabled>重開本題</button>
+    <button id="give-up" disabled>放棄</button>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><span class="muted">時間</span><strong id="time">00:00.0</strong></div>
+    <div class="stat"><span class="muted">步數</span><strong id="moves">0</strong></div>
+    <div class="stat"><span class="muted">重開</span><strong id="restarts">0</strong></div>
+    <div class="stat"><span class="muted">狀態</span><strong id="status">未開始</strong></div>
+  </div>
+
+  <div id="message"></div>
+  <div id="board-wrap">
+    <div class="hidden-board"><div><strong>盤面尚未顯示</strong><br><span class="muted">按「開始」後才顯示並開始計時。</span></div></div>
+  </div>
+
+  <section id="rating-card" class="rating-card" hidden>
+    <h2>本題評分</h2>
+    <div class="rating">
+      <label>主觀難度 1–5
+        <select id="difficulty-rating">
+          <option value="">請選擇</option>
+          <option value="1">1 — 很簡單</option>
+          <option value="2">2 — 簡單</option>
+          <option value="3">3 — 中等</option>
+          <option value="4">4 — 困難</option>
+          <option value="5">5 — 很困難</option>
+        </select>
+      </label>
+      <label>信心 1–5（可選）
+        <select id="confidence-rating">
+          <option value="">略過</option>
+          <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+          <option value="4">4</option><option value="5">5</option>
+        </select>
+      </label>
+      <label>挫折感 1–5（可選）
+        <select id="frustration-rating">
+          <option value="">略過</option>
+          <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+          <option value="4">4</option><option value="5">5</option>
+        </select>
+      </label>
+      <fieldset id="give-up-feedback" class="give-up-feedback" hidden>
+        <legend>為什麼放棄？（可複選，至少一項）</legend>
+        <div class="give-up-options">
+          <label><input type="checkbox" name="give-up-reason" value="no-next-move">不知道下一步怎麼走</label>
+          <label><input type="checkbox" name="give-up-reason" value="likely-dead-end">感覺已經走進死路</label>
+          <label><input type="checkbox" name="give-up-reason" value="repeated-restarts">重開多次仍無法完成</label>
+          <label><input type="checkbox" name="give-up-reason" value="too-many-choices">選擇太多，不知道哪個較好</label>
+          <label><input type="checkbox" name="give-up-reason" value="taking-too-long">題目太耗時間</label>
+          <label><input type="checkbox" name="give-up-reason" value="no-longer-fun">覺得這題不想繼續玩</label>
+          <label><input type="checkbox" name="give-up-reason" value="other">其他</label>
+        </div>
+        <label>其他說明
+          <textarea id="give-up-note" placeholder="選擇「其他」時必填；否則可留白"></textarea>
+        </label>
+      </fieldset>
+      <button id="save-result" class="primary">儲存本題結果</button>
+    </div>
+  </section>
+
+  <section id="results-card" class="results-card" hidden>
+    <h2>本次盲測紀錄</h2>
+    <div class="results-actions">
+      <button id="export-results">匯出 JSON</button>
+      <span id="result-count" class="muted"></span>
+    </div>
+    <div style="overflow:auto">
+      <table>
+        <thead><tr><th>ID</th><th>結果</th><th>時間</th><th>步數</th><th>重開</th><th>難度</th></tr></thead>
+        <tbody id="results-body"></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<script>
+const palette = ['#ef5350','#42a5f5','#66bb6a','#ffca28','#ab47bc','#26c6da','#ff7043','#8d6e63','#78909c','#ec407a','#7e57c2','#9ccc65','#ffa726','#5c6bc0','#26a69a','#d4e157']
+
+let manifest
+let puzzleIndex = 0
+let initialBoard = []
+let board = []
+let selected = null
+let phase = 'idle'
+let startedAt = 0
+let elapsedMs = 0
+let moves = 0
+let restarts = 0
+let timerHandle
+let outcome = null
+let actions = []
+const results = []
+
+const select = document.querySelector('#puzzle-select')
+const startButton = document.querySelector('#start')
+const restartButton = document.querySelector('#restart')
+const giveUpButton = document.querySelector('#give-up')
+const boardWrap = document.querySelector('#board-wrap')
+const message = document.querySelector('#message')
+const timeEl = document.querySelector('#time')
+const movesEl = document.querySelector('#moves')
+const restartsEl = document.querySelector('#restarts')
+const statusEl = document.querySelector('#status')
+const ratingCard = document.querySelector('#rating-card')
+const difficultyRating = document.querySelector('#difficulty-rating')
+const confidenceRating = document.querySelector('#confidence-rating')
+const frustrationRating = document.querySelector('#frustration-rating')
+const giveUpFeedback = document.querySelector('#give-up-feedback')
+const giveUpNote = document.querySelector('#give-up-note')
+const saveResultButton = document.querySelector('#save-result')
+const resultsCard = document.querySelector('#results-card')
+const resultsBody = document.querySelector('#results-body')
+const resultCount = document.querySelector('#result-count')
+
+function cloneBoard(value) {
+  return value.map(tube => [...tube])
+}
+
+function currentPuzzle() {
+  return manifest.puzzles[puzzleIndex]
+}
+
+function topRunLength(tube) {
+  if (tube.length === 0) return 0
+  const color = tube[tube.length - 1]
+  let count = 0
+  for (let index = tube.length - 1; index >= 0 && tube[index] === color; index -= 1) count += 1
+  return count
+}
+
+function calculatePour(from, to) {
+  const capacity = currentPuzzle().capacity
+  if (from === to || from < 0 || to < 0 || from >= board.length || to >= board.length) return null
+  const source = board[from]
+  const target = board[to]
+  if (source.length === 0 || target.length >= capacity) return null
+  const color = source[source.length - 1]
+  const targetColor = target[target.length - 1]
+  if (targetColor !== undefined && targetColor !== color) return null
+  const amount = Math.min(topRunLength(source), capacity - target.length)
+  return amount > 0 ? { from, to, color, amount } : null
+}
+
+function applyMove(move) {
+  const removed = board[move.from].splice(-move.amount)
+  board[move.to].push(...removed)
+}
+
+function isSolved() {
+  const capacity = currentPuzzle().capacity
+  return board.every(tube =>
+    tube.length === 0 ||
+    (tube.length === capacity && tube.every(color => color === tube[0]))
+  )
+}
+
+function formatTime(ms) {
+  const tenths = Math.floor(ms / 100) % 10
+  const totalSeconds = Math.floor(ms / 1000)
+  const minutes = Math.floor(totalSeconds / 60)
+  const seconds = totalSeconds % 60
+  return String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0') + '.' + tenths
+}
+
+function refreshStats() {
+  const liveElapsed = phase === 'running' ? performance.now() - startedAt : elapsedMs
+  timeEl.textContent = formatTime(liveElapsed)
+  movesEl.textContent = String(moves)
+  restartsEl.textContent = String(restarts)
+  statusEl.textContent =
+    phase === 'idle' ? '未開始' :
+    phase === 'running' ? '進行中' :
+    outcome === 'solved' ? '完成' : '放棄'
+}
+
+function startTimer() {
+  clearInterval(timerHandle)
+  timerHandle = setInterval(refreshStats, 100)
+}
+
+function stopTimer() {
+  if (phase === 'running') elapsedMs = performance.now() - startedAt
+  clearInterval(timerHandle)
+  refreshStats()
+}
+
+function renderBoard() {
+  const container = document.createElement('div')
+  container.id = 'board'
+  board.forEach((tube, tubeIndex) => {
+    const button = document.createElement('button')
+    button.className = 'tube' + (selected === tubeIndex ? ' selected' : '')
+    button.type = 'button'
+    button.setAttribute('aria-label', '試管 ' + (tubeIndex + 1))
+    button.addEventListener('click', () => handleTubeClick(tubeIndex))
+
+    for (let slot = 0; slot < currentPuzzle().capacity; slot += 1) {
+      const cell = document.createElement('div')
+      cell.className = 'cell'
+      const color = tube[slot]
+      cell.style.background = color === undefined ? 'transparent' : palette[color % palette.length]
+      cell.style.borderColor = color === undefined ? 'transparent' : 'rgba(0,0,0,.2)'
+      button.appendChild(cell)
+    }
+    container.appendChild(button)
+  })
+  boardWrap.replaceChildren(container)
+}
+
+function handleTubeClick(index) {
+  if (phase !== 'running') return
+  message.textContent = ''
+
+  if (selected === null) {
+    if (board[index].length === 0) return
+    selected = index
+    renderBoard()
+    return
+  }
+
+  if (selected === index) {
+    selected = null
+    renderBoard()
+    return
+  }
+
+  const move = calculatePour(selected, index)
+  selected = null
+  if (!move) {
+    message.textContent = '這一步不能倒入目標試管。'
+    renderBoard()
+    return
+  }
+
+  applyMove(move)
+  moves += 1
+  actions.push({
+    type: 'move',
+    atMs: Math.round(performance.now() - startedAt),
+    from: move.from,
+    to: move.to,
+    color: move.color,
+    amount: move.amount,
+  })
+  renderBoard()
+  refreshStats()
+
+  if (isSolved()) finishPuzzle('solved')
+}
+
+function resetForSelectedPuzzle() {
+  clearInterval(timerHandle)
+  const puzzle = currentPuzzle()
+  initialBoard = cloneBoard(puzzle.board)
+  board = cloneBoard(initialBoard)
+  selected = null
+  phase = 'idle'
+  startedAt = 0
+  elapsedMs = 0
+  moves = 0
+  restarts = 0
+  outcome = null
+  actions = []
+  message.textContent = ''
+  ratingCard.hidden = true
+  giveUpFeedback.hidden = true
+  giveUpNote.value = ''
+  document.querySelectorAll('input[name="give-up-reason"]').forEach(input => { input.checked = false })
+  difficultyRating.value = ''
+  confidenceRating.value = ''
+  frustrationRating.value = ''
+  startButton.disabled = false
+  restartButton.disabled = true
+  giveUpButton.disabled = true
+  select.disabled = false
+  boardWrap.innerHTML = '<div class="hidden-board"><div><strong>盤面尚未顯示</strong><br><span class="muted">按「開始」後才顯示並開始計時。</span></div></div>'
+  refreshStats()
+}
+
+function beginPuzzle() {
+  initialBoard = cloneBoard(currentPuzzle().board)
+  board = cloneBoard(initialBoard)
+  selected = null
+  phase = 'running'
+  outcome = null
+  actions = []
+  startedAt = performance.now()
+  elapsedMs = 0
+  moves = 0
+  restarts = 0
+  startButton.disabled = true
+  restartButton.disabled = false
+  giveUpButton.disabled = false
+  select.disabled = true
+  ratingCard.hidden = true
+  message.textContent = ''
+  renderBoard()
+  refreshStats()
+  startTimer()
+}
+
+function restartPuzzle() {
+  if (phase !== 'running') return
+  board = cloneBoard(initialBoard)
+  selected = null
+  restarts += 1
+  actions.push({
+    type: 'restart',
+    atMs: Math.round(performance.now() - startedAt),
+  })
+  message.textContent = '已重開本題；計時持續。'
+  renderBoard()
+  refreshStats()
+}
+
+function finishPuzzle(nextOutcome) {
+  if (phase !== 'running') return
+  stopTimer()
+  phase = 'finished'
+  outcome = nextOutcome
+  selected = null
+  restartButton.disabled = true
+  giveUpButton.disabled = true
+  ratingCard.hidden = false
+  giveUpFeedback.hidden = nextOutcome !== 'gave-up'
+  message.textContent = nextOutcome === 'solved'
+    ? '完成。請先評分，再儲存結果。'
+    : '已記為放棄。請告訴我們卡住的原因，再評分。'
+  renderBoard()
+  refreshStats()
+}
+
+function renderResults() {
+  resultsCard.hidden = results.length === 0
+  resultCount.textContent = results.length + ' / ' + manifest.puzzles.length + ' 題已記錄'
+  resultsBody.replaceChildren(...results.map(result => {
+    const row = document.createElement('tr')
+    for (const value of [
+      result.benchmarkId,
+      result.outcome === 'solved' ? '完成' : '放棄',
+      formatTime(result.elapsedMs),
+      result.moves,
+      result.restarts,
+      result.perceivedDifficulty,
+    ]) {
+      const cell = document.createElement('td')
+      cell.textContent = String(value)
+      row.appendChild(cell)
+    }
+    return row
+  }))
+}
+
+function saveResult() {
+  const perceivedDifficulty = Number(difficultyRating.value)
+  if (!Number.isInteger(perceivedDifficulty) || perceivedDifficulty < 1 || perceivedDifficulty > 5) {
+    message.textContent = '請先選擇 1–5 的主觀難度。'
+    return
+  }
+
+  const benchmarkId = currentPuzzle().benchmarkId
+  const giveUpReasons = [...document.querySelectorAll('input[name="give-up-reason"]:checked')]
+    .map(input => input.value)
+  const trimmedGiveUpNote = giveUpNote.value.trim()
+
+  if (outcome === 'gave-up' && giveUpReasons.length === 0) {
+    message.textContent = '放棄的題目請至少選擇一個原因。'
+    return
+  }
+  if (outcome === 'gave-up' && giveUpReasons.includes('other') && !trimmedGiveUpNote) {
+    message.textContent = '選擇「其他」時請填寫說明。'
+    return
+  }
+
+  const record = {
+    benchmarkId,
+    outcome,
+    elapsedMs: Math.round(elapsedMs),
+    moves,
+    restarts,
+    actions: actions.map(action => ({ ...action })),
+    finalBoard: cloneBoard(board),
+    perceivedDifficulty,
+    ...(confidenceRating.value ? { confidence: Number(confidenceRating.value) } : {}),
+    ...(frustrationRating.value ? { frustration: Number(frustrationRating.value) } : {}),
+    ...(outcome === 'gave-up' ? { giveUpReasons } : {}),
+    ...(outcome === 'gave-up' && trimmedGiveUpNote ? { giveUpNote: trimmedGiveUpNote } : {}),
+  }
+
+  const existing = results.findIndex(result => result.benchmarkId === benchmarkId)
+  if (existing >= 0) results.splice(existing, 1, record)
+  else results.push(record)
+
+  renderResults()
+
+  if (puzzleIndex < manifest.puzzles.length - 1) {
+    puzzleIndex += 1
+    select.value = String(puzzleIndex)
+  }
+  resetForSelectedPuzzle()
+  message.textContent = benchmarkId + ' 已儲存。'
+}
+
+function exportResults() {
+  const payload = {
+    version: 'difficulty-v2-playtest-results-v2',
+    benchmark: manifest.benchmark,
+    exportedAt: new Date().toISOString(),
+    results,
+  }
+  const blob = new Blob([JSON.stringify(payload, null, 2) + '\n'], { type: 'application/json' })
+  const link = document.createElement('a')
+  link.href = URL.createObjectURL(blob)
+  link.download = 'difficulty-v2-playtest-results.json'
+  link.click()
+  setTimeout(() => URL.revokeObjectURL(link.href), 0)
+}
+
+async function main() {
+  const response = await fetch('/benchmark.json', { cache: 'no-store' })
+  if (!response.ok) throw new Error('Failed to load benchmark')
+  manifest = await response.json()
+
+  manifest.puzzles.forEach((puzzle, index) => {
+    const option = document.createElement('option')
+    option.value = String(index)
+    option.textContent = puzzle.benchmarkId
+    select.appendChild(option)
+  })
+
+  select.addEventListener('change', () => {
+    puzzleIndex = Number(select.value)
+    resetForSelectedPuzzle()
+  })
+  startButton.addEventListener('click', beginPuzzle)
+  restartButton.addEventListener('click', restartPuzzle)
+  giveUpButton.addEventListener('click', () => {
+    if (window.confirm('確定要放棄這一題嗎？目前時間、步數、重開與操作紀錄都會保留。')) {
+      finishPuzzle('gave-up')
+    }
+  })
+  saveResultButton.addEventListener('click', saveResult)
+  document.querySelector('#export-results').addEventListener('click', exportResults)
+
+  resetForSelectedPuzzle()
+}
+
+main().catch(error => {
+  console.error(error)
+  message.textContent = '載入 benchmark 失敗。'
+})
+</script>
+</body>
+</html>

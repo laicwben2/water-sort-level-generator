@@ -18,9 +18,9 @@ It does not own rendering, persistence, input handling, animation, player record
 
 ## Candidate model
 
-For a given profile and deterministic source seed, each color appears exactly `capacity` times. Layers are shuffled and divided into full colored tubes. The same colored arrangement is tested with 1..N empty tubes.
+For a given profile and independently derived deterministic candidate seed, each abstract type appears exactly `capacity` times. Layers are shuffled and divided into full tubes. Empty-tube counts are tested sequentially from 1 upward.
 
-Only solver-confirmed configurations that satisfy the selected difficulty profile can enter the catalog.
+A minimum empty-tube count is recorded only when every smaller count is proven unsolvable and the selected count is solved. `budget-exceeded` means unknown and rejects the candidate from production-quality output.
 
 ## Solver semantics
 
@@ -45,8 +45,8 @@ These are a starting point, not a complete model of human difficulty. Future wor
 
 ## Data separation
 
-The audit catalog is intentionally verbose and reproducible. It stores source seed, solution, canonical key, search metrics, path metrics, and every tested empty-tube configuration.
+The audit catalog is intentionally verbose and reproducible. It stores batch/candidate seed metadata, version fingerprints, the exact canonical key, `optimalMoves`, `optimalSolution`, search metrics, path metrics, and every tested empty-tube configuration.
 
-The runtime pack is intentionally small. It stores only stable ID, difficulty, capacity, board, and optional consumer-facing metadata.
+The runtime pack is intentionally small. It stores only stable ID, difficulty, capacity, board, and consumer-facing metadata such as `optimalMoves`. Full answers are exported separately through the optional solution artifact.
 
 The game client must not depend on audit fields.
