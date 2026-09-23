@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { findMinimumEmptyTubes } from '../src/generator'
+import { generateBalancedFullTubes } from '../src/candidate'
+import { findMinimumEmptyTubes, generateAuditCatalog } from '../src/generator'
 import { createRng, deriveCandidateSeed, shuffle } from '../src/rng'
 import type { Board } from '../src/types'
 
@@ -18,6 +19,24 @@ describe('deterministic generation foundation', () => {
 
     expect(afterPrevious).toEqual(direct)
     expect(deriveCandidateSeed('batch-A', 'expanded', 'hard', 8)).toBe(seed8)
+  })
+
+  it('reconstructs every accepted board from its candidate seed', () => {
+    const catalog = generateAuditCatalog({
+      profileName: 'baseline',
+      perDifficulty: 1,
+      maxAttempts: 1_000,
+      batchSeed: 'test-candidate-reproduction',
+    })
+
+    for (const puzzle of catalog.puzzles) {
+      const types = new Set(puzzle.board.flat()).size
+      const fullTubes = generateBalancedFullTubes(types, puzzle.capacity, puzzle.candidateSeed)
+      expect(puzzle.board).toEqual([
+        ...fullTubes,
+        ...Array.from({ length: puzzle.emptyTubes }, () => []),
+      ])
+    }
   })
 
   it('proves an exact minimum of two empty tubes', () => {
