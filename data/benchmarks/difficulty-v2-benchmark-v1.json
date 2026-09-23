@@ -1,0 +1,665 @@
+{
+  "version": "difficulty-v2-benchmark-v1",
+  "source": {
+    "profile": "expanded",
+    "batchSeed": "water-sort:difficulty-v2:research-3",
+    "analysis": "full-optimal-path",
+    "puzzlesPerDifficulty": 10,
+    "alternativeMaxVisitedStates": 10000,
+    "alternativeMaxDepth": 120
+  },
+  "selectionPolicy": {
+    "perSourceDifficulty": 4,
+    "roles": [
+      "branch-heavy",
+      "trap-heavy",
+      "recovery-heavy-or-low-pressure",
+      "representative"
+    ],
+    "blindOrder": "sha256('difficulty-v2-benchmark-v1-order:' + levelId), ascending"
+  },
+  "puzzles": [
+    {
+      "benchmarkId": "B01",
+      "id": "ws-g0.2.1-rfnv1a32-mulberry32-v1-uclassic-v1.bdwBhAHQAZQByAC0AcwBvAHIAdAA6AGQAaQBmAGYAaQBjAHUAbAB0AHkALQB2ADIAOgByAGUAcwBlAGEAcgBjAGgALQAzAA.expanded.hard.k4.c000002",
+      "sourceDifficulty": "hard",
+      "selectionRole": "recovery-heavy",
+      "candidateIndex": 2,
+      "capacity": 4,
+      "board": [
+        [
+          1,
+          5,
+          3,
+          2
+        ],
+        [
+          6,
+          5,
+          2,
+          1
+        ],
+        [
+          4,
+          4,
+          3,
+          6
+        ],
+        [
+          5,
+          0,
+          2,
+          0
+        ],
+        [
+          3,
+          3,
+          6,
+          0
+        ],
+        [
+          5,
+          6,
+          4,
+          1
+        ],
+        [
+          1,
+          0,
+          2,
+          4
+        ],
+        [],
+        []
+      ],
+      "optimalMoves": 21,
+      "decisionStates": 20,
+      "alternativesPerAnalyzedState": 3.380952380952381,
+      "wrongMoveDensity": 0.7183098591549296,
+      "deadEndDensity": 0.056338028169014086,
+      "maxRecoveryPenalty": 4
+    },
+    {
+      "benchmarkId": "B02",
+      "id": "ws-g0.2.1-rfnv1a32-mulberry32-v1-uclassic-v1.bdwBhAHQAZQByAC0AcwBvAHIAdAA6AGQAaQBmAGYAaQBjAHUAbAB0AHkALQB2ADIAOgByAGUAcwBlAGEAcgBjAGgALQAzAA.expanded.easy.k4.c000006",
+      "sourceDifficulty": "easy",
+      "selectionRole": "low-pressure",
+      "candidateIndex": 6,
+      "capacity": 4,
+      "board": [
+        [
+          0,
+          3,
+          0,
+          4
+        ],
+        [
+          2,
+          2,
+          2,
+          1
+        ],
+        [
+          4,
+          4,
+          1,
+          3
+        ],
+        [
+          2,
+          1,
+          1,
+          3
+        ],
+        [
+          4,
+          0,
+          3,
+          0
+        ],
+        []
+      ],
+      "optimalMoves": 13,
+      "decisionStates": 6,
+      "alternativesPerAnalyzedState": 0.8461538461538461,
+      "wrongMoveDensity": 0.8181818181818182,
+      "deadEndDensity": 0.5454545454545454,
+      "maxRecoveryPenalty": 1
+    },
+    {
+      "benchmarkId": "B03",
+      "id": "ws-g0.2.1-rfnv1a32-mulberry32-v1-uclassic-v1.bdwBhAHQAZQByAC0AcwBvAHIAdAA6AGQAaQBmAGYAaQBjAHUAbAB0AHkALQB2ADIAOgByAGUAcwBlAGEAcgBjAGgALQAzAA.expanded.easy.k4.c000008",
+      "sourceDifficulty": "easy",
+      "selectionRole": "representative",
+      "candidateIndex": 8,
+      "capacity": 4,
+      "board": [
+        [
+          0,
+          3,
+          3,
+          1
+        ],
+        [
+          1,
+          3,
+          2,
+          0
+        ],
+        [
+          0,
+          3,
+          1,
+          1
+        ],
+        [
+          2,
+          2,
+          4,
+          4
+        ],
+        [
+          4,
+          0,
+          4,
+          2
+        ],
+        []
+      ],
+      "optimalMoves": 13,
+      "decisionStates": 12,
+      "alternativesPerAnalyzedState": 2.8461538461538463,
+      "wrongMoveDensity": 0.7567567567567568,
+      "deadEndDensity": 0,
+      "maxRecoveryPenalty": 1
+    },
+    {
+      "benchmarkId": "B04",
+      "id": "ws-g0.2.1-rfnv1a32-mulberry32-v1-uclassic-v1.bdwBhAHQAZQByAC0AcwBvAHIAdAA6AGQAaQBmAGYAaQBjAHUAbAB0AHkALQB2ADIAOgByAGUAcwBlAGEAcgBjAGgALQAzAA.expanded.medium.k4.c000004",
+      "sourceDifficulty": "medium",
+      "selectionRole": "branch-heavy",
+      "candidateIndex": 4,
+      "capacity": 4,
+      "board": [
+        [
+          3,
+          4,
+          1,
+          5
+        ],
+        [
+          0,
+          4,
+          3,
+          2
+        ],
+        [
+          3,
+          1,
+          5,
+          4
+        ],
+        [
+          5,
+          0,
+          3,
+          1
+        ],
+        [
+          2,
+          1,
+          2,
+          2
+        ],
+        [
+          5,
+          0,
+          4,
+          0
+        ],
+        [],
+        []
+      ],
+      "optimalMoves": 20,
+      "decisionStates": 19,
+      "alternativesPerAnalyzedState": 4.1,
+      "wrongMoveDensity": 0.573170731707317,
+      "deadEndDensity": 0.036585365853658534,
+      "maxRecoveryPenalty": 1
+    },
+    {
+      "benchmarkId": "B05",
+      "id": "ws-g0.2.1-rfnv1a32-mulberry32-v1-uclassic-v1.bdwBhAHQAZQByAC0AcwBvAHIAdAA6AGQAaQBmAGYAaQBjAHUAbAB0AHkALQB2ADIAOgByAGUAcwBlAGEAcgBjAGgALQAzAA.expanded.hard.k4.c000005",
+      "sourceDifficulty": "hard",
+      "selectionRole": "trap-heavy",
+      "candidateIndex": 5,
+      "capacity": 4,
+      "board": [
+        [
+          4,
+          0,
+          4,
+          4
+        ],
+        [
+          5,
+          2,
+          1,
+          3
+        ],
+        [
+          2,
+          6,
+          2,
+          0
+        ],
+        [
+          1,
+          5,
+          0,
+          1
+        ],
+        [
+          6,
+          1,
+          5,
+          6
+        ],
+        [
+          6,
+          4,
+          0,
+          5
+        ],
+        [
+          2,
+          3,
+          3,
+          3
+        ],
+        []
+      ],
+      "optimalMoves": 20,
+      "decisionStates": 7,
+      "alternativesPerAnalyzedState": 0.8,
+      "wrongMoveDensity": 0.9375,
+      "deadEndDensity": 0.6875,
+      "maxRecoveryPenalty": 1
+    },
+    {
+      "benchmarkId": "B06",
+      "id": "ws-g0.2.1-rfnv1a32-mulberry32-v1-uclassic-v1.bdwBhAHQAZQByAC0AcwBvAHIAdAA6AGQAaQBmAGYAaQBjAHUAbAB0AHkALQB2ADIAOgByAGUAcwBlAGEAcgBjAGgALQAzAA.expanded.easy.k4.c000002",
+      "sourceDifficulty": "easy",
+      "selectionRole": "trap-heavy",
+      "candidateIndex": 2,
+      "capacity": 4,
+      "board": [
+        [
+          3,
+          0,
+          0,
+          2
+        ],
+        [
+          2,
+          1,
+          3,
+          2
+        ],
+        [
+          4,
+          3,
+          4,
+          1
+        ],
+        [
+          0,
+          2,
+          3,
+          1
+        ],
+        [
+          4,
+          4,
+          1,
+          0
+        ],
+        []
+      ],
+      "optimalMoves": 15,
+      "decisionStates": 8,
+      "alternativesPerAnalyzedState": 0.9333333333333333,
+      "wrongMoveDensity": 0.7857142857142857,
+      "deadEndDensity": 0.6428571428571429,
+      "maxRecoveryPenalty": 1
+    },
+    {
+      "benchmarkId": "B07",
+      "id": "ws-g0.2.1-rfnv1a32-mulberry32-v1-uclassic-v1.bdwBhAHQAZQByAC0AcwBvAHIAdAA6AGQAaQBmAGYAaQBjAHUAbAB0AHkALQB2ADIAOgByAGUAcwBlAGEAcgBjAGgALQAzAA.expanded.medium.k4.c000002",
+      "sourceDifficulty": "medium",
+      "selectionRole": "representative",
+      "candidateIndex": 2,
+      "capacity": 4,
+      "board": [
+        [
+          3,
+          4,
+          2,
+          0
+        ],
+        [
+          1,
+          1,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          2,
+          5
+        ],
+        [
+          5,
+          1,
+          5,
+          5
+        ],
+        [
+          3,
+          1,
+          3,
+          4
+        ],
+        [
+          4,
+          4,
+          2,
+          2
+        ],
+        [],
+        []
+      ],
+      "optimalMoves": 16,
+      "decisionStates": 15,
+      "alternativesPerAnalyzedState": 2.75,
+      "wrongMoveDensity": 0.5227272727272727,
+      "deadEndDensity": 0.045454545454545456,
+      "maxRecoveryPenalty": 1
+    },
+    {
+      "benchmarkId": "B08",
+      "id": "ws-g0.2.1-rfnv1a32-mulberry32-v1-uclassic-v1.bdwBhAHQAZQByAC0AcwBvAHIAdAA6AGQAaQBmAGYAaQBjAHUAbAB0AHkALQB2ADIAOgByAGUAcwBlAGEAcgBjAGgALQAzAA.expanded.medium.k4.c000007",
+      "sourceDifficulty": "medium",
+      "selectionRole": "trap-heavy",
+      "candidateIndex": 7,
+      "capacity": 4,
+      "board": [
+        [
+          2,
+          5,
+          0,
+          3
+        ],
+        [
+          1,
+          0,
+          1,
+          4
+        ],
+        [
+          1,
+          0,
+          5,
+          2
+        ],
+        [
+          3,
+          3,
+          3,
+          4
+        ],
+        [
+          5,
+          4,
+          0,
+          5
+        ],
+        [
+          4,
+          2,
+          2,
+          1
+        ],
+        []
+      ],
+      "optimalMoves": 17,
+      "decisionStates": 7,
+      "alternativesPerAnalyzedState": 0.6470588235294118,
+      "wrongMoveDensity": 0.6363636363636364,
+      "deadEndDensity": 0.45454545454545453,
+      "maxRecoveryPenalty": 1
+    },
+    {
+      "benchmarkId": "B09",
+      "id": "ws-g0.2.1-rfnv1a32-mulberry32-v1-uclassic-v1.bdwBhAHQAZQByAC0AcwBvAHIAdAA6AGQAaQBmAGYAaQBjAHUAbAB0AHkALQB2ADIAOgByAGUAcwBlAGEAcgBjAGgALQAzAA.expanded.hard.k4.c000009",
+      "sourceDifficulty": "hard",
+      "selectionRole": "branch-heavy",
+      "candidateIndex": 9,
+      "capacity": 4,
+      "board": [
+        [
+          2,
+          6,
+          5,
+          5
+        ],
+        [
+          5,
+          6,
+          3,
+          6
+        ],
+        [
+          3,
+          4,
+          3,
+          0
+        ],
+        [
+          1,
+          4,
+          4,
+          2
+        ],
+        [
+          0,
+          0,
+          3,
+          5
+        ],
+        [
+          4,
+          2,
+          0,
+          6
+        ],
+        [
+          1,
+          2,
+          1,
+          1
+        ],
+        [],
+        []
+      ],
+      "optimalMoves": 19,
+      "decisionStates": 18,
+      "alternativesPerAnalyzedState": 4.631578947368421,
+      "wrongMoveDensity": 0.4772727272727273,
+      "deadEndDensity": 0,
+      "maxRecoveryPenalty": 1
+    },
+    {
+      "benchmarkId": "B10",
+      "id": "ws-g0.2.1-rfnv1a32-mulberry32-v1-uclassic-v1.bdwBhAHQAZQByAC0AcwBvAHIAdAA6AGQAaQBmAGYAaQBjAHUAbAB0AHkALQB2ADIAOgByAGUAcwBlAGEAcgBjAGgALQAzAA.expanded.hard.k4.c000001",
+      "sourceDifficulty": "hard",
+      "selectionRole": "representative",
+      "candidateIndex": 1,
+      "capacity": 4,
+      "board": [
+        [
+          4,
+          4,
+          3,
+          6
+        ],
+        [
+          6,
+          4,
+          2,
+          2
+        ],
+        [
+          2,
+          1,
+          5,
+          0
+        ],
+        [
+          5,
+          5,
+          4,
+          3
+        ],
+        [
+          3,
+          0,
+          6,
+          1
+        ],
+        [
+          1,
+          5,
+          3,
+          0
+        ],
+        [
+          6,
+          1,
+          0,
+          2
+        ],
+        [],
+        []
+      ],
+      "optimalMoves": 20,
+      "decisionStates": 19,
+      "alternativesPerAnalyzedState": 3.85,
+      "wrongMoveDensity": 0.5844155844155844,
+      "deadEndDensity": 0.025974025974025976,
+      "maxRecoveryPenalty": 1
+    },
+    {
+      "benchmarkId": "B11",
+      "id": "ws-g0.2.1-rfnv1a32-mulberry32-v1-uclassic-v1.bdwBhAHQAZQByAC0AcwBvAHIAdAA6AGQAaQBmAGYAaQBjAHUAbAB0AHkALQB2ADIAOgByAGUAcwBlAGEAcgBjAGgALQAzAA.expanded.medium.k4.c000003",
+      "sourceDifficulty": "medium",
+      "selectionRole": "recovery-heavy",
+      "candidateIndex": 3,
+      "capacity": 4,
+      "board": [
+        [
+          2,
+          2,
+          4,
+          3
+        ],
+        [
+          4,
+          2,
+          5,
+          1
+        ],
+        [
+          0,
+          4,
+          0,
+          3
+        ],
+        [
+          3,
+          1,
+          5,
+          5
+        ],
+        [
+          0,
+          1,
+          4,
+          3
+        ],
+        [
+          1,
+          2,
+          5,
+          0
+        ],
+        []
+      ],
+      "optimalMoves": 19,
+      "decisionStates": 13,
+      "alternativesPerAnalyzedState": 1.3157894736842106,
+      "wrongMoveDensity": 0.6,
+      "deadEndDensity": 0.44,
+      "maxRecoveryPenalty": 2
+    },
+    {
+      "benchmarkId": "B12",
+      "id": "ws-g0.2.1-rfnv1a32-mulberry32-v1-uclassic-v1.bdwBhAHQAZQByAC0AcwBvAHIAdAA6AGQAaQBmAGYAaQBjAHUAbAB0AHkALQB2ADIAOgByAGUAcwBlAGEAcgBjAGgALQAzAA.expanded.easy.k4.c000005",
+      "sourceDifficulty": "easy",
+      "selectionRole": "branch-heavy",
+      "candidateIndex": 5,
+      "capacity": 4,
+      "board": [
+        [
+          4,
+          0,
+          4,
+          0
+        ],
+        [
+          3,
+          1,
+          2,
+          4
+        ],
+        [
+          2,
+          1,
+          0,
+          3
+        ],
+        [
+          1,
+          2,
+          3,
+          3
+        ],
+        [
+          0,
+          2,
+          4,
+          1
+        ],
+        [],
+        []
+      ],
+      "optimalMoves": 16,
+      "decisionStates": 15,
+      "alternativesPerAnalyzedState": 3.625,
+      "wrongMoveDensity": 0.6551724137931034,
+      "deadEndDensity": 0,
+      "maxRecoveryPenalty": 1
+    }
+  ]
+}
