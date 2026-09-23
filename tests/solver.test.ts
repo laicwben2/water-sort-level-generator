@@ -30,7 +30,12 @@ describe('bounded water sort solver', () => {
   })
 
   it('matches independent breadth-first shortest paths on small balanced layouts', () => {
-    function checkLayouts(types: number, capacity: number, expectedLayouts: number) {
+    function checkLayouts(
+      types: number,
+      capacity: number,
+      expectedLayouts: number,
+      sampleIndices?: readonly number[],
+    ) {
       const layouts: Board[] = []
       const counts = Array.from({ length: types }, () => 0)
       const cells: number[] = []
@@ -77,7 +82,7 @@ describe('bounded water sort solver', () => {
 
       enumerate()
       expect(layouts).toHaveLength(expectedLayouts)
-      for (const board of layouts) {
+      for (const board of sampleIndices ? sampleIndices.map((index) => layouts[index]) : layouts) {
         const shortest = shortestByBfs(board)
         const result = solveBoard(board, { capacity, maxDepth: 50, maxVisitedStates: 100_000 })
         if (shortest === undefined) {
@@ -92,6 +97,7 @@ describe('bounded water sort solver', () => {
     checkLayouts(3, 2, 90)
     checkLayouts(2, 3, 20)
     checkLayouts(2, 4, 70)
+    checkLayouts(3, 4, 34_650, Array.from({ length: 30 }, (_, index) => (index * 997) % 34_650))
   })
 
   it('collapses symmetric moves and reports path choices', () => {
