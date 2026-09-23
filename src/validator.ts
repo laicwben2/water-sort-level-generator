@@ -131,6 +131,13 @@ export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
     if (canonicalKeys.has(puzzle.canonicalKey)) throw new Error(`Canonical duplicate: ${puzzle.id}`)
     canonicalKeys.add(puzzle.canonicalKey)
 
+    if (!Number.isInteger(puzzle.capacity) || puzzle.capacity < 1 || puzzle.capacity > 4) {
+      throw new Error(`Unsupported capacity: ${puzzle.id}`)
+    }
+    if (puzzle.board.some((tube) => tube.some((type) =>
+      !Number.isInteger(type) || type < 0 || type >= 16))) {
+      throw new Error(`Invalid Type ID: ${puzzle.id}`)
+    }
     if (canonicalPuzzleKey(puzzle.board) !== puzzle.canonicalKey) {
       throw new Error(`Invalid canonical key: ${puzzle.id}`)
     }

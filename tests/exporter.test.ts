@@ -112,6 +112,15 @@ describe('catalog validation and exports', () => {
     expect(() => validateAuditCatalog(catalog)).toThrow(/Inconsistent deadEndDensity/)
   })
 
+  it('rejects unsupported capacities and Type IDs before export', () => {
+    const wrongCapacity = fixture()
+    wrongCapacity.puzzles[0].capacity = 5
+    expect(() => validateAuditCatalog(wrongCapacity)).toThrow(/Unsupported capacity/)
+
+    const wrongType = fixture()
+    wrongType.puzzles[0].board[0][0] = 16
+    expect(() => validateAuditCatalog(wrongType)).toThrow(/Invalid Type ID/)
+  })
   it('rejects an inconsistent minimum-empty optimal move count', () => {
     const catalog = fixture()
     catalog.puzzles[0].emptyTubeAnalysis[0].optimalMoves = 99
