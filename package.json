@@ -12,7 +12,8 @@
     "export:runtime": "tsx src/cli/export-runtime.ts",
     "export:solutions": "tsx src/cli/export-solutions.ts",
     "benchmark": "tsx src/cli/benchmark.ts",
-    "summarize:difficulty": "tsx src/cli/summarize-difficulty.ts"
+    "summarize:difficulty": "tsx src/cli/summarize-difficulty.ts",
+    "playtest:benchmark": "tsx src/cli/playtest-benchmark.ts"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
