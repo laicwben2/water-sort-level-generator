@@ -98,6 +98,54 @@ The playtest page:
 - exports the current session as `difficulty-v2-playtest-results.json`;
 - reads only the blind benchmark manifest and does not expose source difficulty or solver metadata.
 
+
+### Validate exported results
+
+```bash
+npm run validate:playtest -- --file=difficulty-v2-playtest-results.json
+```
+
+Validation checks:
+
+- results format version;
+- benchmark identity;
+- valid export timestamp;
+- benchmark IDs against the blind manifest;
+- duplicate benchmark IDs;
+- solved / gave-up outcome values;
+- non-negative integer elapsed time, moves, and restarts;
+- 1–5 perceived-difficulty ratings;
+- optional 1–5 confidence and frustration ratings.
+
+Partial sessions are valid; a tester does not need to finish all 12 puzzles before exporting.
+
+The JSON contract is documented in:
+
+```text
+spec/difficulty-v2-playtest-results-v1.schema.json
+```
+
+### Summarize exported results
+
+```bash
+npm run summarize:playtest -- \
+  --input=difficulty-v2-playtest-results.json \
+  --output=data/output/difficulty-v2-playtest-summary.json
+```
+
+The summary validates the source first, then reports:
+
+- benchmark coverage;
+- solved / gave-up counts and completion rate;
+- elapsed-time distribution;
+- move-count distribution;
+- restart distribution;
+- perceived-difficulty distribution;
+- optional confidence / frustration distributions;
+- normalized per-puzzle records.
+
+This summary is descriptive only. It does not derive or change production Easy / Medium / Hard thresholds.
+
 ## Selected coverage
 
 The set deliberately includes contrasting structures such as:
