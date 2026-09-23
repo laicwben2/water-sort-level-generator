@@ -2,13 +2,10 @@ import { performance } from 'node:perf_hooks'
 import { generateBalancedFullTubes } from '../candidate'
 import { findMinimumEmptyTubes } from '../generator'
 import { deriveCandidateSeed } from '../rng'
-import { positiveIntArg, stringArg } from './args'
+import { nonNegativeIntArg, positiveIntArg, stringArg } from './args'
 
 const types = positiveIntArg('types', 6)
-const candidateIndex = Number.parseInt(stringArg('candidate-index', '0')!, 10)
-if (!Number.isInteger(candidateIndex) || candidateIndex < 0) {
-  throw new Error('--candidate-index must be a non-negative integer')
-}
+const candidateIndex = nonNegativeIntArg('candidate-index', 0)
 const capacity = positiveIntArg('capacity', 4)
 const maxEmptyTubes = positiveIntArg('max-empty', 5)
 const maxVisitedStates = positiveIntArg('max-states', 100_000)
