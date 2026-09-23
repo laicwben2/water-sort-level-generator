@@ -176,6 +176,26 @@ describe('catalog validation and exports', () => {
     expect(() => validateAuditCatalog(catalog)).toThrow(/Unsupported generator/)
   })
 
+  it('rejects built-in profile catalogs with the wrong Type count', () => {
+    const catalog = fixture()
+    catalog.profile = 'baseline'
+    catalog.puzzles[0].candidateSeed = deriveCandidateSeed(
+      catalog.reproducibility.batchSeed,
+      catalog.profile,
+      catalog.puzzles[0].difficulty,
+      catalog.puzzles[0].candidateIndex,
+    )
+    catalog.puzzles[0].id = deriveLevelId(
+      catalog.reproducibility.batchSeed,
+      catalog.profile,
+      catalog.puzzles[0].difficulty,
+      catalog.puzzles[0].capacity,
+      catalog.puzzles[0].candidateIndex,
+    )
+
+    expect(() => validateAuditCatalog(catalog)).toThrow(/Profile Type count mismatch/)
+  })
+
   it('rejects non-string audit profiles instead of coercing them', () => {
     const catalog = fixture()
     ;(catalog as unknown as { profile: unknown }).profile = ['test']
