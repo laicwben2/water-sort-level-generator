@@ -225,7 +225,7 @@ However, the differences are not stable enough across both five-puzzle samples t
 
 ## Full-path paired comparison
 
-A paired follow-up used the same deterministic seed as research batch 3 and selected the same first five accepted puzzles per difficulty. Level IDs were verified to match exactly between the 8-state and full-path artifacts. The only intended analysis change was removing the `maxPathStates = 8` cap.
+A paired follow-up used the same deterministic seed as research batch 3 and the same 10 accepted puzzles per difficulty. Level IDs, candidate seeds, and boards were verified to match exactly between the 8-state and full-path artifacts. The only intended analysis change was removing the `maxPathStates = 8` cap.
 
 Both variants retained:
 
@@ -238,25 +238,25 @@ Selected paired results:
 
 | Metric | Easy cap8 | Easy full | Medium cap8 | Medium full | Hard cap8 | Hard full |
 |---|---:|---:|---:|---:|---:|---:|
-| decisionStates p50 | 6 | 9 | 8 | 15 | 8 | 19 |
-| decisionStates p90 | 8 | 14 | 8 | 19 | 8 | 20 |
-| alternatives/state p50 | 1.50 | 1.00 | 3.625 | 2.75 | 6.25 | 3.381 |
-| alternatives/state p90 | 5.00 | 3.80 | 6.375 | 4.444 | 6.625 | 3.85 |
-| wrong-move density p50 | 0.636 | 0.733 | 0.540 | 0.600 | 0.580 | 0.584 |
-| dead-end density p50 | 0.091 | 0.133 | 0.069 | 0.045 | 0.050 | 0.037 |
-| max recovery penalty p90 | 1 | 1 | 2 | 2 | 4 | 4 |
+| decisionStates p50 | 8 | 12 | 8 | 14 | 8 | 18 |
+| decisionStates p90 | 8 | 15 | 8 | 17 | 8 | 19 |
+| alternatives/state p50 | 3.25 | 2.286 | 3.625 | 2.75 | 5.00 | 3.00 |
+| alternatives/state p90 | 5.00 | 3.733 | 6.25 | 4.10 | 6.625 | 3.85 |
+| wrong-move density p50 | 0.636 | 0.703 | 0.600 | 0.636 | 0.600 | 0.616 |
+| dead-end density p50 | 0.000 | 0.000 | 0.000 | 0.037 | 0.040 | 0.026 |
+| max recovery penalty p90 | 1 | 1 | 1 | 1 | 2 | 2 |
 
 Interpretation:
 
 - the fixed 8-state cap materially distorted `decisionStates` through a ceiling effect;
-- full-path `decisionStates` produced a clearer Easy < Medium < Hard ordering in this paired sample;
+- full-path `decisionStates` retained a clear Easy < Medium < Hard ordering after expanding the paired sample from 5 to 10 puzzles per difficulty;
 - early-path states had systematically higher alternatives per analyzed state, so the capped metric overstates whole-puzzle average branching pressure;
-- wrong-move density and dead-end density changed less consistently and still overlap substantially;
+- wrong-move density and dead-end density still overlap substantially and are not monotonic enough to serve as standalone difficulty classifiers;
 - recovery-penalty tails were stable under the longer analysis, with Hard retaining the strongest tail.
 
 For benchmark calibration, full-path analysis is therefore preferred when computationally practical. If an early-path metric is retained for gameplay reasons, it should be treated as a distinct signal rather than mixed with full-path averages.
 
-This paired sample is still small (5 puzzles per difficulty) and does not justify production thresholds.
+This paired sample is still research-scale (10 puzzles per difficulty) and does not justify production thresholds.
 
 ## Current interpretation
 
