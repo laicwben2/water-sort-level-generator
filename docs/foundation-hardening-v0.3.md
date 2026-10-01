@@ -278,6 +278,31 @@ Compatibility rules:
 - current-registry duplicate check before release;
 - migration rules for existing seed-bank levels.
 
+## Current implementation status
+
+As of 2026-10-01 on this branch:
+
+- **H0 documentation/contracts**: complete for the current migration scope.
+- **H1 identity migration foundation**: implemented additively. New audit catalogs emit `puzzleId` and `puzzleIdentityVersion`; legacy provenance-derived `id` remains unchanged for runtime compatibility. Stable puzzle identity includes rules version, capacity, and exact canonical puzzle key.
+- **H2 difficulty / generation decoupling**: migration foundation implemented. New catalogs emit immutable `sourceBucket`; `technical-validity` acceptance can bypass the legacy move window while explicit technical rejection still removes already-solved boards. Legacy mode remains the default.
+- **H3 reference BFS**: implemented as a deliberately simple ordered-board BFS independent of packed solver state and production transitions. Differential tests compare it with the production A* solver on small exact spaces.
+- **H4 validator hardening**: existing rule-level solution replay and color-conservation checks remain; stable identity, source-bucket provenance, and stored structure descriptors are now validated. Further cross-release equivalence checking belongs to H7.
+- **H5 structural descriptors**: initial cheap descriptors are implemented and stored in new audit puzzles: total runs, normalized runs, all-distinct tube count, Type spread mean/max, and initial distinct next-state count. They are research facts only, not difficulty scores.
+- **Yield observability**: generator attempts can optionally emit closed reason-coded records and a derived Yield Report. This is opt-in and does not enlarge AuditCatalog by default.
+
+Example research generation:
+
+```bash
+npm run generate -- \
+  --profile=baseline \
+  --count=10 \
+  --acceptance=technical-validity \
+  --yield-output=data/output/baseline-yield.json \
+  --output=data/audit/baseline-candidates.json
+```
+
+No production coverage bins, distance weights, or targeted generator have been introduced.
+
 ## Exit criteria for v0.3 foundation hardening
 
 v0.3 is complete when:
