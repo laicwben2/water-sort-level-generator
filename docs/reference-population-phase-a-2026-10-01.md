@@ -1,9 +1,27 @@
 # Formal reference population Phase A — 2026-10-01
 
-Status: approved execution plan  
+Status: generation complete; analysis pending  
 Catalog format: `research-candidates-v1`  
 Generator family: `uniform-v1`  
 Proof budget: `research-proof-200k-d200-e5-v1`
+
+## Execution status
+
+GitHub Actions run:
+
+`Reference Population Phase A 2026-10-01 / run 1`
+
+Execution result:
+
+- 39 / 39 generation matrix cells completed successfully;
+- 0 failed matrix cells;
+- aggregate artifact job completed successfully;
+- 40 / 40 workflow jobs completed successfully;
+- fixed proof budget and declared seeds/configuration were not changed during execution.
+
+Phase A is therefore past the generation gate and is now waiting for full artifact inventory and statistical analysis.
+
+No descriptor, coverage-space, difficulty, or targeted-generator conclusion is implied by workflow success alone.
 
 ## Purpose
 
@@ -179,7 +197,7 @@ Phase A must not be used to:
 
 ## Completion gate
 
-Phase A passes when:
+Generation execution has passed. Phase A as a research phase is complete only when:
 
 1. all 39 requested matrix cells either complete under the fixed contract or produce an explicitly documented failure;
 2. catalogs validate;
