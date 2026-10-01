@@ -91,10 +91,15 @@ Design:
 
 Execution status:
 
+- workflow run: `36840180259`;
+- execution commit: `8edfd26b8c953c66c4176bfce13712e14b628353`;
 - 39 / 39 generation matrix cells completed successfully;
 - 0 failed cells;
 - aggregate artifact job completed successfully;
-- 40 / 40 workflow jobs completed successfully in the Phase A run.
+- 40 / 40 workflow jobs completed successfully in the Phase A run;
+- 39 per-cell artifacts are present;
+- aggregate artifact: `reference-population-phase-a-all` / artifact ID `11152379298`;
+- aggregate artifact digest: `sha256:36802fd8d6ffdb3e9bcc61eeba81c6baed55c861347b68e607bad177ae589c05`.
 
 Phase A **generation is complete**. The work is now at the analysis gate. Do not infer final Phase A conclusions from the execution status alone; the full artifacts still need to be aggregated and analyzed according to the declared plan.
 
@@ -106,9 +111,8 @@ The immediate next work is analysis, not more generator redesign.
 
 Generation is complete. Next:
 
-- inventory the aggregate artifact and confirm all 39 matrix-cell directories/files are present;
-- record artifact digests / identifiers where available;
-- record the exact workflow run and generator commit;
+- download / inspect the aggregate artifact contents and confirm the expected catalog, Yield, and structure-summary files exist for all 39 cells;
+- preserve workflow run `36840180259`, execution commit `8edfd26b8c953c66c4176bfce13712e14b628353`, and aggregate artifact digest as the authoritative Phase A provenance;
 - preserve the completed artifacts as the authoritative Phase A dataset;
 - do not regenerate successful cells with different seeds or budgets merely to improve results.
 
