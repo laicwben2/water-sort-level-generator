@@ -6,6 +6,7 @@ export const STRUCTURE_DESCRIPTOR_NAMES = [
   'allDistinctTubeCount',
   'typeSpreadMean',
   'typeSpreadMax',
+  'topDistinctTypeCount',
   'initialDistinctNextStates',
 ] as const
 
