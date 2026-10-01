@@ -89,26 +89,27 @@ Design:
 - fixed `research-proof-200k-d200-e5-v1` budget;
 - full accepted catalog + Yield artifact + structure summary per cell.
 
-At the documentation checkpoint:
+Execution status:
 
-- 38 / 39 generation matrix cells completed successfully;
+- 39 / 39 generation matrix cells completed successfully;
 - 0 failed cells;
-- remaining cell: `T16 / reference-phase-a-2026-10-01-c`;
-- aggregate job has not yet been treated as complete until the final cell finishes.
+- aggregate artifact job completed successfully;
+- 40 / 40 workflow jobs completed successfully in the Phase A run.
 
-Do not infer final Phase A statistics from partial completion.
+Phase A **generation is complete**. The work is now at the analysis gate. Do not infer final Phase A conclusions from the execution status alone; the full artifacts still need to be aggregated and analyzed according to the declared plan.
 
 ## Next work
 
 The immediate next work is analysis, not more generator redesign.
 
-### N1 — finish and freeze Phase A artifacts
+### N1 — freeze and inventory Phase A artifacts
 
-After the final matrix cell completes:
+Generation is complete. Next:
 
-- verify all 39 cells succeeded or explicitly record any failure;
-- verify the aggregate artifact contains all expected cells;
+- inventory the aggregate artifact and confirm all 39 matrix-cell directories/files are present;
+- record artifact digests / identifiers where available;
 - record the exact workflow run and generator commit;
+- preserve the completed artifacts as the authoritative Phase A dataset;
 - do not regenerate successful cells with different seeds or budgets merely to improve results.
 
 ### N2 — build the Phase A analysis report
