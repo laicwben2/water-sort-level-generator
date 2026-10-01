@@ -8,6 +8,7 @@ import { generateBalancedFullTubes } from './candidate'
 import { PUZZLE_ID_VERSION, derivePuzzleIdFromCanonicalKey } from './identity'
 import { CanonicalSequenceTrie } from './dedup'
 import { analyzeMistakesAlongOptimalPath } from './difficulty'
+import { isSolved } from './rules'
 import { PROFILE_SETS, type DifficultyProfile, type ProfileName } from './profiles'
 import {
   deriveCandidateSeed,
@@ -188,6 +189,7 @@ export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalo
         maxVisitedStates: profile.maxVisitedStates,
       })
       if (minimum.status !== 'exact') continue
+      if (isSolved(minimum.board, capacity)) continue
 
       const path = analyzeSolutionPath(minimum.board, minimum.result.solution, capacity)
       if (acceptanceMode === 'legacy-difficulty-window'
