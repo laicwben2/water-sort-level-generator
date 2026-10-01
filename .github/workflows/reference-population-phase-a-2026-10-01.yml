@@ -1,0 +1,70 @@
+name: Reference Population Phase A 2026-10-01
+
+on:
+  push:
+    branches:
+      - feat/foundation-hardening-v0.3
+    paths:
+      - '.github/workflows/reference-population-phase-a-2026-10-01.yml'
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        types: [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+        seed:
+          - reference-phase-a-2026-10-01-a
+          - reference-phase-a-2026-10-01-b
+          - reference-phase-a-2026-10-01-c
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - name: Generate research population
+        run: >
+          npm run generate:research --
+          --types=${{ matrix.types }}
+          --count=500
+          --max-attempts=2000
+          --seed=${{ matrix.seed }}-t${{ matrix.types }}
+          --yield-output=data/output/yield.json
+          --output=data/audit/candidates.json
+      - name: Validate research catalog
+        run: npm run validate:research -- --file=data/audit/candidates.json
+      - name: Summarize structure
+        run: >
+          npm run summarize:research-structure --
+          --input=data/audit/candidates.json
+          --output=data/output/structure-summary.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase-a-${{ matrix.seed }}-t${{ matrix.types }}
+          retention-days: 7
+          if-no-files-found: error
+          path: |
+            data/audit/candidates.json
+            data/output/yield.json
+            data/output/structure-summary.json
+
+  aggregate:
+    needs: generate
+    if: always() && needs.generate.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: phase-a-*
+          path: reference-population-phase-a
+          merge-multiple: false
+      - uses: actions/upload-artifact@v4
+        with:
+          name: reference-population-phase-a-all
+          retention-days: 7
+          if-no-files-found: error
+          path: reference-population-phase-a
