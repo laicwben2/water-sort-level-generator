@@ -111,7 +111,7 @@ Generation provenance
   -> how was this puzzle found?
 ```
 
-A stable puzzle identifier will be derived from the exact canonical puzzle identity together with the rules namespace.
+A stable puzzle identifier will be derived from the exact canonical puzzle identity together with the rules namespace and tube capacity.
 
 Generation provenance remains separately recorded:
 
