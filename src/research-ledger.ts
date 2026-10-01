@@ -65,3 +65,27 @@ export function summarizeResearchGenerationAttempts(
     byReason,
   }
 }
+
+export interface ResearchGenerationYieldArtifact extends ResearchGenerationYieldReport {
+  version: 'research-yield-v1'
+  batchSeed: string
+  configFingerprint: string
+  proofBudgetVersion: string
+}
+
+export function createResearchGenerationYieldArtifact(
+  report: ResearchGenerationYieldReport,
+  context: {
+    batchSeed: string
+    configFingerprint: string
+    proofBudgetVersion: string
+  },
+): ResearchGenerationYieldArtifact {
+  return {
+    version: 'research-yield-v1',
+    batchSeed: context.batchSeed,
+    configFingerprint: context.configFingerprint,
+    proofBudgetVersion: context.proofBudgetVersion,
+    ...report,
+  }
+}
