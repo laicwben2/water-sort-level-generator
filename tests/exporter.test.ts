@@ -31,7 +31,7 @@ function fixture(): AuditCatalog {
     },
     puzzles: [{
       id: fixtureId,
-      puzzleId: derivePuzzleId(board),
+      puzzleId: derivePuzzleId(board, 2),
       difficulty: 'easy',
       sourceBucket: 'easy',
       candidateIndex: 1,
