@@ -15,6 +15,7 @@ import {
   fingerprintConfig,
 } from './rng'
 import { analyzeSolutionPath, solveBoard } from './solver'
+import { analyzeStructure } from './structure'
 import type {
   AuditCatalog,
   AuditPuzzle,
@@ -225,6 +226,7 @@ export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalo
           ...minimum.result.metrics,
         },
         solutionPath: path,
+        structure: analyzeStructure(minimum.board, capacity),
         ...(mistakeAnalysis ? { mistakeAnalysis } : {}),
         emptyTubeAnalysis: minimum.analyses,
       })
