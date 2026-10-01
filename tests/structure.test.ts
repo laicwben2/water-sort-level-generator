@@ -15,6 +15,7 @@ describe('structure descriptors', () => {
     expect(descriptors.allDistinctTubeCount).toBe(0)
     expect(descriptors.typeSpreadMean).toBe(2)
     expect(descriptors.typeSpreadMax).toBe(2)
+    expect(descriptors.topDistinctTypeCount).toBe(1)
     expect(descriptors.initialDistinctNextStates).toBeGreaterThan(0)
   })
 
@@ -30,6 +31,7 @@ describe('structure descriptors', () => {
     expect(descriptors.allDistinctTubeCount).toBe(2)
     expect(descriptors.typeSpreadMean).toBe(2)
     expect(descriptors.typeSpreadMax).toBe(2)
+    expect(descriptors.topDistinctTypeCount).toBe(2)
   })
 
   it('returns finite zero-valued descriptors for an empty board', () => {
@@ -39,6 +41,7 @@ describe('structure descriptors', () => {
       allDistinctTubeCount: 0,
       typeSpreadMean: 0,
       typeSpreadMax: 0,
+      topDistinctTypeCount: 0,
       initialDistinctNextStates: 0,
     })
   })
