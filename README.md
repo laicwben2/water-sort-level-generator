@@ -40,7 +40,9 @@ Generation source buckets and calibrated human difficulty are separate concepts.
 
 The audit catalog keeps solver solutions and research metrics. The runtime pack strips those authoring details and contains only data needed by consumers.
 
-Current migration and hardening decisions are tracked in [`docs/foundation-hardening-v0.3.md`](docs/foundation-hardening-v0.3.md). The released identity registry contract is documented in [`docs/released-puzzle-registry-v0.3.md`](docs/released-puzzle-registry-v0.3.md).
+Current migration and hardening decisions are tracked in [`docs/foundation-hardening-v0.3.md`](docs/foundation-hardening-v0.3.md).
+
+The current execution checkpoint and ordered next-work list are tracked in [`docs/current-work-status-2026-10-01.md`](docs/current-work-status-2026-10-01.md). The released identity registry contract is documented in [`docs/released-puzzle-registry-v0.3.md`](docs/released-puzzle-registry-v0.3.md).
 
 ## Install
 
