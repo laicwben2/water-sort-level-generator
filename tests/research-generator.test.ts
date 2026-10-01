@@ -18,6 +18,17 @@ describe('neutral Type-count research generation', () => {
     expect(catalog.version).toBe('research-candidates-v1')
     expect(catalog.generatorFamily).toBe('uniform-v1')
     expect(catalog.stratum).toEqual({ id: 'types-4', typeCount: 4 })
+    expect(catalog.generation).toEqual({
+      capacity: 4,
+      requestedAcceptedCount: 3,
+      maxAttempts: 100,
+      proofBudget: {
+        version: 'research-proof-200k-d200-e5-v1',
+        maxVisitedStates: 200_000,
+        maxDepth: 200,
+        maxEmptyTubes: 5,
+      },
+    })
     expect(catalog.puzzles).toHaveLength(3)
     expect(validateResearchCandidateCatalog(catalog)).toEqual({
       valid: true,
@@ -73,6 +84,42 @@ describe('neutral Type-count research generation', () => {
       typeCount: 17,
       acceptedCount: 1,
     })).toThrow(/2\.\.16/)
+  })
+
+  it('rejects opaque or inconsistent run configuration metadata', () => {
+    const catalog = generateResearchCandidateCatalog({
+      typeCount: 4,
+      acceptedCount: 2,
+      maxAttempts: 100,
+      batchSeed: 'research-run-config',
+    })
+
+    catalog.reproducibility.configFingerprint = '00000000'
+    expect(() => validateResearchCandidateCatalog(catalog))
+      .toThrow(/config fingerprint mismatch/i)
+
+    const capacityMismatch = generateResearchCandidateCatalog({
+      typeCount: 4,
+      acceptedCount: 1,
+      maxAttempts: 100,
+      batchSeed: 'research-capacity-config',
+    })
+    capacityMismatch.generation.capacity = 3
+    expect(() => validateResearchCandidateCatalog(capacityMismatch))
+      .toThrow(/config fingerprint mismatch|capacity mismatch/i)
+  })
+
+  it('requires the catalog puzzle count to match the declared stopping target', () => {
+    const catalog = generateResearchCandidateCatalog({
+      typeCount: 4,
+      acceptedCount: 2,
+      maxAttempts: 100,
+      batchSeed: 'research-count-contract',
+    })
+
+    catalog.puzzles.pop()
+    expect(() => validateResearchCandidateCatalog(catalog))
+      .toThrow(/accepted puzzle count mismatch/i)
   })
 
   it('detects research catalog provenance corruption', () => {
