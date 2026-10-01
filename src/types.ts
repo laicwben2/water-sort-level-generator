@@ -2,6 +2,8 @@ export type ColorId = number
 export type Tube = ColorId[]
 export type Board = Tube[]
 export type Difficulty = 'easy' | 'medium' | 'hard'
+export type SourceBucket = Difficulty
+export type GenerationAcceptanceMode = 'legacy-difficulty-window' | 'technical-validity'
 
 export interface Move {
   from: number
@@ -63,7 +65,10 @@ export interface AuditPuzzle {
   id: string
   /** Stable structural puzzle identity. New catalogs emit this; historical audit-v2 files may omit it. */
   puzzleId?: string
+  /** Consumer-compatible label. It is not treated as calibrated human difficulty during authoring migration. */
   difficulty: Difficulty
+  /** Immutable generation provenance bucket used to reconstruct candidate seed/profile behavior. */
+  sourceBucket?: SourceBucket
   candidateIndex: number
   candidateSeed: string
   capacity: number
@@ -90,6 +95,8 @@ export interface AuditCatalog {
     solverStateEncodingVersion: string
     /** Puzzle identity derivation version. Optional for historical audit-v2 compatibility. */
     puzzleIdentityVersion?: string
+    /** Candidate acceptance policy. Optional for historical audit-v2 compatibility. */
+    acceptanceMode?: GenerationAcceptanceMode
     batchSeed: string
     configFingerprint: string
   }
