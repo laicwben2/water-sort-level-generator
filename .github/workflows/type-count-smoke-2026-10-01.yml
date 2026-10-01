@@ -1,0 +1,51 @@
+name: Explicit Type-count Research Smoke 2026-10-01
+
+on:
+  push:
+    branches:
+      - feat/foundation-hardening-v0.3
+    paths:
+      - '.github/workflows/type-count-smoke-2026-10-01.yml'
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        types: [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - name: Generate research candidates
+        run: >
+          npm run generate:research --
+          --types=${{ matrix.types }}
+          --count=20
+          --max-attempts=200
+          --seed=type-count-smoke-2026-10-01-t${{ matrix.types }}
+          --yield-output=data/output/t${{ matrix.types }}-yield.json
+          --output=data/audit/t${{ matrix.types }}-candidates.json
+      - name: Validate research catalog
+        run: >
+          npm run validate:research --
+          --file=data/audit/t${{ matrix.types }}-candidates.json
+      - name: Summarize structure
+        run: >
+          npm run summarize:research-structure --
+          --input=data/audit/t${{ matrix.types }}-candidates.json
+          --output=data/output/t${{ matrix.types }}-structure-summary.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: type-count-smoke-t${{ matrix.types }}
+          retention-days: 7
+          if-no-files-found: error
+          path: |
+            data/audit/t${{ matrix.types }}-candidates.json
+            data/output/t${{ matrix.types }}-yield.json
+            data/output/t${{ matrix.types }}-structure-summary.json
