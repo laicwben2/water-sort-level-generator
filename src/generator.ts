@@ -140,6 +140,9 @@ export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalo
   const maxEmptyTubes = options.maxEmptyTubes ?? 5
   const batchSeed = options.batchSeed ?? 'water-sort:generator:v0.2:default'
   const acceptanceMode = options.acceptanceMode ?? 'legacy-difficulty-window'
+  if (!['legacy-difficulty-window', 'technical-validity'].includes(acceptanceMode)) {
+    throw new Error(`Unknown acceptance mode: ${acceptanceMode}`)
+  }
   assertPositiveSafeInteger(perDifficulty, 'perDifficulty')
   assertPositiveSafeInteger(maxAttempts, 'maxAttempts')
   assertPositiveSafeInteger(maxEmptyTubes, 'maxEmptyTubes')
