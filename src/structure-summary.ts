@@ -73,7 +73,7 @@ function correlation(first: readonly number[], second: readonly number[]): numbe
   return covariance / Math.sqrt(firstSquares * secondSquares)
 }
 
-function summarizeGroup(structures: readonly StructureDescriptors[]): StructurePopulationGroup {
+export function summarizeStructureDescriptors(structures: readonly StructureDescriptors[]): StructurePopulationGroup {
   const values = Object.fromEntries(
     STRUCTURE_DESCRIPTOR_NAMES.map((name) => [name, structures.map((structure) => structure[name])]),
   ) as Record<StructureDescriptorName, number[]>
@@ -119,9 +119,9 @@ export function summarizeStructurePopulation(
   }
 
   return {
-    overall: summarizeGroup(withStructure.map((puzzle) => puzzle.structure)),
+    overall: summarizeStructureDescriptors(withStructure.map((puzzle) => puzzle.structure)),
     bySourceBucket: Object.fromEntries(
-      [...byBucket.entries()].map(([bucket, structures]) => [bucket, summarizeGroup(structures)]),
+      [...byBucket.entries()].map(([bucket, structures]) => [bucket, summarizeStructureDescriptors(structures)]),
     ),
   }
 }
