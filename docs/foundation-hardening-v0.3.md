@@ -304,6 +304,8 @@ npm run generate -- \
 
 No production coverage bins, distance weights, or targeted generator have been introduced.
 
+A manual `Structure Reference Population` GitHub Actions workflow is available for reproducible larger runs. It uses `technical-validity`, validates the resulting audit catalog, emits a Yield Report, summarizes structure distributions/correlations, and uploads all three artifacts. It is intentionally manual so large research runs do not execute on every push.
+
 ## Exit criteria for v0.3 foundation hardening
 
 v0.3 is complete when:
