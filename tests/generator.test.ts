@@ -98,6 +98,28 @@ describe('deterministic generation foundation', () => {
     }
   })
 
+  it('supports technical-validity candidate acceptance without treating source buckets as calibrated difficulty', () => {
+    const catalog = generateAuditCatalog({
+      profileName: 'baseline',
+      perDifficulty: 1,
+      maxAttempts: 1_000,
+      batchSeed: 'test-technical-validity-mode',
+      acceptanceMode: 'technical-validity',
+    })
+
+    expect(catalog.reproducibility.acceptanceMode).toBe('technical-validity')
+    for (const puzzle of catalog.puzzles) {
+      expect(puzzle.sourceBucket).toBe(puzzle.difficulty)
+      expect(['easy', 'medium', 'hard']).toContain(puzzle.sourceBucket)
+    }
+  })
+
+  it('rejects unknown generation acceptance modes', () => {
+    expect(() => generateAuditCatalog({
+      acceptanceMode: 'invented-mode' as never,
+    })).toThrow(/Unknown acceptance mode/)
+  })
+
   it('reconstructs every accepted board from its candidate seed', () => {
     const catalog = generateAuditCatalog({
       profileName: 'baseline',
