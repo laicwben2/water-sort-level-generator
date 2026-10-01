@@ -187,7 +187,7 @@ export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalo
       const minimum = findMinimumEmptyTubes(fullTubes, {
         capacity,
         maxEmptyTubes,
-        maxDepth: profile.maxMoves + 12,
+        maxDepth: profile.proofMaxDepth,
         maxVisitedStates: profile.maxVisitedStates,
       })
       if (minimum.status !== 'exact') {
