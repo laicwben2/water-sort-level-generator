@@ -50,6 +50,28 @@ export function deriveCandidateSeed(
   ].join(':')
 }
 
+export function deriveResearchCandidateSeed(
+  batchSeed: string,
+  generatorFamily: string,
+  stratumId: string,
+  candidateIndex: number,
+): string {
+  if (!Number.isSafeInteger(candidateIndex) || candidateIndex < 0) {
+    throw new Error('candidateIndex must be a non-negative safe integer')
+  }
+  assertSeedTupleLabel(generatorFamily, 'generatorFamily')
+  assertSeedTupleLabel(stratumId, 'stratumId')
+  return [
+    'water-sort',
+    'research-candidate',
+    RNG_VERSION,
+    batchSeed,
+    generatorFamily,
+    stratumId,
+    String(candidateIndex),
+  ].join(':')
+}
+
 export function deriveLevelId(
   batchSeed: string,
   profile: string,
