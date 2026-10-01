@@ -270,6 +270,44 @@ A formal research run should emit a versioned Yield Report artifact that embeds 
 
 The Yield Report remains a derived observation artifact; the research catalog remains the source of accepted puzzle facts.
 
+
+### Attempt-level pre-proof structure
+
+Because the fixed proof budget can reject a candidate as UNKNOWN, accepted-puzzle structure alone may be a budget-conditioned sample.
+
+For formal population runs, each attempt record should therefore retain a cheap standardized structure snapshot computed **before** the proof decision.
+
+Standardization for classic-v1:
+
+```text
+full generated tubes
++ exactly one empty tube
+-> analyzeStructure()
+```
+
+This snapshot is called `preProofStructure`.
+
+The one-empty representation is used only to make the cheap descriptor calculation deterministic across attempts. It does not claim that one empty tube is sufficient.
+
+For a proof-budget rejection, the attempt record should also retain:
+
+- the last tested empty-tube count;
+- the last solver metrics available at termination.
+
+This allows later analysis to compare:
+
+```text
+accepted candidates
+vs
+budget-UNKNOWN candidates
+```
+
+on the same pre-proof structural variables.
+
+This is especially important for T16, where the smoke already observed a non-zero 200k-budget rejection tail.
+
+The accepted puzzle's authoritative `structure` field remains computed from the actual accepted initial Board. `preProofStructure` is an attempt-level research observation and must not replace it.
+
 ## Validation
 
 A research catalog validator must verify:
