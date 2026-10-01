@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { generateBalancedFullTubes } from '../src/candidate'
 import { findMinimumEmptyTubes, generateAuditCatalog } from '../src/generator'
+import { PUZZLE_ID_VERSION, derivePuzzleId } from '../src/identity'
 import { createRng, deriveCandidateSeed, deriveLevelId, shuffle } from '../src/rng'
 import type { ProfileName } from '../src/profiles'
 import { applyMove, calculatePour, isSolved } from '../src/rules'
@@ -80,6 +81,21 @@ describe('deterministic generation foundation', () => {
       .not.toBe(deriveLevelId('a', 'baseline', 'easy', 4, 0))
     expect(deriveLevelId('a', 'baseline', 'easy', 4, 0))
       .not.toBe(deriveLevelId('a', 'baseline', 'easy', 3, 0))
+  })
+
+  it('emits stable puzzle identity separately from legacy provenance IDs', () => {
+    const catalog = generateAuditCatalog({
+      profileName: 'baseline',
+      perDifficulty: 1,
+      maxAttempts: 1_000,
+      batchSeed: 'test-stable-puzzle-identity',
+    })
+
+    expect(catalog.reproducibility.puzzleIdentityVersion).toBe(PUZZLE_ID_VERSION)
+    for (const puzzle of catalog.puzzles) {
+      expect(puzzle.puzzleId).toBe(derivePuzzleId(puzzle.board))
+      expect(puzzle.puzzleId).not.toBe(puzzle.id)
+    }
   })
 
   it('reconstructs every accepted board from its candidate seed', () => {
