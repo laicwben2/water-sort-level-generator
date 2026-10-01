@@ -148,6 +148,17 @@ Conceptual shape:
     "id": "types-8",
     "typeCount": 8
   },
+  "generation": {
+    "capacity": 4,
+    "requestedAcceptedCount": 1000,
+    "maxAttempts": 10000,
+    "proofBudget": {
+      "version": "research-proof-200k-d200-e5-v1",
+      "maxVisitedStates": 200000,
+      "maxDepth": 200,
+      "maxEmptyTubes": 5
+    }
+  },
   "reproducibility": {
     "generatorVersion": "...",
     "rngVersion": "...",
@@ -184,6 +195,48 @@ It does not require:
 - Easy / Medium / Hard;
 - runtime exportability.
 
+
+### Run configuration and fingerprint contract
+
+The catalog must be self-describing enough to reproduce both the candidate stream and the stopping policy.
+
+The `generation` block is mandatory and records:
+
+- capacity;
+- requested accepted count;
+- maximum candidate attempts;
+- proof-budget version;
+- explicit proof-budget values.
+
+The validator must recompute `configFingerprint` from the stored run configuration and reject a mismatch.
+
+The fingerprint input for `research-candidates-v1` is exactly:
+
+```text
+catalog version
+generator family
+stratum id
+Type count
+capacity
+requested accepted count
+max attempts
+proof-budget version
+max visited states
+max depth
+max empty tubes
+```
+
+Fields such as output path, Yield Report path, wall-clock timestamps, and CLI formatting are not generation semantics and do not enter this fingerprint.
+
+The catalog must also satisfy:
+
+- `puzzles.length === requestedAcceptedCount`;
+- every candidate index is lower than `maxAttempts`;
+- every puzzle capacity equals `generation.capacity`;
+- the explicit proof-budget values match the declared proof-budget version.
+
+This prevents a fingerprint from becoming an opaque checksum that cannot be independently audited.
+
 ## Structural descriptors
 
 The pilot result changes the proposed descriptor priorities.
@@ -203,6 +256,19 @@ Add:
 Retain `initialDistinctNextStates` only as a diagnostic compatibility field for now; it is not a primary coverage candidate because the pilot found it nearly constant at T=4..6.
 
 No coverage weights or bins are defined here.
+
+## Yield artifact linkage
+
+A formal research run should emit a versioned Yield Report artifact that embeds enough provenance to bind it to the catalog:
+
+- catalog config fingerprint;
+- batch seed;
+- stratum ID / Type count;
+- proof-budget version;
+- attempted / accepted / rejected counts;
+- closed reason-code counts.
+
+The Yield Report remains a derived observation artifact; the research catalog remains the source of accepted puzzle facts.
 
 ## Validation
 
