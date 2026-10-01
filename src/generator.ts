@@ -5,6 +5,7 @@ import {
   canonicalPuzzleSequence,
 } from './canonical'
 import { generateBalancedFullTubes } from './candidate'
+import { PUZZLE_ID_VERSION, derivePuzzleIdFromCanonicalKey } from './identity'
 import { CanonicalSequenceTrie } from './dedup'
 import { analyzeMistakesAlongOptimalPath } from './difficulty'
 import { PROFILE_SETS, type DifficultyProfile, type ProfileName } from './profiles'
@@ -200,6 +201,7 @@ export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalo
       accepted += 1
       puzzles.push({
         id: deriveLevelId(batchSeed, profileName, difficulty, capacity, attempt),
+        puzzleId: derivePuzzleIdFromCanonicalKey(canonicalKey),
         difficulty,
         candidateIndex: attempt,
         candidateSeed,
@@ -234,6 +236,7 @@ export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalo
       canonicalVersion: CANONICAL_VERSION,
       encodingVersion: ENCODING_VERSION,
       solverStateEncodingVersion: SOLVER_STATE_ENCODING_VERSION,
+      puzzleIdentityVersion: PUZZLE_ID_VERSION,
       batchSeed,
       configFingerprint,
     },
