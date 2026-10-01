@@ -34,6 +34,7 @@ export function analyzeStructure(
     ? 0
     : spreadValues.reduce((sum, value) => sum + value, 0) / spreadValues.length
   const typeSpreadMax = spreadValues.length === 0 ? 0 : Math.max(...spreadValues)
+  const topDistinctTypeCount = new Set(nonEmptyTubes.map((tube) => tube[tube.length - 1])).size
 
   const nextStates = new Set<string>()
   for (let from = 0; from < board.length; from += 1) {
@@ -50,6 +51,7 @@ export function analyzeStructure(
     allDistinctTubeCount,
     typeSpreadMean,
     typeSpreadMax,
+    topDistinctTypeCount,
     initialDistinctNextStates: nextStates.size,
   }
 }
