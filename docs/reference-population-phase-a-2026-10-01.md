@@ -11,11 +11,17 @@ GitHub Actions run:
 
 `Reference Population Phase A 2026-10-01 / run 1`
 
+Run ID: `36840180259`  
+Execution commit: `8edfd26b8c953c66c4176bfce13712e14b628353`  
+Aggregate artifact: `reference-population-phase-a-all` / ID `11152379298`  
+Aggregate digest: `sha256:36802fd8d6ffdb3e9bcc61eeba81c6baed55c861347b68e607bad177ae589c05`
+
 Execution result:
 
 - 39 / 39 generation matrix cells completed successfully;
 - 0 failed matrix cells;
 - aggregate artifact job completed successfully;
+- 39 per-cell artifacts plus 1 aggregate artifact are present;
 - 40 / 40 workflow jobs completed successfully;
 - fixed proof budget and declared seeds/configuration were not changed during execution.
 
