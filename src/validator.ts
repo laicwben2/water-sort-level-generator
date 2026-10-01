@@ -1,5 +1,6 @@
 import { CANONICAL_VERSION, ENCODING_VERSION, canonicalPuzzleKey } from './canonical'
 import { generateBalancedFullTubes } from './candidate'
+import { PUZZLE_ID_VERSION, derivePuzzleIdFromCanonicalKey } from './identity'
 import { PROFILE_SETS, type ProfileName } from './profiles'
 import { applyMove, calculatePour, isSolved } from './rules'
 import { deriveCandidateSeed, deriveLevelId } from './rng'
@@ -157,10 +158,15 @@ export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
   if (catalog.reproducibility.solverStateEncodingVersion !== SOLVER_STATE_ENCODING_VERSION) {
     throw new Error('Solver state encoding version mismatch')
   }
+  if (catalog.reproducibility.puzzleIdentityVersion !== undefined
+    && catalog.reproducibility.puzzleIdentityVersion !== PUZZLE_ID_VERSION) {
+    throw new Error('Puzzle identity version mismatch')
+  }
 
   if (catalog.puzzles.length === 0) throw new Error('Audit catalog must contain puzzles')
 
   const ids = new Set<string>()
+  const puzzleIds = new Set<string>()
   const canonicalKeys = new Set<string>()
   const byDifficulty: Record<string, number> = {}
 
@@ -225,6 +231,20 @@ export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
     }
     if (canonicalPuzzleKey(puzzle.board) !== puzzle.canonicalKey) {
       throw new Error(`Invalid canonical key: ${puzzle.id}`)
+    }
+    if (puzzle.puzzleId !== undefined) {
+      if (!puzzle.puzzleId.trim()) throw new Error(`Stable puzzle ID must not be empty: ${puzzle.id}`)
+      if (catalog.reproducibility.puzzleIdentityVersion === undefined) {
+        throw new Error(`Stable puzzle ID requires puzzle identity version: ${puzzle.id}`)
+      }
+      const expectedPuzzleId = derivePuzzleIdFromCanonicalKey(puzzle.canonicalKey)
+      if (puzzle.puzzleId !== expectedPuzzleId) {
+        throw new Error(`Stable puzzle ID mismatch: ${puzzle.id}`)
+      }
+      if (puzzleIds.has(puzzle.puzzleId)) {
+        throw new Error(`Duplicate stable puzzle ID: ${puzzle.puzzleId}`)
+      }
+      puzzleIds.add(puzzle.puzzleId)
     }
     if (isSolved(puzzle.board, puzzle.capacity)) throw new Error(`Starts solved: ${puzzle.id}`)
     if (puzzle.emptyTubes !== puzzle.minimumRequiredEmptyTubes) {
