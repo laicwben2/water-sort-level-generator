@@ -93,7 +93,7 @@ describe('deterministic generation foundation', () => {
 
     expect(catalog.reproducibility.puzzleIdentityVersion).toBe(PUZZLE_ID_VERSION)
     for (const puzzle of catalog.puzzles) {
-      expect(puzzle.puzzleId).toBe(derivePuzzleId(puzzle.board))
+      expect(puzzle.puzzleId).toBe(derivePuzzleId(puzzle.board, puzzle.capacity))
       expect(puzzle.puzzleId).not.toBe(puzzle.id)
     }
   })
