@@ -289,6 +289,7 @@ As of 2026-10-01 on this branch:
 - **H4 validator hardening**: existing rule-level solution replay and color-conservation checks remain; stable identity, source-bucket provenance, and stored structure descriptors are now validated. An independent tube-matching / global-Type-bijection equivalence checker now exists without importing the canonicalizer, providing a second identity path for differential tests and future H7 release checks.
 - **H5 structural descriptors**: initial cheap descriptors are implemented and stored in new audit puzzles: total runs, normalized runs, all-distinct tube count, Type spread mean/max, and initial distinct next-state count. They are research facts only, not difficulty scores.
 - **Yield observability**: generator attempts can optionally emit closed reason-coded records and a derived Yield Report. This is opt-in and does not enlarge AuditCatalog by default.
+- **H7 registry foundation**: the append-only released-puzzle registry contract and pure validation/query primitives are implemented. The registry retains release Boards, validates stable identity, keeps withdrawn identities reserved, and uses the independent equivalence checker as a second duplicate path. It is not yet wired into a release command or populated with historical levels.
 
 Example research generation:
 
