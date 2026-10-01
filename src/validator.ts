@@ -5,6 +5,7 @@ import { PROFILE_SETS, type ProfileName } from './profiles'
 import { applyMove, calculatePour, isSolved } from './rules'
 import { deriveCandidateSeed, deriveLevelId } from './rng'
 import { analyzeSolutionPath } from './solver'
+import { analyzeStructure } from './structure'
 import type { AuditCatalog, SolverMetrics } from './types'
 import { GENERATOR_VERSION, RNG_VERSION, SOLVER_STATE_ENCODING_VERSION } from './version'
 
@@ -253,6 +254,12 @@ export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
         throw new Error(`Duplicate stable puzzle ID: ${puzzle.puzzleId}`)
       }
       puzzleIds.add(puzzle.puzzleId)
+    }
+    if (puzzle.structure !== undefined) {
+      const expectedStructure = analyzeStructure(puzzle.board, puzzle.capacity)
+      if (JSON.stringify(puzzle.structure) !== JSON.stringify(expectedStructure)) {
+        throw new Error(`Structure descriptors mismatch: ${puzzle.id}`)
+      }
     }
     if (isSolved(puzzle.board, puzzle.capacity)) throw new Error(`Starts solved: ${puzzle.id}`)
     if (puzzle.emptyTubes !== puzzle.minimumRequiredEmptyTubes) {
