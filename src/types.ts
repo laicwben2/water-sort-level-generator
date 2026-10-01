@@ -142,6 +142,17 @@ export interface ResearchCandidateCatalog {
     id: string
     typeCount: number
   }
+  generation: {
+    capacity: number
+    requestedAcceptedCount: number
+    maxAttempts: number
+    proofBudget: {
+      version: string
+      maxVisitedStates: number
+      maxDepth: number
+      maxEmptyTubes: number
+    }
+  }
   reproducibility: {
     generatorVersion: string
     rngVersion: string
