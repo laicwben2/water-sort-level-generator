@@ -280,6 +280,8 @@ Compatibility rules:
 
 ## Current implementation status
 
+Detailed live checkpoint: [current-work-status-2026-10-01.md](current-work-status-2026-10-01.md)
+
 As of 2026-10-01 on this branch:
 
 - **H0 documentation/contracts**: complete for the current migration scope.
@@ -287,8 +289,8 @@ As of 2026-10-01 on this branch:
 - **H2 difficulty / generation decoupling**: migration foundation implemented. New catalogs emit immutable `sourceBucket`; internal profile terminology uses `GenerationBucketProfile` (with a deprecated compatibility alias for the old name); `technical-validity` acceptance can bypass the legacy move window while explicit technical rejection still removes already-solved boards. Solver proof depth is now an explicit `proofMaxDepth` resource budget rather than being computed from the legacy move window. Legacy mode remains the default.
 - **H3 reference BFS**: implemented as a deliberately simple ordered-board BFS independent of packed solver state and production transitions. Differential tests compare it with the production A* solver on small exact spaces.
 - **H4 validator hardening**: existing rule-level solution replay and color-conservation checks remain; stable identity, source-bucket provenance, and stored structure descriptors are now validated. An independent tube-matching / global-Type-bijection equivalence checker now exists without importing the canonicalizer, providing a second identity path for differential tests and future H7 release checks.
-- **H5 structural descriptors**: initial cheap descriptors are implemented and stored in new audit puzzles: total runs, normalized runs, all-distinct tube count, Type spread mean/max, and initial distinct next-state count. They are research facts only, not difficulty scores.
-- **Yield observability**: generator attempts can optionally emit closed reason-coded records and a derived Yield Report. This is opt-in and does not enlarge AuditCatalog by default.
+- **H5 structural descriptors**: descriptor measurement and population-research tooling are operational. Current descriptors include total runs, normalized runs, all-distinct Tube count, Type spread mean/max, `topDistinctTypeCount`, and diagnostic `initialDistinctNextStates`. The 9,000-puzzle pilot and T4..16 smoke are complete; formal Reference Population Phase A is in execution/analysis transition. These remain research facts only, not difficulty scores.
+- **Yield observability**: generator attempts can emit closed reason-coded records and derived Yield Reports. The neutral research path additionally retains attempt-level `preProofStructure` and final proof observations for UNKNOWN attempts so proof-budget conditioning can be analyzed rather than hidden.
 - **H7 registry foundation**: the append-only released-puzzle registry contract and pure validation/query primitives are implemented. The registry retains release Boards, validates stable identity, keeps withdrawn identities reserved, and uses the independent equivalence checker as a second duplicate path. It is not yet wired into a release command or populated with historical levels.
 
 Example research generation:
@@ -303,6 +305,10 @@ npm run generate -- \
 ```
 
 No production coverage bins, distance weights, or targeted generator have been introduced.
+
+The neutral explicit-Type-count `research-candidates-v1` path is implemented and validated across T=4..16. Its fixed research proof budget is `research-proof-200k-d200-e5-v1`. The explicit Type-count smoke passed; T16 showed a non-zero budget-UNKNOWN tail, so high-T accepted populations must retain that conditioning provenance.
+
+The current decision gate is the completed formal Reference Population Phase A analysis. Until that report is reviewed, `coverageSpaceVersion=1` remains unfrozen and H6 Selection work must not begin.
 
 A manual `Structure Reference Population` GitHub Actions workflow is available for reproducible larger runs. It uses `technical-validity`, validates the resulting audit catalog, emits a Yield Report, summarizes structure distributions/correlations, and uploads all three artifacts. It is intentionally manual so large research runs do not execute on every push.
 
