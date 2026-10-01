@@ -162,6 +162,10 @@ export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
     && catalog.reproducibility.puzzleIdentityVersion !== PUZZLE_ID_VERSION) {
     throw new Error('Puzzle identity version mismatch')
   }
+  if (catalog.reproducibility.acceptanceMode !== undefined
+    && !['legacy-difficulty-window', 'technical-validity'].includes(catalog.reproducibility.acceptanceMode)) {
+    throw new Error('Invalid acceptance mode')
+  }
 
   if (catalog.puzzles.length === 0) throw new Error('Audit catalog must contain puzzles')
 
@@ -175,6 +179,10 @@ export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
     if (!['easy', 'medium', 'hard'].includes(puzzle.difficulty)) {
       throw new Error(`Invalid difficulty: ${puzzle.id}`)
     }
+    const sourceBucket = puzzle.sourceBucket ?? puzzle.difficulty
+    if (!['easy', 'medium', 'hard'].includes(sourceBucket)) {
+      throw new Error(`Invalid source bucket: ${puzzle.id}`)
+    }
     if (ids.has(puzzle.id)) throw new Error(`Duplicate puzzle id: ${puzzle.id}`)
     ids.add(puzzle.id)
 
@@ -184,7 +192,7 @@ export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
     if (puzzle.candidateSeed !== deriveCandidateSeed(
       catalog.reproducibility.batchSeed,
       catalog.profile,
-      puzzle.difficulty,
+      sourceBucket,
       puzzle.candidateIndex,
     )) {
       throw new Error(`Candidate seed mismatch: ${puzzle.id}`)
@@ -199,7 +207,7 @@ export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
     if (puzzle.id !== deriveLevelId(
       catalog.reproducibility.batchSeed,
       catalog.profile,
-      puzzle.difficulty,
+      sourceBucket,
       puzzle.capacity,
       puzzle.candidateIndex,
     )) {
@@ -217,7 +225,7 @@ export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
     const typeCount = new Set(puzzle.board.flat()).size
     if (typeCount < 1) throw new Error(`Puzzle has no Types: ${puzzle.id}`)
     if (Object.hasOwn(PROFILE_SETS, catalog.profile)) {
-      const profile = PROFILE_SETS[catalog.profile as ProfileName][puzzle.difficulty]
+      const profile = PROFILE_SETS[catalog.profile as ProfileName][sourceBucket]
       if (typeCount !== profile.colors) {
         throw new Error(`Profile Type count mismatch: ${puzzle.id}`)
       }
