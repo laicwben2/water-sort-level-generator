@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { generateResearchCandidateCatalog } from '../src/research-generator'
-import { summarizeResearchGenerationAttempts, type ResearchGenerationAttemptRecord } from '../src/research-ledger'
+import { createResearchGenerationYieldArtifact, summarizeResearchGenerationAttempts, type ResearchGenerationAttemptRecord } from '../src/research-ledger'
 import { validateResearchCandidateCatalog } from '../src/research-validator'
 import { deriveResearchCandidateSeed } from '../src/rng'
 
@@ -49,6 +49,36 @@ describe('neutral Type-count research generation', () => {
     expect(yieldReport.typeCount).toBe(4)
     expect(yieldReport.accepted).toBe(3)
     expect(yieldReport.attempted).toBeGreaterThanOrEqual(3)
+  })
+
+  it('retains attempt-level pre-proof observations in the provenance-bound yield artifact', () => {
+    const records: ResearchGenerationAttemptRecord[] = []
+    const catalog = generateResearchCandidateCatalog({
+      typeCount: 4,
+      acceptedCount: 2,
+      maxAttempts: 100,
+      batchSeed: 'research-yield-observations',
+      onAttempt: (record) => records.push(record),
+    })
+
+    expect(records).not.toHaveLength(0)
+    expect(records.every((record) => record.preProofStructure !== undefined)).toBe(true)
+
+    const artifact = createResearchGenerationYieldArtifact(
+      summarizeResearchGenerationAttempts(records),
+      {
+        batchSeed: catalog.reproducibility.batchSeed,
+        configFingerprint: catalog.reproducibility.configFingerprint,
+        proofBudgetVersion: catalog.reproducibility.proofBudgetVersion,
+      },
+      records,
+    )
+
+    expect(artifact.version).toBe('research-yield-v1')
+    expect(artifact.batchSeed).toBe('research-yield-observations')
+    expect(artifact.configFingerprint).toBe(catalog.reproducibility.configFingerprint)
+    expect(artifact.attempts).toHaveLength(records.length)
+    expect(artifact.attempts[0].preProofStructure).toBeDefined()
   })
 
   it('derives research candidate seeds independently of legacy difficulty buckets', () => {
