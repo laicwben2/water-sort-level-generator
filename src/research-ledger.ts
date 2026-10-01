@@ -1,4 +1,5 @@
 import type { GenerationReasonCode } from './generation-ledger'
+import type { SolverMetrics, StructureDescriptors } from './types'
 
 export type ResearchGenerationReasonCode = Exclude<
   GenerationReasonCode,
@@ -16,6 +17,9 @@ export interface ResearchGenerationAttemptRecord {
   optimalMoves?: number
   canonicalKey?: string
   puzzleId?: string
+  preProofStructure?: StructureDescriptors
+  lastProofEmptyTubes?: number
+  lastProofMetrics?: SolverMetrics
 }
 
 export interface ResearchGenerationYieldReport {
@@ -71,6 +75,7 @@ export interface ResearchGenerationYieldArtifact extends ResearchGenerationYield
   batchSeed: string
   configFingerprint: string
   proofBudgetVersion: string
+  attempts: ResearchGenerationAttemptRecord[]
 }
 
 export function createResearchGenerationYieldArtifact(
@@ -80,12 +85,14 @@ export function createResearchGenerationYieldArtifact(
     configFingerprint: string
     proofBudgetVersion: string
   },
+  attempts: readonly ResearchGenerationAttemptRecord[],
 ): ResearchGenerationYieldArtifact {
   return {
     version: 'research-yield-v1',
     batchSeed: context.batchSeed,
     configFingerprint: context.configFingerprint,
     proofBudgetVersion: context.proofBudgetVersion,
+    attempts: attempts.map((record) => ({ ...record })),
     ...report,
   }
 }
