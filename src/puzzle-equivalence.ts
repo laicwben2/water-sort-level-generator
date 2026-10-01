@@ -37,10 +37,16 @@ function tryMatchTube(
     const mappedReverse = reverse.get(secondType)
 
     if (mappedForward !== undefined) {
-      if (mappedForward !== secondType) return null
+      if (mappedForward !== secondType) {
+        rollback(added, forward, reverse)
+        return null
+      }
       continue
     }
-    if (mappedReverse !== undefined) return null
+    if (mappedReverse !== undefined) {
+      rollback(added, forward, reverse)
+      return null
+    }
 
     forward.set(firstType, secondType)
     reverse.set(secondType, firstType)
