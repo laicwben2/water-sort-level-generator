@@ -1,6 +1,6 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
-import { summarizeResearchGenerationAttempts, type ResearchGenerationAttemptRecord } from '../research-ledger'
+import { createResearchGenerationYieldArtifact, summarizeResearchGenerationAttempts, type ResearchGenerationAttemptRecord } from '../research-ledger'
 import { generateResearchCandidateCatalog } from '../research-generator'
 import { validateResearchCandidateCatalog } from '../research-validator'
 import { positiveIntArg, stringArg } from './args'
@@ -32,9 +32,17 @@ await writeFile(outputPath, `${JSON.stringify(catalog, null, 2)}\n`)
 
 if (yieldOutputPath !== undefined) {
   await mkdir(dirname(yieldOutputPath), { recursive: true })
+  const yieldArtifact = createResearchGenerationYieldArtifact(
+    summarizeResearchGenerationAttempts(records),
+    {
+      batchSeed: catalog.reproducibility.batchSeed,
+      configFingerprint: catalog.reproducibility.configFingerprint,
+      proofBudgetVersion: catalog.reproducibility.proofBudgetVersion,
+    },
+  )
   await writeFile(
     yieldOutputPath,
-    `${JSON.stringify(summarizeResearchGenerationAttempts(records), null, 2)}\n`,
+    `${JSON.stringify(yieldArtifact, null, 2)}\n`,
   )
 }
 
