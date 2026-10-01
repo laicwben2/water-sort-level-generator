@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { CANONICAL_VERSION, ENCODING_VERSION, canonicalPuzzleKey } from '../src/canonical'
 import { exportRuntimePack, exportSolutionArtifact } from '../src/exporter'
+import { PUZZLE_ID_VERSION, derivePuzzleId } from '../src/identity'
 import { deriveCandidateSeed, deriveLevelId } from '../src/rng'
 import { analyzeSolutionPath, solveBoard } from '../src/solver'
 import type { AuditCatalog } from '../src/types'
@@ -23,12 +24,16 @@ function fixture(): AuditCatalog {
       canonicalVersion: CANONICAL_VERSION,
       encodingVersion: ENCODING_VERSION,
       solverStateEncodingVersion: SOLVER_STATE_ENCODING_VERSION,
+      puzzleIdentityVersion: PUZZLE_ID_VERSION,
+      acceptanceMode: 'legacy-difficulty-window',
       batchSeed: 'fixture-batch',
       configFingerprint: 'fixture',
     },
     puzzles: [{
       id: fixtureId,
+      puzzleId: derivePuzzleId(board, 2),
       difficulty: 'easy',
+      sourceBucket: 'easy',
       candidateIndex: 1,
       candidateSeed: deriveCandidateSeed('fixture-batch', 'test', 'easy', 1),
       capacity: 2,
@@ -194,6 +199,14 @@ describe('catalog validation and exports', () => {
     )
 
     expect(() => validateAuditCatalog(catalog)).toThrow(/Profile Type count mismatch/)
+  })
+
+  it('keeps generation provenance stable when the consumer difficulty label is recalibrated', () => {
+    const catalog = fixture()
+    catalog.puzzles[0].difficulty = 'hard'
+
+    expect(catalog.puzzles[0].sourceBucket).toBe('easy')
+    expect(validateAuditCatalog(catalog).valid).toBe(true)
   })
 
   it('rejects non-string audit profiles instead of coercing them', () => {

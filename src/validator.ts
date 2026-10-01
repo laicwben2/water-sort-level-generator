@@ -1,9 +1,11 @@
 import { CANONICAL_VERSION, ENCODING_VERSION, canonicalPuzzleKey } from './canonical'
 import { generateBalancedFullTubes } from './candidate'
+import { PUZZLE_ID_VERSION, derivePuzzleIdFromCanonicalKey } from './identity'
 import { PROFILE_SETS, type ProfileName } from './profiles'
 import { applyMove, calculatePour, isSolved } from './rules'
 import { deriveCandidateSeed, deriveLevelId } from './rng'
 import { analyzeSolutionPath } from './solver'
+import { analyzeStructure } from './structure'
 import type { AuditCatalog, SolverMetrics } from './types'
 import { GENERATOR_VERSION, RNG_VERSION, SOLVER_STATE_ENCODING_VERSION } from './version'
 
@@ -157,10 +159,19 @@ export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
   if (catalog.reproducibility.solverStateEncodingVersion !== SOLVER_STATE_ENCODING_VERSION) {
     throw new Error('Solver state encoding version mismatch')
   }
+  if (catalog.reproducibility.puzzleIdentityVersion !== undefined
+    && catalog.reproducibility.puzzleIdentityVersion !== PUZZLE_ID_VERSION) {
+    throw new Error('Puzzle identity version mismatch')
+  }
+  if (catalog.reproducibility.acceptanceMode !== undefined
+    && !['legacy-difficulty-window', 'technical-validity'].includes(catalog.reproducibility.acceptanceMode)) {
+    throw new Error('Invalid acceptance mode')
+  }
 
   if (catalog.puzzles.length === 0) throw new Error('Audit catalog must contain puzzles')
 
   const ids = new Set<string>()
+  const puzzleIds = new Set<string>()
   const canonicalKeys = new Set<string>()
   const byDifficulty: Record<string, number> = {}
 
@@ -168,6 +179,10 @@ export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
     if (!puzzle.id.trim()) throw new Error('Puzzle id must not be empty')
     if (!['easy', 'medium', 'hard'].includes(puzzle.difficulty)) {
       throw new Error(`Invalid difficulty: ${puzzle.id}`)
+    }
+    const sourceBucket = puzzle.sourceBucket ?? puzzle.difficulty
+    if (!['easy', 'medium', 'hard'].includes(sourceBucket)) {
+      throw new Error(`Invalid source bucket: ${puzzle.id}`)
     }
     if (ids.has(puzzle.id)) throw new Error(`Duplicate puzzle id: ${puzzle.id}`)
     ids.add(puzzle.id)
@@ -178,7 +193,7 @@ export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
     if (puzzle.candidateSeed !== deriveCandidateSeed(
       catalog.reproducibility.batchSeed,
       catalog.profile,
-      puzzle.difficulty,
+      sourceBucket,
       puzzle.candidateIndex,
     )) {
       throw new Error(`Candidate seed mismatch: ${puzzle.id}`)
@@ -193,7 +208,7 @@ export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
     if (puzzle.id !== deriveLevelId(
       catalog.reproducibility.batchSeed,
       catalog.profile,
-      puzzle.difficulty,
+      sourceBucket,
       puzzle.capacity,
       puzzle.candidateIndex,
     )) {
@@ -211,7 +226,7 @@ export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
     const typeCount = new Set(puzzle.board.flat()).size
     if (typeCount < 1) throw new Error(`Puzzle has no Types: ${puzzle.id}`)
     if (Object.hasOwn(PROFILE_SETS, catalog.profile)) {
-      const profile = PROFILE_SETS[catalog.profile as ProfileName][puzzle.difficulty]
+      const profile = PROFILE_SETS[catalog.profile as ProfileName][sourceBucket]
       if (typeCount !== profile.colors) {
         throw new Error(`Profile Type count mismatch: ${puzzle.id}`)
       }
@@ -225,6 +240,26 @@ export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
     }
     if (canonicalPuzzleKey(puzzle.board) !== puzzle.canonicalKey) {
       throw new Error(`Invalid canonical key: ${puzzle.id}`)
+    }
+    if (puzzle.puzzleId !== undefined) {
+      if (!puzzle.puzzleId.trim()) throw new Error(`Stable puzzle ID must not be empty: ${puzzle.id}`)
+      if (catalog.reproducibility.puzzleIdentityVersion === undefined) {
+        throw new Error(`Stable puzzle ID requires puzzle identity version: ${puzzle.id}`)
+      }
+      const expectedPuzzleId = derivePuzzleIdFromCanonicalKey(puzzle.canonicalKey, puzzle.capacity)
+      if (puzzle.puzzleId !== expectedPuzzleId) {
+        throw new Error(`Stable puzzle ID mismatch: ${puzzle.id}`)
+      }
+      if (puzzleIds.has(puzzle.puzzleId)) {
+        throw new Error(`Duplicate stable puzzle ID: ${puzzle.puzzleId}`)
+      }
+      puzzleIds.add(puzzle.puzzleId)
+    }
+    if (puzzle.structure !== undefined) {
+      const expectedStructure = analyzeStructure(puzzle.board, puzzle.capacity)
+      if (JSON.stringify(puzzle.structure) !== JSON.stringify(expectedStructure)) {
+        throw new Error(`Structure descriptors mismatch: ${puzzle.id}`)
+      }
     }
     if (isSolved(puzzle.board, puzzle.capacity)) throw new Error(`Starts solved: ${puzzle.id}`)
     if (puzzle.emptyTubes !== puzzle.minimumRequiredEmptyTubes) {

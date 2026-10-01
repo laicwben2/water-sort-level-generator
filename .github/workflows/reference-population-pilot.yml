@@ -1,0 +1,55 @@
+name: Reference Population Pilot 2026-10-01
+
+on:
+  push:
+    branches:
+      - feat/foundation-hardening-v0.3
+    paths:
+      - '.github/workflows/reference-population-pilot.yml'
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        seed:
+          - structure-reference-2026-10-01-a
+          - structure-reference-2026-10-01-b
+          - structure-reference-2026-10-01-c
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - name: Generate technical-validity reference population
+        run: >
+          npm run generate --
+          --profile=baseline
+          --count=1000
+          --max-attempts=100000
+          --seed=${{ matrix.seed }}
+          --acceptance=technical-validity
+          --yield-output=data/output/${{ matrix.seed }}-yield.json
+          --output=data/audit/${{ matrix.seed }}-candidates.json
+      - name: Validate candidate catalog
+        run: >
+          npm run validate --
+          --file=data/audit/${{ matrix.seed }}-candidates.json
+      - name: Summarize structure
+        run: >
+          npm run summarize:structure --
+          --input=data/audit/${{ matrix.seed }}-candidates.json
+          --output=data/output/${{ matrix.seed }}-structure-summary.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.seed }}
+          retention-days: 7
+          if-no-files-found: error
+          path: |
+            data/audit/${{ matrix.seed }}-candidates.json
+            data/output/${{ matrix.seed }}-yield.json
+            data/output/${{ matrix.seed }}-structure-summary.json

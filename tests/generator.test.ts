@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { generateBalancedFullTubes } from '../src/candidate'
 import { findMinimumEmptyTubes, generateAuditCatalog } from '../src/generator'
+import { PUZZLE_ID_VERSION, derivePuzzleId } from '../src/identity'
 import { createRng, deriveCandidateSeed, deriveLevelId, shuffle } from '../src/rng'
 import type { ProfileName } from '../src/profiles'
 import { applyMove, calculatePour, isSolved } from '../src/rules'
@@ -80,6 +81,43 @@ describe('deterministic generation foundation', () => {
       .not.toBe(deriveLevelId('a', 'baseline', 'easy', 4, 0))
     expect(deriveLevelId('a', 'baseline', 'easy', 4, 0))
       .not.toBe(deriveLevelId('a', 'baseline', 'easy', 3, 0))
+  })
+
+  it('emits stable puzzle identity separately from legacy provenance IDs', () => {
+    const catalog = generateAuditCatalog({
+      profileName: 'baseline',
+      perDifficulty: 1,
+      maxAttempts: 1_000,
+      batchSeed: 'test-stable-puzzle-identity',
+    })
+
+    expect(catalog.reproducibility.puzzleIdentityVersion).toBe(PUZZLE_ID_VERSION)
+    for (const puzzle of catalog.puzzles) {
+      expect(puzzle.puzzleId).toBe(derivePuzzleId(puzzle.board, puzzle.capacity))
+      expect(puzzle.puzzleId).not.toBe(puzzle.id)
+    }
+  })
+
+  it('supports technical-validity candidate acceptance without treating source buckets as calibrated difficulty', () => {
+    const catalog = generateAuditCatalog({
+      profileName: 'baseline',
+      perDifficulty: 1,
+      maxAttempts: 1_000,
+      batchSeed: 'test-technical-validity-mode',
+      acceptanceMode: 'technical-validity',
+    })
+
+    expect(catalog.reproducibility.acceptanceMode).toBe('technical-validity')
+    for (const puzzle of catalog.puzzles) {
+      expect(puzzle.sourceBucket).toBe(puzzle.difficulty)
+      expect(['easy', 'medium', 'hard']).toContain(puzzle.sourceBucket)
+    }
+  })
+
+  it('rejects unknown generation acceptance modes', () => {
+    expect(() => generateAuditCatalog({
+      acceptanceMode: 'invented-mode' as never,
+    })).toThrow(/Unknown acceptance mode/)
   })
 
   it('reconstructs every accepted board from its candidate seed', () => {

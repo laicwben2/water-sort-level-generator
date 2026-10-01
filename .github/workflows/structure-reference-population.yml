@@ -1,0 +1,64 @@
+name: Structure Reference Population
+
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: Generation profile
+        required: true
+        default: baseline
+        type: choice
+        options:
+          - baseline
+          - expanded
+      count:
+        description: Accepted puzzles per source bucket
+        required: true
+        default: '100'
+        type: string
+      max_attempts:
+        description: Maximum attempts per source bucket
+        required: true
+        default: '20000'
+        type: string
+      seed:
+        description: Deterministic batch seed
+        required: true
+        default: water-sort:structure-reference:v0.3
+        type: string
+
+jobs:
+  reference-population:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - name: Generate technical-validity population
+        run: >
+          npm run generate --
+          --profile=${{ inputs.profile }}
+          --count=${{ inputs.count }}
+          --max-attempts=${{ inputs.max_attempts }}
+          --seed=${{ inputs.seed }}
+          --acceptance=technical-validity
+          --yield-output=data/output/structure-reference-yield.json
+          --output=data/audit/structure-reference-candidates.json
+      - name: Validate population
+        run: npm run validate -- --file=data/audit/structure-reference-candidates.json
+      - name: Summarize structural population
+        run: >
+          npm run summarize:structure --
+          --input=data/audit/structure-reference-candidates.json
+          --output=data/output/structure-reference-summary.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: structure-reference-${{ inputs.profile }}
+          path: |
+            data/audit/structure-reference-candidates.json
+            data/output/structure-reference-yield.json
+            data/output/structure-reference-summary.json
+          if-no-files-found: error

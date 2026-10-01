@@ -19,6 +19,12 @@ jobs:
       - run: npm run build
       - run: npm run generate -- --profile=baseline --count=1 --max-attempts=1000 --output=data/audit/ci-smoke.json
       - run: npm run validate -- --file=data/audit/ci-smoke.json
+      - run: npm run generate -- --profile=baseline --count=1 --max-attempts=1000 --acceptance=technical-validity --yield-output=data/output/technical-yield-smoke.json --output=data/audit/technical-smoke.json
+      - run: npm run validate -- --file=data/audit/technical-smoke.json
+      - run: npm run summarize:structure -- --input=data/audit/technical-smoke.json --output=data/output/structure-summary-smoke.json
+      - run: npm run generate:research -- --types=8 --count=1 --max-attempts=100 --seed=research-ci-t8 --yield-output=data/output/research-t8-yield-smoke.json --output=data/audit/research-t8-smoke.json
+      - run: npm run validate:research -- --file=data/audit/research-t8-smoke.json
+      - run: npm run summarize:research-structure -- --input=data/audit/research-t8-smoke.json --output=data/output/research-t8-structure-smoke.json
       - run: npm run export:runtime -- --input=data/audit/ci-smoke.json --output=data/output/ci-smoke.json --pack-id=ci-smoke
       - run: npm run export:solutions -- --input=data/audit/ci-smoke.json --output=data/output/ci-solutions.json
       - run: npm run benchmark -- --min-types=6 --max-types=6 --samples=1 --max-states=10000 --max-empty=3 --output=data/output/benchmark-smoke.json

@@ -5,20 +5,25 @@ import {
   canonicalPuzzleSequence,
 } from './canonical'
 import { generateBalancedFullTubes } from './candidate'
+import type { GenerationAttemptRecord } from './generation-ledger'
+import { PUZZLE_ID_VERSION, derivePuzzleIdFromCanonicalKey } from './identity'
 import { CanonicalSequenceTrie } from './dedup'
 import { analyzeMistakesAlongOptimalPath } from './difficulty'
-import { PROFILE_SETS, type DifficultyProfile, type ProfileName } from './profiles'
+import { isSolved } from './rules'
+import { PROFILE_SETS, type GenerationBucketProfile, type ProfileName } from './profiles'
 import {
   deriveCandidateSeed,
   deriveLevelId,
   fingerprintConfig,
 } from './rng'
 import { analyzeSolutionPath, solveBoard } from './solver'
+import { analyzeStructure } from './structure'
 import type {
   AuditCatalog,
   AuditPuzzle,
   Board,
-  Difficulty,
+  SourceBucket,
+  GenerationAcceptanceMode,
   EmptyTubeAnalysis,
   SolverResult,
 } from './types'
@@ -35,6 +40,8 @@ export interface GenerateOptions {
   mistakeMaxVisitedStatesPerAlternative?: number
   mistakeMaxDepthPerAlternative?: number
   mistakeMaxPathStates?: number
+  acceptanceMode?: GenerationAcceptanceMode
+  onAttempt?: (record: GenerationAttemptRecord) => void
 }
 
 export interface MinimumEmptySearchOptions {
@@ -112,9 +119,9 @@ export function findMinimumEmptyTubes(
   }
 }
 
-function matchesCurrentDifficultyWindow(
+function matchesLegacyMoveWindow(
   result: Extract<SolverResult, { status: 'solved' }>,
-  profile: DifficultyProfile,
+  profile: GenerationBucketProfile,
 ): boolean {
   return result.solution.length >= profile.minMoves
     && result.solution.length <= profile.maxMoves
@@ -136,6 +143,10 @@ export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalo
   const capacity = options.capacity ?? 4
   const maxEmptyTubes = options.maxEmptyTubes ?? 5
   const batchSeed = options.batchSeed ?? 'water-sort:generator:v0.2:default'
+  const acceptanceMode = options.acceptanceMode ?? 'legacy-difficulty-window'
+  if (!['legacy-difficulty-window', 'technical-validity'].includes(acceptanceMode)) {
+    throw new Error(`Unknown acceptance mode: ${acceptanceMode}`)
+  }
   assertPositiveSafeInteger(perDifficulty, 'perDifficulty')
   assertPositiveSafeInteger(maxAttempts, 'maxAttempts')
   assertPositiveSafeInteger(maxEmptyTubes, 'maxEmptyTubes')
@@ -163,25 +174,61 @@ export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalo
     mistakeMaxVisitedStatesPerAlternative: options.mistakeMaxVisitedStatesPerAlternative ?? 20_000,
     mistakeMaxDepthPerAlternative: options.mistakeMaxDepthPerAlternative ?? 120,
     mistakeMaxPathStates: options.mistakeMaxPathStates ?? null,
+    acceptanceMode,
   })
 
-  for (const [difficulty, profile] of Object.entries(profiles) as Array<[Difficulty, DifficultyProfile]>) {
+  for (const [sourceBucket, profile] of Object.entries(profiles) as Array<[SourceBucket, GenerationBucketProfile]>) {
     let accepted = 0
 
     for (let attempt = 0; attempt < maxAttempts && accepted < perDifficulty; attempt += 1) {
-      const candidateSeed = deriveCandidateSeed(batchSeed, profileName, difficulty, attempt)
+      const candidateSeed = deriveCandidateSeed(batchSeed, profileName, sourceBucket, attempt)
       const fullTubes = generateBalancedFullTubes(profile.colors, capacity, candidateSeed)
 
       const minimum = findMinimumEmptyTubes(fullTubes, {
         capacity,
         maxEmptyTubes,
-        maxDepth: profile.maxMoves + 12,
+        maxDepth: profile.proofMaxDepth,
         maxVisitedStates: profile.maxVisitedStates,
       })
-      if (minimum.status !== 'exact') continue
+      if (minimum.status !== 'exact') {
+        options.onAttempt?.({
+          sourceBucket,
+          candidateIndex: attempt,
+          candidateSeed,
+          disposition: 'rejected',
+          reasonCode: minimum.reason === 'budget-exceeded'
+            ? 'MINIMUM_EMPTY_BUDGET_EXCEEDED'
+            : 'MINIMUM_EMPTY_EXHAUSTED',
+        })
+        continue
+      }
+      if (isSolved(minimum.board, capacity)) {
+        options.onAttempt?.({
+          sourceBucket,
+          candidateIndex: attempt,
+          candidateSeed,
+          disposition: 'rejected',
+          reasonCode: 'STARTS_SOLVED',
+          minimumRequiredEmptyTubes: minimum.minimumRequiredEmptyTubes,
+          optimalMoves: minimum.result.solution.length,
+        })
+        continue
+      }
 
       const path = analyzeSolutionPath(minimum.board, minimum.result.solution, capacity)
-      if (!matchesCurrentDifficultyWindow(minimum.result, profile)) continue
+      if (acceptanceMode === 'legacy-difficulty-window'
+        && !matchesLegacyMoveWindow(minimum.result, profile)) {
+        options.onAttempt?.({
+          sourceBucket,
+          candidateIndex: attempt,
+          candidateSeed,
+          disposition: 'rejected',
+          reasonCode: 'LEGACY_MOVE_WINDOW',
+          minimumRequiredEmptyTubes: minimum.minimumRequiredEmptyTubes,
+          optimalMoves: minimum.result.solution.length,
+        })
+        continue
+      }
 
       const mistakeAnalysis = options.analyzeMistakes
         ? analyzeMistakesAlongOptimalPath(minimum.board, minimum.result.solution, {
@@ -195,12 +242,28 @@ export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalo
         : undefined
 
       const canonicalSequence = canonicalPuzzleSequence(minimum.board)
-      if (!canonicalIndex.add(canonicalSequence)) continue
       const canonicalKey = canonicalPuzzleKeyFromSequence(canonicalSequence)
+      const puzzleId = derivePuzzleIdFromCanonicalKey(canonicalKey, capacity)
+      if (!canonicalIndex.add(canonicalSequence)) {
+        options.onAttempt?.({
+          sourceBucket,
+          candidateIndex: attempt,
+          candidateSeed,
+          disposition: 'rejected',
+          reasonCode: 'CANONICAL_DUPLICATE',
+          minimumRequiredEmptyTubes: minimum.minimumRequiredEmptyTubes,
+          optimalMoves: minimum.result.solution.length,
+          canonicalKey,
+          puzzleId,
+        })
+        continue
+      }
       accepted += 1
       puzzles.push({
-        id: deriveLevelId(batchSeed, profileName, difficulty, capacity, attempt),
-        difficulty,
+        id: deriveLevelId(batchSeed, profileName, sourceBucket, capacity, attempt),
+        puzzleId,
+        difficulty: sourceBucket,
+        sourceBucket,
         candidateIndex: attempt,
         candidateSeed,
         capacity,
@@ -214,13 +277,25 @@ export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalo
           ...minimum.result.metrics,
         },
         solutionPath: path,
+        structure: analyzeStructure(minimum.board, capacity),
         ...(mistakeAnalysis ? { mistakeAnalysis } : {}),
         emptyTubeAnalysis: minimum.analyses,
+      })
+      options.onAttempt?.({
+        sourceBucket,
+        candidateIndex: attempt,
+        candidateSeed,
+        disposition: 'accepted',
+        reasonCode: 'ACCEPTED',
+        minimumRequiredEmptyTubes: minimum.minimumRequiredEmptyTubes,
+        optimalMoves: minimum.result.solution.length,
+        canonicalKey,
+        puzzleId,
       })
     }
 
     if (accepted < perDifficulty) {
-      throw new Error(`Only generated ${accepted}/${perDifficulty} ${difficulty} puzzles after ${maxAttempts} attempts`)
+      throw new Error(`Only generated ${accepted}/${perDifficulty} ${sourceBucket} source-bucket puzzles after ${maxAttempts} attempts`)
     }
   }
 
@@ -234,6 +309,8 @@ export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalo
       canonicalVersion: CANONICAL_VERSION,
       encodingVersion: ENCODING_VERSION,
       solverStateEncodingVersion: SOLVER_STATE_ENCODING_VERSION,
+      puzzleIdentityVersion: PUZZLE_ID_VERSION,
+      acceptanceMode,
       batchSeed,
       configFingerprint,
     },

@@ -2,7 +2,7 @@
 
 Offline, reusable content-generation toolchain for Water Sort games.
 
-This project generates candidate boards, proves solvability with a bounded A* solver, measures difficulty signals, removes canonical duplicates, validates the resulting audit catalog, and exports a compact **Level Pack v1** for game clients.
+This project generates deterministic candidate boards, proves solvability with an optimized A* solver, cross-checks core solver behavior with an independent reference BFS, records structural and difficulty-research signals, removes exact canonical duplicates, validates the resulting audit catalog, and exports a compact **Level Pack v1** for game clients.
 
 It intentionally has no dependency on React, Vite, localStorage, or a specific game UI. The exported pack can be consumed by the existing web game and future iOS, Android, Unity, or other clients that implement the same `rulesVersion`.
 
@@ -12,21 +12,22 @@ It intentionally has no dependency on React, Vite, localStorage, or a specific g
 candidate generation
         |
         v
-empty-tube trials
+empty-tube proof / optimized solver
         |
         v
-bounded A* solver
+technical validity
         |
         v
-difficulty selection
+canonical identity + exact deduplication
+        |
+        +--> structural / difficulty research descriptors
         |
         v
-canonical deduplication
-        |
-        v
-audit catalog
+audit candidate pool
         |
         +--> validator
+        |
+        +--> future diversity / coverage selection
         |
         v
 runtime exporter
@@ -35,7 +36,13 @@ runtime exporter
 Level Pack v1 JSON
 ```
 
-The audit catalog keeps solver solutions and search metrics. The runtime pack strips those authoring details and contains only data needed by consumers.
+Generation source buckets and calibrated human difficulty are separate concepts. The current runtime format retains the legacy `difficulty` field for compatibility while new audit catalogs also preserve immutable `sourceBucket` provenance.
+
+The audit catalog keeps solver solutions and research metrics. The runtime pack strips those authoring details and contains only data needed by consumers.
+
+Current migration and hardening decisions are tracked in [`docs/foundation-hardening-v0.3.md`](docs/foundation-hardening-v0.3.md).
+
+The current execution checkpoint and ordered next-work list are tracked in [`docs/current-work-status-2026-10-01.md`](docs/current-work-status-2026-10-01.md). The released identity registry contract is documented in [`docs/released-puzzle-registry-v0.3.md`](docs/released-puzzle-registry-v0.3.md).
 
 ## Install
 
@@ -61,6 +68,27 @@ The baseline 4/5/6-color profile is also available:
 
 ```bash
 npm run generate -- --profile=baseline --count=20
+```
+
+
+For research candidate pools that should not be filtered by the legacy move windows:
+
+```bash
+npm run generate -- \
+  --profile=baseline \
+  --count=20 \
+  --acceptance=technical-validity \
+  --yield-output=data/output/baseline-yield.json
+```
+
+New technical-validity catalogs still reject already-solved starts and still require exact minimum-empty proof. They simply do not use the historical Easy/Medium/Hard move windows as candidate-validity rules.
+
+Summarize the cheap structural descriptors and their correlations:
+
+```bash
+npm run summarize:structure -- \
+  --input=data/audit/catalog-baseline.json \
+  --output=data/output/structure-summary.json
 ```
 
 ## Validate
