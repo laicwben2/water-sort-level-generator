@@ -40,7 +40,7 @@ function reconstructSolution(nodes: ReferenceNode[], solvedNodeId: number): Move
   let nodeId: number | undefined = solvedNodeId
 
   while (nodeId !== undefined) {
-    const node = nodes[nodeId]
+    const node: ReferenceNode = nodes[nodeId]
     if (node.move) solution.push(node.move)
     nodeId = node.parentId
   }
@@ -85,7 +85,7 @@ export function solveBoardReference(
   while (queueIndex < queue.length) {
     const nodeId = queue[queueIndex]
     queueIndex += 1
-    const node = nodes[nodeId]
+    const node: ReferenceNode = nodes[nodeId]
     exploredStates += 1
     maxDepthReached = Math.max(maxDepthReached, node.depth)
 
