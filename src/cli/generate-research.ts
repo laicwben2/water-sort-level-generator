@@ -39,6 +39,7 @@ if (yieldOutputPath !== undefined) {
       configFingerprint: catalog.reproducibility.configFingerprint,
       proofBudgetVersion: catalog.reproducibility.proofBudgetVersion,
     },
+    records,
   )
   await writeFile(
     yieldOutputPath,
