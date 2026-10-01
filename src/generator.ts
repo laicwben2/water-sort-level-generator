@@ -5,6 +5,7 @@ import {
   canonicalPuzzleSequence,
 } from './canonical'
 import { generateBalancedFullTubes } from './candidate'
+import type { GenerationAttemptRecord } from './generation-ledger'
 import { PUZZLE_ID_VERSION, derivePuzzleIdFromCanonicalKey } from './identity'
 import { CanonicalSequenceTrie } from './dedup'
 import { analyzeMistakesAlongOptimalPath } from './difficulty'
@@ -40,6 +41,7 @@ export interface GenerateOptions {
   mistakeMaxDepthPerAlternative?: number
   mistakeMaxPathStates?: number
   acceptanceMode?: GenerationAcceptanceMode
+  onAttempt?: (record: GenerationAttemptRecord) => void
 }
 
 export interface MinimumEmptySearchOptions {
@@ -188,12 +190,45 @@ export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalo
         maxDepth: profile.maxMoves + 12,
         maxVisitedStates: profile.maxVisitedStates,
       })
-      if (minimum.status !== 'exact') continue
-      if (isSolved(minimum.board, capacity)) continue
+      if (minimum.status !== 'exact') {
+        options.onAttempt?.({
+          sourceBucket,
+          candidateIndex: attempt,
+          candidateSeed,
+          disposition: 'rejected',
+          reasonCode: minimum.reason === 'budget-exceeded'
+            ? 'MINIMUM_EMPTY_BUDGET_EXCEEDED'
+            : 'MINIMUM_EMPTY_EXHAUSTED',
+        })
+        continue
+      }
+      if (isSolved(minimum.board, capacity)) {
+        options.onAttempt?.({
+          sourceBucket,
+          candidateIndex: attempt,
+          candidateSeed,
+          disposition: 'rejected',
+          reasonCode: 'STARTS_SOLVED',
+          minimumRequiredEmptyTubes: minimum.minimumRequiredEmptyTubes,
+          optimalMoves: minimum.result.solution.length,
+        })
+        continue
+      }
 
       const path = analyzeSolutionPath(minimum.board, minimum.result.solution, capacity)
       if (acceptanceMode === 'legacy-difficulty-window'
-        && !matchesLegacyMoveWindow(minimum.result, profile)) continue
+        && !matchesLegacyMoveWindow(minimum.result, profile)) {
+        options.onAttempt?.({
+          sourceBucket,
+          candidateIndex: attempt,
+          candidateSeed,
+          disposition: 'rejected',
+          reasonCode: 'LEGACY_MOVE_WINDOW',
+          minimumRequiredEmptyTubes: minimum.minimumRequiredEmptyTubes,
+          optimalMoves: minimum.result.solution.length,
+        })
+        continue
+      }
 
       const mistakeAnalysis = options.analyzeMistakes
         ? analyzeMistakesAlongOptimalPath(minimum.board, minimum.result.solution, {
@@ -207,12 +242,26 @@ export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalo
         : undefined
 
       const canonicalSequence = canonicalPuzzleSequence(minimum.board)
-      if (!canonicalIndex.add(canonicalSequence)) continue
       const canonicalKey = canonicalPuzzleKeyFromSequence(canonicalSequence)
+      const puzzleId = derivePuzzleIdFromCanonicalKey(canonicalKey, capacity)
+      if (!canonicalIndex.add(canonicalSequence)) {
+        options.onAttempt?.({
+          sourceBucket,
+          candidateIndex: attempt,
+          candidateSeed,
+          disposition: 'rejected',
+          reasonCode: 'CANONICAL_DUPLICATE',
+          minimumRequiredEmptyTubes: minimum.minimumRequiredEmptyTubes,
+          optimalMoves: minimum.result.solution.length,
+          canonicalKey,
+          puzzleId,
+        })
+        continue
+      }
       accepted += 1
       puzzles.push({
         id: deriveLevelId(batchSeed, profileName, sourceBucket, capacity, attempt),
-        puzzleId: derivePuzzleIdFromCanonicalKey(canonicalKey, capacity),
+        puzzleId,
         difficulty: sourceBucket,
         sourceBucket,
         candidateIndex: attempt,
@@ -231,6 +280,17 @@ export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalo
         structure: analyzeStructure(minimum.board, capacity),
         ...(mistakeAnalysis ? { mistakeAnalysis } : {}),
         emptyTubeAnalysis: minimum.analyses,
+      })
+      options.onAttempt?.({
+        sourceBucket,
+        candidateIndex: attempt,
+        candidateSeed,
+        disposition: 'accepted',
+        reasonCode: 'ACCEPTED',
+        minimumRequiredEmptyTubes: minimum.minimumRequiredEmptyTubes,
+        optimalMoves: minimum.result.solution.length,
+        canonicalKey,
+        puzzleId,
       })
     }
 
