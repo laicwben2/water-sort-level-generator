@@ -3,11 +3,13 @@ import { generateBalancedFullTubes } from './candidate'
 import { PUZZLE_ID_VERSION, derivePuzzleIdFromCanonicalKey } from './identity'
 import {
   RESEARCH_GENERATOR_FAMILY,
+  RESEARCH_PROOF_BUDGET,
   RESEARCH_PROOF_BUDGET_VERSION,
+  researchFingerprintInput,
   researchStratumId,
 } from './research-config'
 import { applyMove, calculatePour, isSolved } from './rules'
-import { deriveResearchCandidateSeed } from './rng'
+import { deriveResearchCandidateSeed, fingerprintConfig } from './rng'
 import { analyzeSolutionPath } from './solver'
 import { analyzeStructure } from './structure'
 import type { ResearchCandidateCatalog, SolverMetrics } from './types'
@@ -19,19 +21,20 @@ export interface ResearchValidationSummary {
   typeCount: number
 }
 
-const solverMetricNames = [
+const solverCountNames = [
   'exploredStates',
   'visitedStates',
   'generatedMoves',
   'maxDepthReached',
 ] as const
+const solverMetricNames = [...solverCountNames, 'averageBranching'] as const
 
 function approximatelyEqual(first: number, second: number): boolean {
   return Math.abs(first - second) <= 1e-12
 }
 
 function validateSolverMetrics(id: string, metrics: SolverMetrics): void {
-  for (const name of solverMetricNames) {
+  for (const name of solverCountNames) {
     const value = metrics[name]
     if (!Number.isSafeInteger(value) || value < 0) {
       throw new Error(`Invalid solver ${name}: ${id}`)
@@ -64,6 +67,27 @@ export function validateResearchCandidateCatalog(
     throw new Error('Research stratum ID/typeCount mismatch')
   }
 
+  const generation = catalog.generation
+  if (!Number.isSafeInteger(generation.capacity) || generation.capacity < 1 || generation.capacity > 4) {
+    throw new Error('Invalid research generation capacity')
+  }
+  if (!Number.isSafeInteger(generation.requestedAcceptedCount)
+    || generation.requestedAcceptedCount < 1) {
+    throw new Error('Invalid research requested accepted count')
+  }
+  if (!Number.isSafeInteger(generation.maxAttempts) || generation.maxAttempts < 1) {
+    throw new Error('Invalid research max attempts')
+  }
+  if (generation.requestedAcceptedCount > generation.maxAttempts) {
+    throw new Error('Research requested accepted count exceeds max attempts')
+  }
+  if (generation.proofBudget.version !== RESEARCH_PROOF_BUDGET_VERSION
+    || generation.proofBudget.maxVisitedStates !== RESEARCH_PROOF_BUDGET.maxVisitedStates
+    || generation.proofBudget.maxDepth !== RESEARCH_PROOF_BUDGET.maxDepth
+    || generation.proofBudget.maxEmptyTubes !== RESEARCH_PROOF_BUDGET.maxEmptyTubes) {
+    throw new Error('Research proof budget declaration mismatch')
+  }
+
   const versions = catalog.reproducibility
   if (versions.generatorVersion !== GENERATOR_VERSION) throw new Error('Generator version mismatch')
   if (versions.rngVersion !== RNG_VERSION) throw new Error('RNG version mismatch')
@@ -78,7 +102,19 @@ export function validateResearchCandidateCatalog(
   if (versions.proofBudgetVersion !== RESEARCH_PROOF_BUDGET_VERSION) {
     throw new Error('Research proof budget version mismatch')
   }
-  if (catalog.puzzles.length === 0) throw new Error('Research catalog must contain puzzles')
+  const expectedFingerprint = fingerprintConfig(researchFingerprintInput({
+    stratumId: catalog.stratum.id,
+    typeCount: catalog.stratum.typeCount,
+    capacity: generation.capacity,
+    requestedAcceptedCount: generation.requestedAcceptedCount,
+    maxAttempts: generation.maxAttempts,
+  }))
+  if (versions.configFingerprint !== expectedFingerprint) {
+    throw new Error('Research config fingerprint mismatch')
+  }
+  if (catalog.puzzles.length !== generation.requestedAcceptedCount) {
+    throw new Error('Research accepted puzzle count mismatch')
+  }
 
   const canonicalKeys = new Set<string>()
   const puzzleIds = new Set<string>()
@@ -89,7 +125,9 @@ export function validateResearchCandidateCatalog(
     if (puzzle.stratumId !== catalog.stratum.id || puzzle.typeCount !== catalog.stratum.typeCount) {
       throw new Error(`Research puzzle stratum mismatch: ${id}`)
     }
-    if (!Number.isSafeInteger(puzzle.candidateIndex) || puzzle.candidateIndex < 0) {
+    if (!Number.isSafeInteger(puzzle.candidateIndex)
+      || puzzle.candidateIndex < 0
+      || puzzle.candidateIndex >= generation.maxAttempts) {
       throw new Error(`Invalid candidate index: ${id}`)
     }
     const expectedSeed = deriveResearchCandidateSeed(
@@ -103,6 +141,9 @@ export function validateResearchCandidateCatalog(
     }
     if (!Number.isSafeInteger(puzzle.capacity) || puzzle.capacity < 1 || puzzle.capacity > 4) {
       throw new Error(`Unsupported capacity: ${id}`)
+    }
+    if (puzzle.capacity !== generation.capacity) {
+      throw new Error(`Research puzzle capacity mismatch: ${id}`)
     }
 
     const typeIds = puzzle.board.flat()
@@ -178,6 +219,10 @@ export function validateResearchCandidateCatalog(
       }
       if (isMinimum && analysis.optimalMoves !== puzzle.solver.optimalMoves) {
         throw new Error(`Minimum empty-tube optimal moves mismatch: ${id}`)
+      }
+      if (isMinimum && solverMetricNames.some((name) =>
+        analysis.metrics[name] !== puzzle.solver[name])) {
+        throw new Error(`Minimum empty-tube solver metrics mismatch: ${id}`)
       }
       if (!isMinimum && analysis.optimalMoves !== undefined) {
         throw new Error(`Unsolvable empty-tube result has optimal moves: ${id}`)
