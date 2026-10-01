@@ -44,7 +44,7 @@ The current optimized A* engine remains the production bulk solver. v0.3 adds an
 
 Puzzle identity and generation provenance are separate:
 
-- **Puzzle identity** answers "what puzzle is this?" and is based on exact structural canonicalization plus the rules namespace.
+- **Puzzle identity** answers "what puzzle is this?" and is based on exact structural canonicalization plus the rules namespace and tube capacity.
 - **Generation provenance** answers "how was this puzzle found?" and records generator/RNG versions, batch seed, source profile, candidate index/seed, and configuration fingerprint.
 
 The existing provenance-derived level ID remains historical/compatibility data during migration. v0.3 introduces an additive stable puzzle identity rather than silently changing the meaning of existing IDs.
