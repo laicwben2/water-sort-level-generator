@@ -13,3 +13,25 @@ export function researchStratumId(typeCount: number): string {
   }
   return `types-${typeCount}`
 }
+
+export interface ResearchRunConfigInput {
+  stratumId: string
+  typeCount: number
+  capacity: number
+  requestedAcceptedCount: number
+  maxAttempts: number
+}
+
+export function researchFingerprintInput(config: ResearchRunConfigInput) {
+  return {
+    version: 'research-candidates-v1',
+    generatorFamily: RESEARCH_GENERATOR_FAMILY,
+    stratumId: config.stratumId,
+    typeCount: config.typeCount,
+    capacity: config.capacity,
+    requestedAcceptedCount: config.requestedAcceptedCount,
+    maxAttempts: config.maxAttempts,
+    proofBudgetVersion: RESEARCH_PROOF_BUDGET_VERSION,
+    proofBudget: RESEARCH_PROOF_BUDGET,
+  } as const
+}
