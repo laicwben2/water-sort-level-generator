@@ -1,6 +1,6 @@
-import type { Difficulty } from './types'
+import type { SourceBucket } from './types'
 
-export interface DifficultyProfile {
+export interface GenerationBucketProfile {
   colors: number
   /** Legacy source-bucket target retained for historical research compatibility. */
   targetMoves: number
@@ -14,8 +14,11 @@ export interface DifficultyProfile {
   maxVisitedStates: number
 }
 
+/** @deprecated Use GenerationBucketProfile; retained for compatibility with research code. */
+export type DifficultyProfile = GenerationBucketProfile
+
 export type ProfileName = 'baseline' | 'expanded'
-export type ProfileSet = Record<Difficulty, DifficultyProfile>
+export type ProfileSet = Record<SourceBucket, GenerationBucketProfile>
 
 export const PROFILE_SETS: Record<ProfileName, ProfileSet> = {
   baseline: {
