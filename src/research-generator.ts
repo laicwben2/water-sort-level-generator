@@ -12,6 +12,7 @@ import {
   RESEARCH_GENERATOR_FAMILY,
   RESEARCH_PROOF_BUDGET,
   RESEARCH_PROOF_BUDGET_VERSION,
+  researchFingerprintInput,
   researchStratumId,
 } from './research-config'
 import type { ResearchGenerationAttemptRecord } from './research-ledger'
@@ -51,17 +52,13 @@ export function generateResearchCandidateCatalog(
   assertPositiveSafeInteger(capacity, 'capacity')
   if (capacity > 4) throw new Error('research-candidates-v1 supports capacity <= 4')
 
-  const configFingerprint = fingerprintConfig({
-    version: 'research-candidates-v1',
-    generatorFamily: RESEARCH_GENERATOR_FAMILY,
+  const configFingerprint = fingerprintConfig(researchFingerprintInput({
     stratumId,
     typeCount: options.typeCount,
-    acceptedCount,
-    maxAttempts,
     capacity,
-    proofBudgetVersion: RESEARCH_PROOF_BUDGET_VERSION,
-    proofBudget: RESEARCH_PROOF_BUDGET,
-  })
+    requestedAcceptedCount: acceptedCount,
+    maxAttempts,
+  }))
 
   const canonicalIndex = new CanonicalSequenceTrie()
   const puzzles: ResearchCandidate[] = []
@@ -178,6 +175,15 @@ export function generateResearchCandidateCatalog(
     stratum: {
       id: stratumId,
       typeCount: options.typeCount,
+    },
+    generation: {
+      capacity,
+      requestedAcceptedCount: acceptedCount,
+      maxAttempts,
+      proofBudget: {
+        version: RESEARCH_PROOF_BUDGET_VERSION,
+        ...RESEARCH_PROOF_BUDGET,
+      },
     },
     reproducibility: {
       generatorVersion: GENERATOR_VERSION,
