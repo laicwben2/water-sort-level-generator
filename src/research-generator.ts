@@ -71,6 +71,9 @@ export function generateResearchCandidateCatalog(
       attempt,
     )
     const fullTubes = generateBalancedFullTubes(options.typeCount, capacity, candidateSeed)
+    const preProofStructure = options.onAttempt
+      ? analyzeStructure([...fullTubes.map((tube) => [...tube]), []], capacity)
+      : undefined
     const minimum = findMinimumEmptyTubes(fullTubes, {
       capacity,
       maxEmptyTubes: RESEARCH_PROOF_BUDGET.maxEmptyTubes,
@@ -79,6 +82,7 @@ export function generateResearchCandidateCatalog(
     })
 
     if (minimum.status !== 'exact') {
+      const lastAnalysis = minimum.analyses.at(-1)
       options.onAttempt?.({
         stratumId,
         typeCount: options.typeCount,
@@ -88,6 +92,13 @@ export function generateResearchCandidateCatalog(
         reasonCode: minimum.reason === 'budget-exceeded'
           ? 'MINIMUM_EMPTY_BUDGET_EXCEEDED'
           : 'MINIMUM_EMPTY_EXHAUSTED',
+        ...(preProofStructure ? { preProofStructure } : {}),
+        ...(lastAnalysis
+          ? {
+              lastProofEmptyTubes: lastAnalysis.emptyTubes,
+              lastProofMetrics: lastAnalysis.metrics,
+            }
+          : {}),
       })
       continue
     }
@@ -102,6 +113,7 @@ export function generateResearchCandidateCatalog(
         reasonCode: 'STARTS_SOLVED',
         minimumRequiredEmptyTubes: minimum.minimumRequiredEmptyTubes,
         optimalMoves: minimum.result.solution.length,
+        ...(preProofStructure ? { preProofStructure } : {}),
       })
       continue
     }
@@ -122,6 +134,7 @@ export function generateResearchCandidateCatalog(
         optimalMoves: minimum.result.solution.length,
         canonicalKey,
         puzzleId,
+        ...(preProofStructure ? { preProofStructure } : {}),
       })
       continue
     }
@@ -159,6 +172,7 @@ export function generateResearchCandidateCatalog(
       optimalMoves: minimum.result.solution.length,
       canonicalKey,
       puzzleId,
+      ...(preProofStructure ? { preProofStructure } : {}),
     })
   }
 
