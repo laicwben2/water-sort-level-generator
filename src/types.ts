@@ -29,6 +29,15 @@ export interface SolutionPathMetrics {
 }
 
 
+export interface StructureDescriptors {
+  totalRuns: number
+  normalizedTotalRuns: number
+  allDistinctTubeCount: number
+  typeSpreadMean: number
+  typeSpreadMax: number
+  initialDistinctNextStates: number
+}
+
 export interface MistakeAnalysisMetrics {
   analyzedStates: number
   decisionStates: number
@@ -79,6 +88,8 @@ export interface AuditPuzzle {
   canonicalKey: string
   solver: SolverMetrics & { optimalMoves: number }
   solutionPath: SolutionPathMetrics
+  /** Cheap, direction-neutral structural research descriptors. */
+  structure?: StructureDescriptors
   mistakeAnalysis?: MistakeAnalysisMetrics
   emptyTubeAnalysis: EmptyTubeAnalysis[]
 }
