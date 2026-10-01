@@ -246,7 +246,7 @@ export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
       if (catalog.reproducibility.puzzleIdentityVersion === undefined) {
         throw new Error(`Stable puzzle ID requires puzzle identity version: ${puzzle.id}`)
       }
-      const expectedPuzzleId = derivePuzzleIdFromCanonicalKey(puzzle.canonicalKey)
+      const expectedPuzzleId = derivePuzzleIdFromCanonicalKey(puzzle.canonicalKey, puzzle.capacity)
       if (puzzle.puzzleId !== expectedPuzzleId) {
         throw new Error(`Stable puzzle ID mismatch: ${puzzle.id}`)
       }
