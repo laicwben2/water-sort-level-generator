@@ -59,7 +59,10 @@ export interface EmptyTubeAnalysis {
 }
 
 export interface AuditPuzzle {
+  /** Legacy provenance-derived level ID retained for compatibility. */
   id: string
+  /** Stable structural puzzle identity. New catalogs emit this; historical audit-v2 files may omit it. */
+  puzzleId?: string
   difficulty: Difficulty
   candidateIndex: number
   candidateSeed: string
@@ -85,6 +88,8 @@ export interface AuditCatalog {
     canonicalVersion: string
     encodingVersion: string
     solverStateEncodingVersion: string
+    /** Puzzle identity derivation version. Optional for historical audit-v2 compatibility. */
+    puzzleIdentityVersion?: string
     batchSeed: string
     configFingerprint: string
   }
