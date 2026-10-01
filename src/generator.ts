@@ -20,6 +20,7 @@ import type {
   AuditPuzzle,
   Board,
   Difficulty,
+  GenerationAcceptanceMode,
   EmptyTubeAnalysis,
   SolverResult,
 } from './types'
@@ -36,6 +37,7 @@ export interface GenerateOptions {
   mistakeMaxVisitedStatesPerAlternative?: number
   mistakeMaxDepthPerAlternative?: number
   mistakeMaxPathStates?: number
+  acceptanceMode?: GenerationAcceptanceMode
 }
 
 export interface MinimumEmptySearchOptions {
@@ -113,7 +115,7 @@ export function findMinimumEmptyTubes(
   }
 }
 
-function matchesCurrentDifficultyWindow(
+function matchesLegacyMoveWindow(
   result: Extract<SolverResult, { status: 'solved' }>,
   profile: DifficultyProfile,
 ): boolean {
@@ -137,6 +139,7 @@ export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalo
   const capacity = options.capacity ?? 4
   const maxEmptyTubes = options.maxEmptyTubes ?? 5
   const batchSeed = options.batchSeed ?? 'water-sort:generator:v0.2:default'
+  const acceptanceMode = options.acceptanceMode ?? 'legacy-difficulty-window'
   assertPositiveSafeInteger(perDifficulty, 'perDifficulty')
   assertPositiveSafeInteger(maxAttempts, 'maxAttempts')
   assertPositiveSafeInteger(maxEmptyTubes, 'maxEmptyTubes')
@@ -164,13 +167,14 @@ export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalo
     mistakeMaxVisitedStatesPerAlternative: options.mistakeMaxVisitedStatesPerAlternative ?? 20_000,
     mistakeMaxDepthPerAlternative: options.mistakeMaxDepthPerAlternative ?? 120,
     mistakeMaxPathStates: options.mistakeMaxPathStates ?? null,
+    acceptanceMode,
   })
 
-  for (const [difficulty, profile] of Object.entries(profiles) as Array<[Difficulty, DifficultyProfile]>) {
+  for (const [sourceBucket, profile] of Object.entries(profiles) as Array<[Difficulty, DifficultyProfile]>) {
     let accepted = 0
 
     for (let attempt = 0; attempt < maxAttempts && accepted < perDifficulty; attempt += 1) {
-      const candidateSeed = deriveCandidateSeed(batchSeed, profileName, difficulty, attempt)
+      const candidateSeed = deriveCandidateSeed(batchSeed, profileName, sourceBucket, attempt)
       const fullTubes = generateBalancedFullTubes(profile.colors, capacity, candidateSeed)
 
       const minimum = findMinimumEmptyTubes(fullTubes, {
@@ -182,7 +186,8 @@ export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalo
       if (minimum.status !== 'exact') continue
 
       const path = analyzeSolutionPath(minimum.board, minimum.result.solution, capacity)
-      if (!matchesCurrentDifficultyWindow(minimum.result, profile)) continue
+      if (acceptanceMode === 'legacy-difficulty-window'
+        && !matchesLegacyMoveWindow(minimum.result, profile)) continue
 
       const mistakeAnalysis = options.analyzeMistakes
         ? analyzeMistakesAlongOptimalPath(minimum.board, minimum.result.solution, {
@@ -200,9 +205,10 @@ export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalo
       const canonicalKey = canonicalPuzzleKeyFromSequence(canonicalSequence)
       accepted += 1
       puzzles.push({
-        id: deriveLevelId(batchSeed, profileName, difficulty, capacity, attempt),
+        id: deriveLevelId(batchSeed, profileName, sourceBucket, capacity, attempt),
         puzzleId: derivePuzzleIdFromCanonicalKey(canonicalKey),
-        difficulty,
+        difficulty: sourceBucket,
+        sourceBucket,
         candidateIndex: attempt,
         candidateSeed,
         capacity,
@@ -222,7 +228,7 @@ export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalo
     }
 
     if (accepted < perDifficulty) {
-      throw new Error(`Only generated ${accepted}/${perDifficulty} ${difficulty} puzzles after ${maxAttempts} attempts`)
+      throw new Error(`Only generated ${accepted}/${perDifficulty} ${sourceBucket} source-bucket puzzles after ${maxAttempts} attempts`)
     }
   }
 
@@ -237,6 +243,7 @@ export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalo
       encodingVersion: ENCODING_VERSION,
       solverStateEncodingVersion: SOLVER_STATE_ENCODING_VERSION,
       puzzleIdentityVersion: PUZZLE_ID_VERSION,
+      acceptanceMode,
       batchSeed,
       configFingerprint,
     },
