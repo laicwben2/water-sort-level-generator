@@ -35,6 +35,7 @@ export interface StructureDescriptors {
   allDistinctTubeCount: number
   typeSpreadMean: number
   typeSpreadMax: number
+  topDistinctTypeCount: number
   initialDistinctNextStates: number
 }
 
@@ -112,6 +113,47 @@ export interface AuditCatalog {
     configFingerprint: string
   }
   puzzles: AuditPuzzle[]
+}
+
+
+export interface ResearchCandidate {
+  puzzleId: string
+  stratumId: string
+  typeCount: number
+  candidateIndex: number
+  candidateSeed: string
+  capacity: number
+  emptyTubes: number
+  minimumRequiredEmptyTubes: number
+  board: Board
+  optimalSolution: Move[]
+  canonicalKey: string
+  solver: SolverMetrics & { optimalMoves: number }
+  solutionPath: SolutionPathMetrics
+  structure: StructureDescriptors
+  emptyTubeAnalysis: EmptyTubeAnalysis[]
+}
+
+export interface ResearchCandidateCatalog {
+  version: 'research-candidates-v1'
+  generator: 'balanced-shuffle+bounded-a-star'
+  generatorFamily: 'uniform-v1'
+  stratum: {
+    id: string
+    typeCount: number
+  }
+  reproducibility: {
+    generatorVersion: string
+    rngVersion: string
+    canonicalVersion: string
+    encodingVersion: string
+    solverStateEncodingVersion: string
+    puzzleIdentityVersion: string
+    proofBudgetVersion: string
+    batchSeed: string
+    configFingerprint: string
+  }
+  puzzles: ResearchCandidate[]
 }
 
 export interface RuntimeLevel {
