@@ -43,6 +43,7 @@ describe('structure population summary', () => {
       allDistinctTubeCount: 0,
       typeSpreadMean: 1,
       typeSpreadMax: 1,
+      topDistinctTypeCount: 1,
       initialDistinctNextStates: 1,
     }
     const second: StructureDescriptors = {
@@ -51,6 +52,7 @@ describe('structure population summary', () => {
       allDistinctTubeCount: 2,
       typeSpreadMean: 2,
       typeSpreadMax: 2,
+      topDistinctTypeCount: 2,
       initialDistinctNextStates: 3,
     }
 
@@ -75,6 +77,7 @@ describe('structure population summary', () => {
       allDistinctTubeCount: 0,
       typeSpreadMean: 1,
       typeSpreadMax: 1,
+      topDistinctTypeCount: 1,
       initialDistinctNextStates: 1,
     }
     const summary = summarizeStructurePopulation([
