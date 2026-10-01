@@ -10,7 +10,7 @@ import { PUZZLE_ID_VERSION, derivePuzzleIdFromCanonicalKey } from './identity'
 import { CanonicalSequenceTrie } from './dedup'
 import { analyzeMistakesAlongOptimalPath } from './difficulty'
 import { isSolved } from './rules'
-import { PROFILE_SETS, type DifficultyProfile, type ProfileName } from './profiles'
+import { PROFILE_SETS, type GenerationBucketProfile, type ProfileName } from './profiles'
 import {
   deriveCandidateSeed,
   deriveLevelId,
@@ -22,7 +22,7 @@ import type {
   AuditCatalog,
   AuditPuzzle,
   Board,
-  Difficulty,
+  SourceBucket,
   GenerationAcceptanceMode,
   EmptyTubeAnalysis,
   SolverResult,
@@ -121,7 +121,7 @@ export function findMinimumEmptyTubes(
 
 function matchesLegacyMoveWindow(
   result: Extract<SolverResult, { status: 'solved' }>,
-  profile: DifficultyProfile,
+  profile: GenerationBucketProfile,
 ): boolean {
   return result.solution.length >= profile.minMoves
     && result.solution.length <= profile.maxMoves
@@ -177,7 +177,7 @@ export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalo
     acceptanceMode,
   })
 
-  for (const [sourceBucket, profile] of Object.entries(profiles) as Array<[Difficulty, DifficultyProfile]>) {
+  for (const [sourceBucket, profile] of Object.entries(profiles) as Array<[SourceBucket, GenerationBucketProfile]>) {
     let accepted = 0
 
     for (let attempt = 0; attempt < maxAttempts && accepted < perDifficulty; attempt += 1) {
