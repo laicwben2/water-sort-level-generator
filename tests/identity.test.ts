@@ -35,8 +35,16 @@ describe('stable puzzle identity', () => {
     const board = [[0, 1], [1, 0], []]
     const key = canonicalPuzzleKey(board)
 
-    expect(derivePuzzleIdFromCanonicalKey(key, 'classic-v1'))
-      .not.toBe(derivePuzzleIdFromCanonicalKey(key, 'classic-v2'))
+    expect(derivePuzzleIdFromCanonicalKey(key, 2, 'classic-v1'))
+      .not.toBe(derivePuzzleIdFromCanonicalKey(key, 2, 'classic-v2'))
+  })
+
+  it('namespaces identity by capacity', () => {
+    const board = [[0, 1], [1, 0], []]
+    const key = canonicalPuzzleKey(board)
+
+    expect(derivePuzzleIdFromCanonicalKey(key, 2))
+      .not.toBe(derivePuzzleIdFromCanonicalKey(key, 4))
   })
 
   it('is deterministic and explicitly versioned', () => {
@@ -45,7 +53,7 @@ describe('stable puzzle identity', () => {
     const second = derivePuzzleId(board)
 
     expect(first).toBe(second)
-    expect(first).toContain('ws-p1-classic-v1-')
+    expect(first).toContain('ws-p1-classic-v1-k4-')
     expect(PUZZLE_ID_VERSION).toBe('puzzle-id-v1')
   })
 })
