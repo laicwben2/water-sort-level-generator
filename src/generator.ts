@@ -210,7 +210,7 @@ export function generateAuditCatalog(options: GenerateOptions = {}): AuditCatalo
       accepted += 1
       puzzles.push({
         id: deriveLevelId(batchSeed, profileName, sourceBucket, capacity, attempt),
-        puzzleId: derivePuzzleIdFromCanonicalKey(canonicalKey),
+        puzzleId: derivePuzzleIdFromCanonicalKey(canonicalKey, capacity),
         difficulty: sourceBucket,
         sourceBucket,
         candidateIndex: attempt,
