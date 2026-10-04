@@ -17,7 +17,8 @@
     "certify": "node --import tsx src/cli/certify.ts",
     "compare:shards": "node --import tsx src/cli/compare-shards.ts",
     "analyze:shard": "node --import tsx src/cli/analyze-shard.ts",
-    "recover:artifact": "node --import tsx src/cli/recover-artifact.ts"
+    "recover:artifact": "node --import tsx src/cli/recover-artifact.ts",
+    "report:coverage": "node --import tsx src/cli/report-coverage.ts"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",

@@ -50,4 +50,12 @@ local generate／certify／merge／reanalyze 改為父程序監督 worker；每 
 
 階段包含 load、proof、analysis、generate、validation、assemble、serialize、write；inclusive nested phases 不可直接全部相加。原 `.run.json` 保留相容的 partial timing，完整效能以 process report 為準。新增 solver operational allocatedNodes／peakQueue／reopens；不進入 deterministic artifact，也不影響 integer correctness budgets。
 
-第六段驗證結果：87 tests／12 files 與 build 通過；新增 CLI report 斷言已驗证含 write、solver calls 及 terminal RSS。
+第六段驗證結果：87 tests／12 files 與 build 通過；新增 CLI report 斷言已驗證含 write、solver calls 及 terminal RSS。
+
+## 第七段：coverage 與穩定 namespace（R07、R10）
+
+新增 `report:coverage -- --input=SHARD --output=REPORT [--comparison=RESEARCH]`，不呼叫 solver，以顏色數／最佳解長分組顯示 selected steps、skipped、eligible、known、UNKNOWN；比較研究檔時使用同一 candidate subset 的 baseline，避免不同母群相混。明示 deterministic 採樣不是隨機樣本、raw counts 尚無人類難度校準；不改 sampling／analysisVersion。高 coverage sensitivity 與人類資料校準仍需獨立研究。
+
+新增 `candidateIdentity(shard,index)`：完整 config＋reproducibility namespace＋index 作穩定結構身份，範圍／catalog digest 不進入身份。既有 `puzzle.id` 僅為 namespace 內 alias，未改寫 3,000 題。其他工作匯入時保存完整 identity，hash 僅供查找提示；`(sourceShardDigest,index)` 另外作特定 artifact locator。
+
+第七段驗證結果：coverage／identity 兩項測試及 build 通過；3,000 題 coverage report 已產生於 ignored output，未改原 artifacts。
