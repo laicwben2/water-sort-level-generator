@@ -75,3 +75,14 @@ local generate／certify／merge／reanalyze 改為父程序監督 worker；每 
 僅做 dry-run，不新增正式題目的例子：`npm run batch:local -- --baseline=data/batches/mac-local-pilot-v1/catalog.json --directory=data/batches/next-local-series --start-index=3000 --end-index=3099 --dry-run=true`。啟動時顯示 pinned runtime、磁碟、候選範圍與下一個 index。恢復：`--directory=DIR --resume=true`；只看狀況：`--status=true`；發布失敗後只重送：`--publish-retry=true`。
 
 第九段驗證結果：92 tests／15 files 與 build 通過。暫存 Git repository／本機 bare remote 整合測試涵蓋 dry-run 零產題、push 拒絕、publish retry、resume 不重產。已對正式 3,000 題基線做下一批的 dry-run，未新增題目。
+
+## 第十段：邊界補強與 CLI 一致性
+
+研究 validator 增加完整 structural／path schema 及 path accounting，未提供 source 時也拒絕缺失 metrics；shared writer 即使 close 失敗仍清理 temporary file。共用 parser／help／version 擴充至 compare、舊分析／exporters 與 benchmark；benchmark candidate index 改為 strict safe integer。舊 export payload contract 不變。本段補強先前的 R03／R05／R06／R12，並整理新工具格式與完整操作文件。
+
+
+第十段與最終驗證結果：93 tests／15 files、`npm run build`、`git diff --check` 通過。再次核對全部 29 組 shard／manifest 加 catalog 共 59 份 SHA-256 均與原 summary 吻合。原 pilot 加 29 批共 30 份 shards 經新 index 驗證、物化，輸出與原 42,293,397-byte catalog 完全 byte-identical；index 為 1,126,599 bytes。測試輸出位於暫存目錄並已清除，未新增正式題目或改寫既有檔案。
+
+已逐段提交推送的前九段 commit：`f48835c`、`1dbd8e4`、`56215fe`、`d151738`、`4d43fbd`、`f2a652c`、`cab5435`、`4ddc2e5`、`40188f0`。第十段以本文件所在 commit 記錄。分支維持 `feat/local-deterministic-shards-v1`，未合併回 base branch。環境仍為 macOS ARM64、Node 24.19.0／npm 11.17.0；lockfile 未改，正式題庫仍為 3,000 題，下一個 index 為 3000。
+
+剩餘工作：R07 高 coverage 敏感度研究與人類校準；R08 進一步 profiling／穩定 solver 加速證據；Windows 原生及整機斷電恢復驗證。R02 新 index 避免逐批重寫完整 payload，但 metadata 仍增長，物化仍需完整資料；串流 serializer 尚未實作。這些限制不改變原題庫正確性與既有 deterministic contract。

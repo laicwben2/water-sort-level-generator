@@ -3,8 +3,9 @@ import { dirname, resolve } from 'node:path'
 import { exportSolutionArtifact } from '../exporter'
 import type { AuditCatalog } from '../types'
 import { validateAuditCatalog } from '../validator'
-import { stringArg } from './args'
+import { parseCliOptions, stringArg } from './args'
 
+parseCliOptions(['input','output'],'Export historical audit-v2 solutions: --input=AUDIT --output=SOLUTIONS')
 const inputPath = resolve(stringArg('input', 'data/audit/catalog-expanded.json')!)
 const outputPath = resolve(stringArg('output', 'data/output/solutions-v1.json')!)
 

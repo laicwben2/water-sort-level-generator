@@ -1,14 +1,16 @@
-# 目前狀況與階段交接 — 2026-10-04
+# 目前狀況與階段交接 — 2026-10-05
 
 本階段已完成，依使用者指示停在累積 **3,000 題**。本機批次工作已結束；本次文件更新不啟動新的生成。後續增加題目或重新分析，待使用者另行指示。
 
-後續已依使用者指示完成本輪效能、操作體驗與可靠性審查，共 12 項發現，逐項記錄至 [審查與改善待辦](review-backlog.md)，包含實測證據、具體改善方案與驗證方式；全部尚未實作。此次僅修改文件；為量測使用既有資料進行讀取／驗證與小範圍 reanalysis，未新增正式題目或改寫既有 artifacts。已再次核對 58 份 shard／manifest 與累積 catalog 的 SHA-256 均與原紀錄一致。待辦優先順序與量測限制以該文件為準。
+後續審查記錄 12 項發現；已依使用者指示分 10 段改善，每段更新文件、提交及推送。詳見 [改善實作紀錄](implementation-progress.md) 及 [審查待辦目前狀態](review-backlog.md#2026-10-05-實作狀態)。新增完整 worker telemetry、資料驗證、成組發布恢復、選題續跑分析、coverage 報表、穩定 namespace、immutable catalog index 與本機批次工具；修正 CLI 安全及重複計算。完整驗證 93 tests／15 files 與 build 通過。原有 58 份 shard／manifest 加 catalog 共 59 份 checksum 全數吻合；30 份 shards 經新 index 物化仍與原 catalog 完全 byte-identical。未新增正式題目。
+
+R07 的高 coverage 敏感度研究與人類校準仍待進行；R08 尚無穩定 solver 加速倍率；Windows 原生與整機斷電恢復認證尚未完成。
 
 ## 已完成與發布
 
 - Repository：<https://github.com/laicwben2/water-sort-level-generator.git>。
 - 分支：`feat/local-deterministic-shards-v1`；資料與最終驗證已推送，尚未合併回 base branch。
-- 實作 commit：`1c6418ebdf41f8d410fb1890821badceca94960e`。
+- 初始實作 commit：`1c6418ebdf41f8d410fb1890821badceca94960e`。
 - 本次文件整理前的完整交接 commit：`fe8beaaa8af5312272b68cfcf2fa49686f154f32`；此版本已包含 3,000 題與最終驗證。
 - 原 pilot 100 題，加上第一輪 20 批 × 100 題、第二輪 9 批 × 100 題，共處理 3,000 candidates，範圍 **0–2999 inclusive**。
 - 所有追加批次均在本機依序生成、驗證、累積整合去重、提交並推送。原始 shards 與 run manifests 保留，累積 catalog 更新。
@@ -46,7 +48,7 @@ Seed 維持 `mac-local-pilot-v1`。設定為 colors 5／6／7、capacity 4、max
 
 追加 29 批 manifest 的生成／分析／驗證 elapsed 合計約 **266.821 秒**，不含原 pilot，也不含檔案寫入、額外 merge／validation、commit／push 時間。最大單批記錄 maxRSS 約 **281.8 MiB**，為寫檔前的 resource snapshot；不是累積 merge 的記憶體上限。機器負載與題目成本會影響速度，不將此數字當作後續保證。
 
-實作階段 `npm ci`、68 tests／9 files 與 build 通過。此後產題使用相同實作與 lockfile；原始 shards 與累積 catalog 已逐批驗證。本次僅更新文件，沒有重新生成或修改題目。
+實作階段 `npm ci`、68 tests／9 files 與 build 通過。此後產題使用相同實作與 lockfile；原始 shards 與累積 catalog 已逐批驗證。2026-10-05 改善實作後的完整測試為 93 tests／15 files 與 build 通過，沒有重新生成或修改正式題目。
 
 ## 待辦與恢復方式
 

@@ -2,7 +2,9 @@ import { mkdir, writeFile } from 'node:fs/promises'
 import { spawnSync } from 'node:child_process'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { positiveIntArg, stringArg } from './args'
+import { parseCliOptions, positiveIntArg, stringArg } from './args'
+
+parseCliOptions(['min-types','max-types','samples','capacity','max-empty','max-states','max-depth','seed','output'],'Local solver benchmark: --min-types=N --max-types=N --samples=N --output=REPORT [--capacity=N --max-empty=N --max-states=N --max-depth=N --seed=SEED]')
 
 interface CaseResult {
   types: number

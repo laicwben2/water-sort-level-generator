@@ -19,6 +19,25 @@
 | R11 | P2 | recovery 數值一致性驗證缺口 | 記憶體副本 mutation 重現 |
 | R12 | P1 | `--help`／錯字落入 legacy 產題 | CLI 分支靜態確認 |
 
+## 2026-10-05 實作狀態
+
+以下各節「待辦」與程式位置保留審查當時的歷史證據。現在狀態以本表及 [分段實作紀錄](implementation-progress.md) 為準；不是所有研究或平台驗證都已完成。
+
+| 項目 | 目前成果／剩餘工作 |
+| --- | --- |
+| R01 | worker 全流程與 nested phases、終止狀態、CPU／RSS；runner 分列 Git 耗時。強制終止的資源資料可能不可用。 |
+| R02 | 深比較減少配置；immutable index 追加與 v1 adapter 完成。串流 serializer 尚未實作，物化時仍處理完整 payload。 |
+| R03 | checksum journal／complete marker 與可恢復發布完成；整機斷電及 Windows 原生驗證待辦。 |
+| R04 | 合併路徑走訪、重用 packed transitions 完成。 |
+| R05 | strict flags 與正整數分析預算檢查完成。 |
+| R06 | research v1／v2 validator、來源驗證、選題、checkpoint／resume 完成。 |
+| R07 | 分組 coverage 及同母群比較工具完成；高 coverage 敏感度研究、人類校準待辦。 |
+| R08 | transition metadata 重用、operational nodes／queue／reopens 完成；A/B 未證明穩定 solver 加速，進一步 profiling 待辦。 |
+| R09 | tracked plan、本機批次 runner、dry-run／status／resume／publish retry 完成；同目錄僅支援單一 runner。 |
+| R10 | 完整 config／reproducibility namespace／index 的穩定 identity helper 完成；舊 id 保留為 namespace 內 alias。 |
+| R11 | recovery arithmetic 與研究 schema／accounting 驗證完成。 |
+| R12 | CLI help／version 安全返回、錯字拒絕、legacy 預設不覆寫完成。 |
+
 ## R01 · P2 · 執行紀錄缺少完整流程耗時與真正的程序尖峰記憶體
 
 - 狀態：待辦；已確認程式行為。

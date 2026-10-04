@@ -8,8 +8,9 @@ import {
 } from '../difficulty'
 import type { AuditCatalog, MistakeAnalysisConfig } from '../types'
 import { validateAuditCatalog } from '../validator'
-import { positiveIntArg, stringArg } from './args'
+import { parseCliOptions, positiveIntArg, stringArg } from './args'
 
+parseCliOptions(['input','output','max-states','max-depth','max-steps','max-alternatives','severe-penalty'],'Legacy audit reanalysis: --input=AUDIT --output=RESEARCH_AUDIT [--max-states=N --max-depth=N --max-steps=N --max-alternatives=N --severe-penalty=N]')
 const inputPath = resolve(stringArg('input', 'data/audit/catalog-expanded.json')!)
 const outputPath = resolve(stringArg('output', 'data/audit/catalog-expanded-difficulty-v2.json')!)
 

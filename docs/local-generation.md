@@ -117,3 +117,43 @@ npm --version
 Other machines install the exact official runtime normally (or via nvm on macOS); `.local` is not committed or needed by Windows.
 
 CLI scripts use `node --import tsx` to execute TypeScript without the tsx CLI's additional IPC listener. This works with native Node on both platforms and permits generation inside a restricted local workspace without relaxing network/socket permissions.
+
+
+## 2026-10-05 改善後的操作入口
+
+保持相同 exact Node 24.19.0／npm 11.17.0 與 lockfile。共用 CLI 提供 `--help`／`--version`，未知、空值、重複 flags 會拒絕；數字必須為合法 safe integer，分析預算須為正。Legacy generate 預設不覆寫，只有明確 `--overwrite=true` 可覆寫。
+
+新生成的 shard 與 `.run.json` 先 staging，再發布 `.pending.json` checksum journal，最後 `.complete.json`。中斷後以 `npm run recover:artifact -- --file=output/shard.json` 恢復，不重新求解。歷史題庫不補造 marker。完整 worker 流程紀錄位於 `OUTPUT.process-runs/UUID.json`；原 manifest 為較早的 partial snapshot。Inclusive nested phases 不可全部相加；強制終止缺失資源數字為 null，report 自身寫入與父程序 RAM 不包含在 worker 資源數字。
+
+研究分析可選範圍、只選不完整題並續跑；保持來源、選題、設定及輸出路徑一致：
+
+```sh
+npm run analyze:shard -- --input=data/batches/mac-local-pilot-v1/catalog.json --output=output/research-selected.json --start-index=0 --end-index=99 --only-incomplete=true
+# 中斷後，在同一命令加 --resume=true
+npm run validate -- --file=output/research-selected.json --source=data/batches/mac-local-pilot-v1/catalog.json
+npm run report:coverage -- --input=data/batches/mac-local-pilot-v1/catalog.json --output=output/coverage.json --comparison=output/research-selected.json
+```
+
+未提供 source 的研究驗證會明示 `sourceVerified=false`。Coverage 比較使用相同 candidate subset；工具不自動產生新難度分類。另一個工作匯入題目時，保存 `candidateIdentity(shard,index)` 所提供的完整 namespace／config／index；既有 puzzle id 是 namespace 內 alias。
+
+大批量發布使用 immutable shards 與小型 index；需要既有 v1 catalog 時才物化。外來 index 會完整驗證所有參照 checksum 與投影；輸出不覆寫：
+
+```sh
+npm run index:catalog -- output/shard-a.json output/shard-b.json --output=output/index.json
+npm run index:catalog -- --input=output/index.json
+npm run index:catalog -- --input=output/index.json --materialize=output/catalog.json
+```
+
+批次工具 quota 是 candidate range；不保證 accepted 數量。下例只預覽下一批，不新增題目：
+
+```sh
+npm run batch:local -- --baseline=data/batches/mac-local-pilot-v1/catalog.json --directory=data/batches/next-local-series --start-index=3000 --end-index=3099 --batch-size=100 --dry-run=true
+# 已建立 plan 才能使用以下狀態／恢復入口
+npm run batch:local -- --directory=data/batches/next-local-series --status=true
+npm run batch:local -- --directory=data/batches/next-local-series --resume=true
+npm run batch:local -- --directory=data/batches/next-local-series --publish-retry=true
+```
+
+獲授權啟動時移除 dry-run；預設不發布。建立 plan 時加 `--publish=true` 才會每批 commit／push 到 origin 的目前 branch。Tracked plan 綁定來源 src tree／lockfile、baseline checksum、namespace 與分支；ignored state 保存工作進度。發布失敗可重送已完成資料，不重產題、不 force-push、不自動合併遠端分歧。同目錄僅支援單一 runner，需乾淨的工作樹，且發布目錄不可被 Git 忽略。現在正式題庫仍停在 index 2999。
+
+詳細相容性證據與限制見 [改善實作紀錄](implementation-progress.md)；Windows 原生 certification、人類難度校準與整機斷電恢復仍待獨立驗證。

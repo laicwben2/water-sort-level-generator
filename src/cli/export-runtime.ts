@@ -3,8 +3,9 @@ import { dirname, resolve } from 'node:path'
 import { exportRuntimePack } from '../exporter'
 import type { AuditCatalog } from '../types'
 import { validateAuditCatalog } from '../validator'
-import { stringArg } from './args'
+import { parseCliOptions, stringArg } from './args'
 
+parseCliOptions(['input','output','pack-id'],'Export historical audit-v2 runtime pack: --input=AUDIT --output=PACK --pack-id=ID')
 const input = stringArg('input')
 if (!input) throw new Error('Usage: npm run export:runtime -- --input=data/audit/catalog.json --pack-id=production-v1')
 

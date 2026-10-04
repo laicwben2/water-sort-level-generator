@@ -14,6 +14,7 @@ export function positiveIntArg(name: string, fallback: number): number {
 /** Validate before any I/O or expensive work. Help never starts a workload. */
 export function parseCliOptions(allowed: readonly string[], usage: string, positional = false): string[] {
   const args = process.argv.slice(2)
+  if (args.includes('--version')) { console.log(GENERATOR_VERSION); process.exit(0) }
   if (args.includes('--help') || args.includes('-h')) {
     console.log(usage)
     process.exit(0)
@@ -29,3 +30,4 @@ export function parseCliOptions(allowed: readonly string[], usage: string, posit
   }
   return paths
 }
+import {GENERATOR_VERSION} from '../version'
