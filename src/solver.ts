@@ -75,7 +75,8 @@ export function listLegalMoves(board: Board, capacity = 4): Move[] {
   return listPackedTransitions(packBoard(board, capacity), capacity).map(({ move }) => move)
 }
 
-export function analyzeSolutionPath(initialBoard: Board, solution: readonly Move[], capacity = 4): SolutionPathMetrics {
+export interface PathObservers { onStep?: (board: Board, move: Move) => void; onFinish?: (board: Board) => void }
+export function analyzeSolutionPath(initialBoard: Board, solution: readonly Move[], capacity = 4, observers: PathObservers = {}): SolutionPathMetrics {
   let board = initialBoard.map((tube) => [...tube])
   let decisionSteps = 0
   let forcedSteps = 0
@@ -83,6 +84,7 @@ export function analyzeSolutionPath(initialBoard: Board, solution: readonly Move
   let maximumChoices = 0
 
   for (const move of solution) {
+    observers.onStep?.(board, move)
     const choices = listLegalMoves(board, capacity).length
     totalChoices += choices
     maximumChoices = Math.max(maximumChoices, choices)
@@ -90,6 +92,7 @@ export function analyzeSolutionPath(initialBoard: Board, solution: readonly Move
     else decisionSteps += 1
     board = applyMove(board, move)
   }
+  observers.onFinish?.(board)
 
   return {
     decisionSteps,

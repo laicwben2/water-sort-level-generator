@@ -17,3 +17,13 @@
 R06 的選題／checkpoint 在下一段實作；現階段保持原有研究輸出格式。
 
 第二段驗證結果：82 tests／10 files、build 通過；已發布 research smoke artifact 加來源驗證通過。
+
+## 第三段：相容的效能改善（R02 短期、R04、R08 初步）
+
+完整物件比較改用 deep strict equality，避免為比較額外建立 sorted JSON；digest 與輸出 serializer 保持原樣。路徑驗證／choice／staging 統計合併為一次走訪；mistake analysis 直接重用 packed transitions 的 board／key。每個 expansion 預計算 tube metadata，BigInt shift constant 只建立一次；transition／heap 排序與 exact identity 保持。
+
+實測 3,000 題 validation 約 1.32–1.55 秒（舊審查觀測 2.55 秒；不同輪負載不可當穩定倍率）；前一量測程序 maxRSS 354.8 MiB。交錯 A/B 的 warm 20 題 reanalysis：舊 477.97／453.80 ms、新 486.03／445.17 ms，尚未證明 solver 有穩定加速，因此不承諾該項倍數。TypedArray 排序方案已撤回。R02 長期 immutable manifest、R08 operational queue 指標與進一步 profiling 尚在後續。
+
+相容驗證新增：既有 candidate 50 完整結果與 100 題 pilot 的所有 research records 相等；原題庫 3,000 題新版 validator 通過、digest 不變。
+
+第三段驗證結果：84 tests／10 files 與 build 通過。

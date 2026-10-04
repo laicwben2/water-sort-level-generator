@@ -7,6 +7,7 @@ export const MAX_SOLVER_CAPACITY = 4
 const CELL_BITS = 5
 const CELL_MASK = 0b1_1111
 const TUBE_BITS = MAX_SOLVER_CAPACITY * CELL_BITS
+const TUBE_SHIFT = BigInt(TUBE_BITS)
 const TUBE_MASK = (1 << TUBE_BITS) - 1
 
 export type PackedBoard = Uint32Array
@@ -94,7 +95,7 @@ export function topRunLengthPacked(code: number, capacity = MAX_SOLVER_CAPACITY)
 export function packedStateKey(board: PackedBoard): bigint {
   const sorted = Array.from(board).sort((a, b) => a - b)
   let key = BigInt(board.length)
-  for (const tube of sorted) key = (key << BigInt(TUBE_BITS)) | BigInt(tube & TUBE_MASK)
+  for (const tube of sorted) key = (key << TUBE_SHIFT) | BigInt(tube & TUBE_MASK)
   return key
 }
 
@@ -212,17 +213,20 @@ export function listPackedTransitions(
   const currentKey = packedStateKey(board)
   const seenNextStates = new Set<bigint>()
   const transitions: Array<{ move: Move; board: PackedBoard; key: bigint; joinsColor: number }> = []
+  const lengths = Array.from(board, code => tubeLength(code, capacity))
+  const tops = Array.from(board, code => topType(code, capacity))
+  const runs = Array.from(board, code => topRunLengthPacked(code, capacity))
 
   for (let from = 0; from < board.length; from += 1) {
-    if (tubeLength(board[from], capacity) === 0) continue
+    if (lengths[from] === 0) continue
     const seenTargets = new Set<number>()
 
     for (let to = 0; to < board.length; to += 1) {
       const targetCode = board[to]
       if (seenTargets.has(targetCode)) continue
 
-      const move = calculatePackedPour(board, from, to, capacity)
-      if (!move) continue
+      if (from === to || lengths[to] >= capacity || (tops[to] !== undefined && tops[to] !== tops[from])) continue
+      const move: Move = { from, to, color: tops[from]!, amount: Math.min(runs[from], capacity - lengths[to]) }
       seenTargets.add(targetCode)
 
       const nextBoard = applyPackedMove(board, move, capacity)
@@ -234,7 +238,7 @@ export function listPackedTransitions(
         move,
         board: nextBoard,
         key,
-        joinsColor: topType(targetCode, capacity) === move.color ? 1 : 0,
+        joinsColor: tops[to] === move.color ? 1 : 0,
       })
     }
   }

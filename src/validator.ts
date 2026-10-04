@@ -1,9 +1,8 @@
 import { isDeepStrictEqual } from 'node:util'
 import { validateRecoveryTotals } from './research-metrics'
 import { CANONICAL_VERSION, ENCODING_VERSION, canonicalPuzzleKey } from './canonical'
-import { applyMove, calculatePour, isSolved } from './rules'
+import { calculatePour, isSolved } from './rules'
 import { analyzeOptimalPathDifficulty, analyzeStructuralDifficulty } from './difficulty'
-import { analyzeSolutionPath } from './solver'
 import type { AuditCatalog } from './types'
 import { GENERATOR_VERSION, RNG_VERSION, SOLVER_STATE_ENCODING_VERSION } from './version'
 
@@ -83,20 +82,17 @@ export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
       throw new Error(`Color conservation failure: ${puzzle.id}`)
     }
 
-    let board = puzzle.board.map((tube) => [...tube])
-    for (const expectedMove of puzzle.optimalSolution) {
-      const move = calculatePour(board, expectedMove.from, expectedMove.to, puzzle.capacity)
-      if (!isDeepStrictEqual(move, expectedMove)) {
-        throw new Error(`Invalid saved move: ${puzzle.id}`)
-      }
-      board = applyMove(board, expectedMove)
-    }
-
-    if (!isSolved(board, puzzle.capacity)) throw new Error(`Solution does not finish: ${puzzle.id}`)
+    const optimalPath = analyzeOptimalPathDifficulty(puzzle.board, puzzle.optimalSolution, puzzle.capacity, {
+      onStep(board, expectedMove) {
+        if (!isDeepStrictEqual(calculatePour(board, expectedMove.from, expectedMove.to, puzzle.capacity), expectedMove)) throw new Error(`Invalid saved move: ${puzzle.id}`)
+      },
+      onFinish(board) { if (!isSolved(board, puzzle.capacity)) throw new Error(`Solution does not finish: ${puzzle.id}`) },
+    })
+    const {optimalMoves: _moves, movesIntoEmptyTube: _empty, movesJoiningSameType: _joins, stagingRatio: _ratio, ...path} = optimalPath
     if (puzzle.optimalSolution.length !== puzzle.solver.optimalMoves) {
       throw new Error(`Solution length mismatch: ${puzzle.id}`)
     }
-    if (!isDeepStrictEqual(analyzeSolutionPath(puzzle.board, puzzle.optimalSolution, puzzle.capacity), puzzle.solutionPath)) {
+    if (!isDeepStrictEqual(path, puzzle.solutionPath)) {
       throw new Error(`Solution path metrics mismatch: ${puzzle.id}`)
     }
 
@@ -109,11 +105,6 @@ export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
       if (!isDeepStrictEqual(structural, puzzle.difficultyV2.structural)) {
         throw new Error(`Difficulty v2 structural metrics mismatch: ${puzzle.id}`)
       }
-      const optimalPath = analyzeOptimalPathDifficulty(
-        puzzle.board,
-        puzzle.optimalSolution,
-        puzzle.capacity,
-      )
       if (!isDeepStrictEqual(optimalPath, puzzle.difficultyV2.optimalPath)) {
         throw new Error(`Difficulty v2 optimal-path metrics mismatch: ${puzzle.id}`)
       }

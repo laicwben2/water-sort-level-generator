@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto'
+import { isDeepStrictEqual } from 'node:util'
 import { CANONICAL_VERSION, ENCODING_VERSION, canonicalPuzzleKey, canonicalPuzzleSequence } from './canonical'
 import { generateBalancedFullTubes } from './candidate'
 import { analyzeDifficultyV2, DEFAULT_MISTAKE_ANALYSIS_CONFIG } from './difficulty'
@@ -213,7 +214,7 @@ function checkMetricNumbers(value: unknown): void {
   }
 }
 function assertEqual(actual: unknown, expected: unknown, message: string): void {
-  if (serialize(actual) !== serialize(expected)) throw new Error(message)
+  if (!isDeepStrictEqual(actual, expected)) throw new Error(message)
 }
 
 // This validates saved proof metadata and replay, never repeats expensive solves.

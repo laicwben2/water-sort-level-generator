@@ -1,6 +1,6 @@
 import { applyMove, isUniform, topColor } from './rules'
-import { analyzeSolutionPath, listLegalMoves, solveBoard } from './solver'
-import { packBoard, packedStateKey } from './solver-state'
+import { analyzeSolutionPath, solveBoard, type PathObservers } from './solver'
+import { listPackedTransitions, packBoard, packedStateKey, unpackBoard } from './solver-state'
 import type {
   Board,
   DifficultyV2Metrics,
@@ -98,18 +98,20 @@ export function analyzeOptimalPathDifficulty(
   initialBoard: Board,
   optimalSolution: readonly Move[],
   capacity = 4,
+  observers: PathObservers = {},
 ): OptimalPathDifficultyMetrics {
-  const base = analyzeSolutionPath(initialBoard, optimalSolution, capacity)
-  let board = initialBoard.map((tube) => [...tube])
   let movesIntoEmptyTube = 0
   let movesJoiningSameType = 0
 
-  for (const move of optimalSolution) {
-    const target = board[move.to]
-    if (target.length === 0) movesIntoEmptyTube += 1
-    else if (topColor(target) === move.color) movesJoiningSameType += 1
-    board = applyMove(board, move)
-  }
+  const base = analyzeSolutionPath(initialBoard, optimalSolution, capacity, {
+    onStep(board, move) {
+      const target = board[move.to]
+      if (target.length === 0) movesIntoEmptyTube += 1
+      else if (topColor(target) === move.color) movesJoiningSameType += 1
+      observers.onStep?.(board, move)
+    },
+    onFinish: observers.onFinish,
+  })
 
   return {
     optimalMoves: optimalSolution.length,
@@ -180,16 +182,15 @@ export function analyzeMistakeRecovery(
       const optimalSuccessorKey = boardKey(optimalSuccessor, capacity)
       const alternatives: Array<{ move: Move; board: Board; key: bigint }> = []
 
-      for (const move of listLegalMoves(board, capacity)) {
-        const successor = applyMove(board, move)
-        const key = boardKey(successor, capacity)
+      for (const transition of listPackedTransitions(packBoard(board, capacity), capacity)) {
+        const {move, key} = transition
         if (key === optimalSuccessorKey) {
           if (move.from !== optimalMove.from || move.to !== optimalMove.to) {
             equivalentOptimalSuccessorsExcluded += 1
           }
           continue
         }
-        alternatives.push({ move, board: successor, key })
+        alternatives.push({ move, board: unpackBoard(transition.board, capacity), key })
       }
 
       eligibleAlternatives += alternatives.length

@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { digest, validateLocalShard, type LocalShard } from '../src/shard'
+import { analyzeLocalPuzzle, digest, generateLocalCandidate, validateLocalShard, type LocalShard } from '../src/shard'
 import { validateResearchArtifact } from '../src/research'
 import { validateRecoveryTotals } from '../src/research-metrics'
 
@@ -8,6 +8,13 @@ const source = JSON.parse(readFileSync('data/pilots/mac-local-pilot-v1/candidate
 const artifact = JSON.parse(readFileSync('data/pilots/mac-local-pilot-v1/research-candidate-000050.json', 'utf8'))
 function redigest(a: typeof artifact) { const {digest: old, ...payload} = a; a.digest = digest(payload); return a }
 describe('research validation', () => {
+  it('preserves published candidate proof, solver metrics and research byte-for-byte logically', () => {
+    expect(generateLocalCandidate(50, source.reproducibility.batchSeed, source.config)).toEqual(source.candidates[0])
+  })
+  it('preserves all 100 published pilot research records after hot-path changes', () => {
+    const pilot = JSON.parse(readFileSync('data/pilots/mac-local-pilot-v1/shard-000000-000099.json', 'utf8')) as LocalShard
+    for (const p of pilot.acceptedPuzzles) expect(analyzeLocalPuzzle(p, pilot.config.mistakeAnalysis)).toEqual(p.research)
+  }, 30_000)
   it('validates the original published smoke artifact with source identity', () => {
     validateResearchArtifact(artifact, source)
     validateLocalShard(source)
