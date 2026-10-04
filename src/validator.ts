@@ -1,4 +1,5 @@
 import { isDeepStrictEqual } from 'node:util'
+import { validateRecoveryTotals } from './research-metrics'
 import { CANONICAL_VERSION, ENCODING_VERSION, canonicalPuzzleKey } from './canonical'
 import { applyMove, calculatePour, isSolved } from './rules'
 import { analyzeOptimalPathDifficulty, analyzeStructuralDifficulty } from './difficulty'
@@ -118,6 +119,7 @@ export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
       }
       const mistake = puzzle.difficultyV2.mistakeRecovery
       if (mistake) {
+        validateRecoveryTotals(mistake)
         const counted = mistake.optimalAlternativeCount
           + mistake.recoverableMistakeCount
           + mistake.deadEndCount
