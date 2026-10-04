@@ -4,7 +4,9 @@ import { generateAuditCatalog } from '../generator'
 import { PROFILE_SETS, type ProfileName } from '../profiles'
 import { validateAuditCatalog } from '../validator'
 import { parseCliOptions, positiveIntArg, stringArg } from './args'
-import { assertNewOutput, localConfigArgs, runLocalGeneration, safeIntArg } from './local'
+import { assertNewOutput, localConfigArgs, runLocalGeneration, safeIntArg, requireLocalRuntime } from './local'
+import {supervise} from './supervise'
+import {validateRange} from '../shard'
 
 const rangeOptions = ['seed', 'start-index', 'end-index', 'output', 'colors', 'capacity', 'max-empty', 'max-depth', 'max-states', 'analysis-max-states', 'analysis-max-depth', 'analysis-max-steps', 'analysis-max-alternatives', 'severe-penalty']
 const legacyOptions = ['seed', 'profile', 'count', 'max-attempts', 'output', 'overwrite']
@@ -18,11 +20,14 @@ if (process.argv.slice(2).some(arg => /^--(start|end)-index(?:=|$)/.test(arg))) 
     if (!match || !allowed.has(match[1]) || seen.has(match[1])) throw new Error(`Unsupported, malformed or repeated range option: ${arg}`)
     seen.add(match[1])
   }
-  await runLocalGeneration({
+  const options = {
     startIndex: safeIntArg('start-index'), endIndex: safeIntArg('end-index'),
     batchSeed: stringArg('seed', 'water-sort:local-v1:default')!,
     output: stringArg('output', 'output/shard.json')!, config: localConfigArgs(),
-  })
+  }
+  validateRange(options.startIndex,options.endIndex);requireLocalRuntime()
+  await supervise(resolve(options.output))
+  await runLocalGeneration(options)
 } else {
   for (const arg of process.argv.slice(2)) if (!legacyOptions.includes(arg.slice(2).split('=')[0])) throw new Error(`Range option requires --start-index and --end-index: ${arg}`)
   const profileName = (stringArg('profile', 'expanded') ?? 'expanded') as ProfileName

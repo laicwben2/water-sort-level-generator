@@ -4,6 +4,8 @@ import { serialize, validateLocalShard, validateRange } from '../shard'
 import { parseCliOptions, stringArg } from './args'
 import { localConfigArgs, requireLocalRuntime, safeIntArg } from './local'
 import { reanalyzeSelected } from '../reanalysis'
+import {supervise} from './supervise'
+import {measure,measureAsync} from '../telemetry'
 
 parseCliOptions(['input', 'output', 'analysis-max-states', 'analysis-max-depth', 'analysis-max-steps', 'analysis-max-alternatives', 'severe-penalty', 'start-index','end-index','only-incomplete','resume'], 'Reanalyze stored puzzles: --input=SHARD --output=RESEARCH [--start-index=N --end-index=N --only-incomplete=true --resume=true] [--analysis-max-states=25000 --analysis-max-depth=100 --analysis-max-steps=20 --analysis-max-alternatives=6 --severe-penalty=5]. All budgets must be positive safe integers. Checkpoints are bound to source, config and selection.')
 requireLocalRuntime()
@@ -15,7 +17,8 @@ const hasRange = stringArg('start-index') !== undefined || stringArg('end-index'
 const startIndex = hasRange ? safeIntArg('start-index') : undefined, endIndex = hasRange ? safeIntArg('end-index') : undefined
 if (hasRange) validateRange(startIndex!,endIndex!)
 for (const name of ['only-incomplete','resume']) if (stringArg(name) !== undefined && stringArg(name) !== 'true') throw new Error(`--${name} only accepts true`)
-const shard: unknown = JSON.parse(await readFile(input, 'utf8'))
-validateLocalShard(shard)
-const result = await reanalyzeSelected(shard,config,{output,startIndex,endIndex,onlyIncomplete:stringArg('only-incomplete')==='true',resume:stringArg('resume')==='true',onProgress(done,total,index,reused){process.stderr.write(`Research ${done}/${total}: candidate ${index}${reused ? ' (checkpoint)' : ''}\n`)}})
+await supervise(output)
+const parsed: unknown = await measureAsync('load',async()=>JSON.parse(await readFile(input,'utf8')))
+const shard = measure('validation',()=>{validateLocalShard(parsed);return parsed})
+const result = await measureAsync('reanalyze',()=>reanalyzeSelected(shard,config,{output,startIndex,endIndex,onlyIncomplete:stringArg('only-incomplete')==='true',resume:stringArg('resume')==='true',onProgress(done,total,index,reused){process.stderr.write(`Research ${done}/${total}: candidate ${index}${reused ? ' (checkpoint)' : ''}\n`)}}))
 console.log(serialize({ output, puzzles: result.records.length, selection:result.selection }))

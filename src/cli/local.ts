@@ -4,6 +4,7 @@ import { access } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { publishPair, writeExclusive } from '../artifact-store'
 import { performance } from 'node:perf_hooks'
+import {measure} from '../telemetry'
 import { DEFAULT_LOCAL_CONFIG, generateLocalShard, serialize, validateLocalShard, validateConfig, type LocalConfig } from '../shard'
 import { stringArg } from './args'
 
@@ -65,13 +66,13 @@ export async function runLocalGeneration(options: { startIndex: number; endIndex
   const started = performance.now()
   let candidateStarted = started
   const candidateTimings: Array<{ candidateIndex: number; elapsedMs: number }> = []
-  const shard = generateLocalShard({ ...options, onCandidate(candidate) {
+  const shard = measure('generate',()=>generateLocalShard({ ...options, onCandidate(candidate) {
     const finished = performance.now()
     candidateTimings.push({ candidateIndex: candidate.candidateIndex, elapsedMs: finished - candidateStarted })
     candidateStarted = finished
     if ((candidate.candidateIndex - options.startIndex + 1) % 10 === 0) process.stderr.write(`Processed ${candidate.candidateIndex - options.startIndex + 1} candidates\n`)
-  } })
-  validateLocalShard(shard)
+  } }))
+  measure('validation',()=>validateLocalShard(shard))
   const usage = process.resourceUsage()
   const memory = process.memoryUsage()
   const run = {

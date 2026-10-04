@@ -9,6 +9,7 @@ import { isSolved } from './rules'
 import type { AuditPuzzle, Board, DifficultyV2Metrics, EmptyTubeAnalysis, MistakeAnalysisConfig, MistakeRecoveryMetrics } from './types'
 import { validateAuditCatalog } from './validator'
 import { GENERATOR_VERSION, RNG_VERSION, RULES_VERSION, SOLVER_STATE_ENCODING_VERSION } from './version'
+import {measure} from './telemetry'
 
 export const LOCAL_GENERATOR_VERSION = 'local-global-index-v1+generator-0.2.0'
 export const RESEARCH_VERSION = 'workload-trap-recovery-v1'
@@ -118,7 +119,7 @@ function versions(batchSeed: string, config: LocalConfig): LocalShard['reproduci
   }
 }
 export function analyzeLocalPuzzle(puzzle: Pick<LocalPuzzle, 'board' | 'optimalSolution' | 'capacity'>, config: MistakeAnalysisConfig): LocalPuzzle['research'] {
-  const metrics = analyzeDifficultyV2(puzzle.board, puzzle.optimalSolution, puzzle.capacity, config)
+  const metrics = measure('analysis',()=>analyzeDifficultyV2(puzzle.board, puzzle.optimalSolution, puzzle.capacity, config))
   const mistake = metrics.mistakeRecovery!
   return {
     analysisVersion: RESEARCH_VERSION,
@@ -133,7 +134,7 @@ export function generateLocalCandidate(candidateIndex: number, batchSeed: string
   const colors = config.colors[candidateIndex % config.colors.length]
   const candidateSeed = deriveCandidateSeed(batchSeed, 'local-v1', `types-${colors}`, candidateIndex)
   const rawCandidate = generateBalancedFullTubes(colors, config.capacity, candidateSeed)
-  const minimum = findMinimumEmptyTubes(rawCandidate, config)
+  const minimum = measure('proof',()=>findMinimumEmptyTubes(rawCandidate, config))
   const base = { candidateIndex, candidateSeed, rawCandidate, emptyTubeAnalysis: minimum.analyses }
   if (minimum.status === 'unknown') return { ...base, status: 'unknown', reason: minimum.reason }
   if (isSolved(minimum.board, config.capacity)) return { ...base, status: 'quality-rejected', reason: 'starts-solved' }
@@ -198,7 +199,7 @@ export function generateLocalShard(options: CandidateRange & { batchSeed: string
     candidates.push(candidate)
     options.onCandidate?.(structuredClone(candidate))
   }
-  return assemble(candidates, [{ startIndex: options.startIndex, endIndex: options.endIndex }], options.batchSeed, config)
+  return measure('assemble',()=>assemble(candidates, [{ startIndex: options.startIndex, endIndex: options.endIndex }], options.batchSeed, config))
 }
 
 function checkKeys(value: object, required: string[], optional: string[] = []): void {
@@ -322,7 +323,7 @@ export function mergeLocalShards(inputs: unknown[]): LocalShard {
     assertEqual(shard.reproducibility, first.reproducibility, 'Shard metadata mismatch')
     assertEqual(shard.config, first.config, 'Shard configuration mismatch')
   }
-  return assemble(shards.flatMap(s => s.candidates), shards.flatMap(s => s.ranges), first.reproducibility.batchSeed, first.config)
+  return measure('assemble',()=>assemble(shards.flatMap(s => s.candidates), shards.flatMap(s => s.ranges), first.reproducibility.batchSeed, first.config))
 }
 export function compareLocalShards(first: unknown, second: unknown): { identical: true; candidatesMatched: number; digest: string } {
   validateLocalShard(first); validateLocalShard(second)

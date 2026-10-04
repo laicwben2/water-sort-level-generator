@@ -2,6 +2,7 @@ import { createHash, randomUUID } from 'node:crypto'
 import { mkdir, open, link, unlink, readFile, rm, access } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { serialize } from './shard'
+import {measure,measureAsync} from './telemetry'
 
 export async function writeExclusive(path: string, value: unknown): Promise<void> {
   await mkdir(dirname(path), {recursive:true})
@@ -9,7 +10,8 @@ export async function writeExclusive(path: string, value: unknown): Promise<void
   let handle
   try {
     handle = await open(temporary, 'wx')
-    await handle.writeFile(serialize(value), 'utf8'); await handle.sync(); await handle.close(); handle = undefined
+    const encoded=measure('serialize',()=>serialize(value))
+    await measureAsync('write',async()=>{await handle!.writeFile(encoded,'utf8');await handle!.sync()}); await handle.close(); handle = undefined
     await link(temporary, path)
   } finally {
     await handle?.close()

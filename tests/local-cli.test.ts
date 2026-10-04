@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process'
-import { mkdtempSync, readFileSync, existsSync, rmSync } from 'node:fs'
+import { mkdtempSync, readFileSync, existsSync, rmSync, readdirSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterAll, describe, expect, it } from 'vitest'
@@ -31,6 +31,12 @@ describe('native local CLI', () => {
     const a = join(directory, 'a.json'), b = join(directory, 'b.json')
     const args = ['--seed=cli-test', '--start-index=0', '--end-index=0', '--colors=2', '--capacity=2']
     cli('generate', [...args, `--output=${a}`]); cli('generate', [...args, `--output=${b}`])
+    const reports=join(`${a}.process-runs`)
+    const report=JSON.parse(readFileSync(join(reports,readdirSync(reports)[0]),'utf8'))
+    expect(report.status).toBe('completed')
+    expect(report.telemetry.phases.write).toBeGreaterThan(0)
+    expect(report.telemetry.solves.calls).toBeGreaterThan(0)
+    expect(report.telemetry.resourceStatistics.maxRssBytes).toBeGreaterThan(0)
     expect(readFileSync(a, 'utf8')).toBe(readFileSync(b, 'utf8'))
     expect(readFileSync(a.replace('.json', '.run.json'), 'utf8')).not.toBe(readFileSync(b.replace('.json', '.run.json'), 'utf8'))
     validateLocalShard(JSON.parse(readFileSync(a, 'utf8')))

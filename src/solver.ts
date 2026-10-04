@@ -9,6 +9,7 @@ import {
   type PackedBoard,
 } from './solver-state'
 import { applyMove } from './rules'
+import {recordSolve} from './telemetry'
 import type { Board, Move, SolutionPathMetrics, SolverMetrics, SolverResult } from './types'
 
 export interface SolverOptions {
@@ -145,12 +146,14 @@ export function solveBoard(board: Board, options: SolverOptions = {}): SolverRes
   let generatedMoves = 0
   let maxDepthReached = 0
   let depthCutoffReached = false
+  let peakQueue=queue.size,reopens=0
+  const finish=(result:SolverResult):SolverResult=>{recordSolve(nodes.length,peakQueue,reopens);return result}
 
   if (maxVisitedStates < 1) {
-    return {
+    return finish({
       status: 'budget-exceeded',
       metrics: metrics(0, bestDepth.size, 0, 0),
-    }
+    })
   }
 
   while (queue.size > 0) {
@@ -161,11 +164,11 @@ export function solveBoard(board: Board, options: SolverOptions = {}): SolverRes
     maxDepthReached = Math.max(maxDepthReached, node.depth)
 
     if (packedIsSolved(node.board, capacity)) {
-      return {
+      return finish({
         status: 'solved',
         solution: reconstructSolution(nodes, queued.nodeId),
         metrics: metrics(exploredStates, bestDepth.size, generatedMoves, maxDepthReached),
-      }
+      })
     }
 
     if (node.depth >= maxDepth) {
@@ -179,11 +182,12 @@ export function solveBoard(board: Board, options: SolverOptions = {}): SolverRes
       const nextDepth = node.depth + 1
       if ((bestDepth.get(transition.key) ?? Number.POSITIVE_INFINITY) <= nextDepth) continue
       if (!bestDepth.has(transition.key) && bestDepth.size >= maxVisitedStates) {
-        return {
+        return finish({
           status: 'budget-exceeded',
           metrics: metrics(exploredStates, bestDepth.size, generatedMoves, maxDepthReached),
-        }
+        })
       }
+      if(bestDepth.has(transition.key))reopens++
       bestDepth.set(transition.key, nextDepth)
       const next: SearchNode = {
         board: transition.board,
@@ -195,11 +199,12 @@ export function solveBoard(board: Board, options: SolverOptions = {}): SolverRes
       }
       const nodeId = nodes.push(next) - 1
       queue.push({ nodeId, priority: next.estimate, depth: nextDepth })
+      peakQueue=Math.max(peakQueue,queue.size)
     }
   }
 
   const finalMetrics = metrics(exploredStates, bestDepth.size, generatedMoves, maxDepthReached)
-  return depthCutoffReached
+  return finish(depthCutoffReached
     ? { status: 'budget-exceeded', metrics: finalMetrics }
-    : { status: 'unsolvable', metrics: finalMetrics }
+    : { status: 'unsolvable', metrics: finalMetrics })
 }

@@ -43,3 +43,11 @@ generation 先將兩個檔案寫入唯一 staging directory，flush 後發布 ch
 範例：`npm run analyze:shard -- --input=data/batches/mac-local-pilot-v1/catalog.json --output=output/research-selected.json --start-index=0 --end-index=99 --only-incomplete=true`。中斷後加 `--resume=true`，保持其他參數一致。對同一 output 同時開多個程序不支援；exclusive files 會使競爭者失敗，而不覆寫已完成結果。
 
 第五段驗證結果：87 tests／12 files 與 build 通過。
+
+## 第六段：完整 worker telemetry（R01、R08 operational 指標）
+
+local generate／certify／merge／reanalyze 改為父程序監督 worker；每 10 秒顯示 heartbeat，完成／失敗都在 `OUTPUT.process-runs/UUID.json` 保存 operational report。父程序記錄含 worker 啟動／退出的 wall time，worker 成功自然退出前回報含 artifact／manifest／marker 寫入後的 maxRSS／CPU；強制終止時缺失資源資料明示 null，不捏造數據。Report 自身寫入與父程序 RAM 不包含在 worker 資源數字。
+
+階段包含 load、proof、analysis、generate、validation、assemble、serialize、write；inclusive nested phases 不可直接全部相加。原 `.run.json` 保留相容的 partial timing，完整效能以 process report 為準。新增 solver operational allocatedNodes／peakQueue／reopens；不進入 deterministic artifact，也不影響 integer correctness budgets。
+
+第六段驗證結果：87 tests／12 files 與 build 通過；新增 CLI report 斷言已驗证含 write、solver calls 及 terminal RSS。
