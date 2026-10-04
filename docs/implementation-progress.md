@@ -59,3 +59,11 @@ local generate／certify／merge／reanalyze 改為父程序監督 worker；每 
 新增 `candidateIdentity(shard,index)`：完整 config＋reproducibility namespace＋index 作穩定結構身份，範圍／catalog digest 不進入身份。既有 `puzzle.id` 僅為 namespace 內 alias，未改寫 3,000 題。其他工作匯入時保存完整 identity，hash 僅供查找提示；`(sourceShardDigest,index)` 另外作特定 artifact locator。
 
 第七段驗證結果：coverage／identity 兩項測試及 build 通過；3,000 題 coverage report 已產生於 ignored output，未改原 artifacts。
+
+## 第八段：immutable shards／catalog index（R02 長期方案）
+
+新增 `local-catalog-index-v1` 小型 manifest：綁定所有 immutable shard 檔案 checksum／logical digest／namespace，保存 exact canonical winner 與 ranges／counts。首次載入外部 index 會逐一驗證參照檔案並重建投影，不能只信任 index 自己的 checksum；同一已驗證 session 追加時只驗新 shard。metadata 更新仍隨題數成長，但不再每批重寫完整重複 board／solution payload。
+
+`npm run index:catalog -- shard-a.json shard-b.json --output=INDEX.json` 建立；`--input=INDEX.json` 驗證；加 `--materialize=CATALOG.json` 才建立既有 v1 完整 catalog，與原 merge contract 相容。輸出預設不覆寫，所有歷史 blobs 保留。原 3,000 題 catalog 不回寫或刪除。
+
+第八段驗證結果：index 順序／投影／overlap／checksum 測試及 build 通過。
