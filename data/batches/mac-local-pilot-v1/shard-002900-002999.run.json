@@ -1,0 +1,450 @@
+{
+  "architecture": "arm64",
+  "candidateTimings": [
+    {
+      "candidateIndex": 2900,
+      "elapsedMs": 57.69674999999998
+    },
+    {
+      "candidateIndex": 2901,
+      "elapsedMs": 5.444625000000002
+    },
+    {
+      "candidateIndex": 2902,
+      "elapsedMs": 30.229083000000003
+    },
+    {
+      "candidateIndex": 2903,
+      "elapsedMs": 85.713333
+    },
+    {
+      "candidateIndex": 2904,
+      "elapsedMs": 0.851709000000028
+    },
+    {
+      "candidateIndex": 2905,
+      "elapsedMs": 18.893957999999998
+    },
+    {
+      "candidateIndex": 2906,
+      "elapsedMs": 163.341458
+    },
+    {
+      "candidateIndex": 2907,
+      "elapsedMs": 0.5666249999999877
+    },
+    {
+      "candidateIndex": 2908,
+      "elapsedMs": 27.572208999999987
+    },
+    {
+      "candidateIndex": 2909,
+      "elapsedMs": 43.03408300000001
+    },
+    {
+      "candidateIndex": 2910,
+      "elapsedMs": 13.26870800000006
+    },
+    {
+      "candidateIndex": 2911,
+      "elapsedMs": 46.09712499999989
+    },
+    {
+      "candidateIndex": 2912,
+      "elapsedMs": 241.57883400000003
+    },
+    {
+      "candidateIndex": 2913,
+      "elapsedMs": 6.75329099999999
+    },
+    {
+      "candidateIndex": 2914,
+      "elapsedMs": 42.19262500000002
+    },
+    {
+      "candidateIndex": 2915,
+      "elapsedMs": 18.546625000000063
+    },
+    {
+      "candidateIndex": 2916,
+      "elapsedMs": 5.774499999999989
+    },
+    {
+      "candidateIndex": 2917,
+      "elapsedMs": 1.438541999999984
+    },
+    {
+      "candidateIndex": 2918,
+      "elapsedMs": 31.46591699999999
+    },
+    {
+      "candidateIndex": 2919,
+      "elapsedMs": 0.5379580000000033
+    },
+    {
+      "candidateIndex": 2920,
+      "elapsedMs": 7.00283300000001
+    },
+    {
+      "candidateIndex": 2921,
+      "elapsedMs": 44.15662499999996
+    },
+    {
+      "candidateIndex": 2922,
+      "elapsedMs": 0.8535000000000537
+    },
+    {
+      "candidateIndex": 2923,
+      "elapsedMs": 13.449333999999908
+    },
+    {
+      "candidateIndex": 2924,
+      "elapsedMs": 46.81708300000014
+    },
+    {
+      "candidateIndex": 2925,
+      "elapsedMs": 5.511250000000018
+    },
+    {
+      "candidateIndex": 2926,
+      "elapsedMs": 15.769457999999986
+    },
+    {
+      "candidateIndex": 2927,
+      "elapsedMs": 168.84449999999993
+    },
+    {
+      "candidateIndex": 2928,
+      "elapsedMs": 16.967791999999918
+    },
+    {
+      "candidateIndex": 2929,
+      "elapsedMs": 32.01391699999999
+    },
+    {
+      "candidateIndex": 2930,
+      "elapsedMs": 15.429250000000138
+    },
+    {
+      "candidateIndex": 2931,
+      "elapsedMs": 7.66537500000004
+    },
+    {
+      "candidateIndex": 2932,
+      "elapsedMs": 1.0978329999998095
+    },
+    {
+      "candidateIndex": 2933,
+      "elapsedMs": 269.0155
+    },
+    {
+      "candidateIndex": 2934,
+      "elapsedMs": 7.664667000000009
+    },
+    {
+      "candidateIndex": 2935,
+      "elapsedMs": 87.29904099999999
+    },
+    {
+      "candidateIndex": 2936,
+      "elapsedMs": 3.2457500000000437
+    },
+    {
+      "candidateIndex": 2937,
+      "elapsedMs": 18.310666999999967
+    },
+    {
+      "candidateIndex": 2938,
+      "elapsedMs": 131.05420800000002
+    },
+    {
+      "candidateIndex": 2939,
+      "elapsedMs": 21.56208400000014
+    },
+    {
+      "candidateIndex": 2940,
+      "elapsedMs": 62.41670799999997
+    },
+    {
+      "candidateIndex": 2941,
+      "elapsedMs": 35.43316699999991
+    },
+    {
+      "candidateIndex": 2942,
+      "elapsedMs": 58.349791000000096
+    },
+    {
+      "candidateIndex": 2943,
+      "elapsedMs": 10.94179199999985
+    },
+    {
+      "candidateIndex": 2944,
+      "elapsedMs": 37.712208000000146
+    },
+    {
+      "candidateIndex": 2945,
+      "elapsedMs": 25.794459000000188
+    },
+    {
+      "candidateIndex": 2946,
+      "elapsedMs": 5.698957999999948
+    },
+    {
+      "candidateIndex": 2947,
+      "elapsedMs": 26.59395799999993
+    },
+    {
+      "candidateIndex": 2948,
+      "elapsedMs": 162.99216699999988
+    },
+    {
+      "candidateIndex": 2949,
+      "elapsedMs": 0.7789170000000922
+    },
+    {
+      "candidateIndex": 2950,
+      "elapsedMs": 51.984665999999834
+    },
+    {
+      "candidateIndex": 2951,
+      "elapsedMs": 34.7846669999999
+    },
+    {
+      "candidateIndex": 2952,
+      "elapsedMs": 8.13183300000037
+    },
+    {
+      "candidateIndex": 2953,
+      "elapsedMs": 15.93487499999992
+    },
+    {
+      "candidateIndex": 2954,
+      "elapsedMs": 52.40962499999978
+    },
+    {
+      "candidateIndex": 2955,
+      "elapsedMs": 0.5504169999999249
+    },
+    {
+      "candidateIndex": 2956,
+      "elapsedMs": 61.005375000000186
+    },
+    {
+      "candidateIndex": 2957,
+      "elapsedMs": 59.767875000000004
+    },
+    {
+      "candidateIndex": 2958,
+      "elapsedMs": 6.3706670000001395
+    },
+    {
+      "candidateIndex": 2959,
+      "elapsedMs": 22.855583000000024
+    },
+    {
+      "candidateIndex": 2960,
+      "elapsedMs": 83.34162500000002
+    },
+    {
+      "candidateIndex": 2961,
+      "elapsedMs": 0.762166999999863
+    },
+    {
+      "candidateIndex": 2962,
+      "elapsedMs": 29.743415999999797
+    },
+    {
+      "candidateIndex": 2963,
+      "elapsedMs": 67.37845900000002
+    },
+    {
+      "candidateIndex": 2964,
+      "elapsedMs": 13.199291000000358
+    },
+    {
+      "candidateIndex": 2965,
+      "elapsedMs": 88.95054199999959
+    },
+    {
+      "candidateIndex": 2966,
+      "elapsedMs": 432.2710420000003
+    },
+    {
+      "candidateIndex": 2967,
+      "elapsedMs": 30.393499999999676
+    },
+    {
+      "candidateIndex": 2968,
+      "elapsedMs": 19.420166000000336
+    },
+    {
+      "candidateIndex": 2969,
+      "elapsedMs": 69.74358399999983
+    },
+    {
+      "candidateIndex": 2970,
+      "elapsedMs": 0.9668329999999514
+    },
+    {
+      "candidateIndex": 2971,
+      "elapsedMs": 0.9113750000001346
+    },
+    {
+      "candidateIndex": 2972,
+      "elapsedMs": 81.00712500000009
+    },
+    {
+      "candidateIndex": 2973,
+      "elapsedMs": 17.946916999999758
+    },
+    {
+      "candidateIndex": 2974,
+      "elapsedMs": 48.02687500000002
+    },
+    {
+      "candidateIndex": 2975,
+      "elapsedMs": 51.68274999999994
+    },
+    {
+      "candidateIndex": 2976,
+      "elapsedMs": 6.914250000000266
+    },
+    {
+      "candidateIndex": 2977,
+      "elapsedMs": 18.60570800000005
+    },
+    {
+      "candidateIndex": 2978,
+      "elapsedMs": 79.36687499999971
+    },
+    {
+      "candidateIndex": 2979,
+      "elapsedMs": 0.45004199999993943
+    },
+    {
+      "candidateIndex": 2980,
+      "elapsedMs": 15.301832999999988
+    },
+    {
+      "candidateIndex": 2981,
+      "elapsedMs": 79.92541700000038
+    },
+    {
+      "candidateIndex": 2982,
+      "elapsedMs": 0.7824579999996786
+    },
+    {
+      "candidateIndex": 2983,
+      "elapsedMs": 15.527667000000292
+    },
+    {
+      "candidateIndex": 2984,
+      "elapsedMs": 46.04487500000005
+    },
+    {
+      "candidateIndex": 2985,
+      "elapsedMs": 11.812999999999647
+    },
+    {
+      "candidateIndex": 2986,
+      "elapsedMs": 60.18695800000023
+    },
+    {
+      "candidateIndex": 2987,
+      "elapsedMs": 87.02616699999999
+    },
+    {
+      "candidateIndex": 2988,
+      "elapsedMs": 0.6717079999998532
+    },
+    {
+      "candidateIndex": 2989,
+      "elapsedMs": 15.529167000000143
+    },
+    {
+      "candidateIndex": 2990,
+      "elapsedMs": 85.44424999999956
+    },
+    {
+      "candidateIndex": 2991,
+      "elapsedMs": 1.4078750000007858
+    },
+    {
+      "candidateIndex": 2992,
+      "elapsedMs": 73.98570799999925
+    },
+    {
+      "candidateIndex": 2993,
+      "elapsedMs": 12.247667000000547
+    },
+    {
+      "candidateIndex": 2994,
+      "elapsedMs": 0.5712910000002012
+    },
+    {
+      "candidateIndex": 2995,
+      "elapsedMs": 10.480624999999236
+    },
+    {
+      "candidateIndex": 2996,
+      "elapsedMs": 79.93183399999998
+    },
+    {
+      "candidateIndex": 2997,
+      "elapsedMs": 12.244250000000648
+    },
+    {
+      "candidateIndex": 2998,
+      "elapsedMs": 0.848957999999584
+    },
+    {
+      "candidateIndex": 2999,
+      "elapsedMs": 508.0600830000003
+    }
+  ],
+  "candidatesProcessed": 100,
+  "elapsedMs": 4837.3288330000005,
+  "endIndex": 2999,
+  "finishTime": "2026-10-04T06:51:34.651Z",
+  "formatVersion": "local-run-v1",
+  "git": {
+    "branch": "feat/local-deterministic-shards-v1",
+    "commit": "ded2d4801e9e0e1effae86d568330af6077ab639",
+    "dirty": false
+  },
+  "hostname": "chenhengyideMacBook-Neo.local",
+  "nodeVersion": "v24.19.0",
+  "npmVersion": "11.17.0",
+  "osRelease": "25.6.0",
+  "platform": "darwin",
+  "reproducibility": {
+    "analysisVersion": "workload-trap-recovery-v1",
+    "batchSeed": "mac-local-pilot-v1",
+    "canonicalVersion": "tube-order-v2",
+    "configFingerprint": "b54ade4ff19be507500b4a0e36f0ad79c7ff0d14059999cc8444fa09d24d69f4",
+    "configFingerprintVersion": "sha256-canonical-json-v1",
+    "encodingVersion": "tube64-v1",
+    "generatorVersion": "local-global-index-v1+generator-0.2.0",
+    "rngVersion": "fnv1a32-mulberry32-v1",
+    "seedNamespace": "local-v1",
+    "serializationVersion": "sorted-json-lf-v1",
+    "solverStateEncodingVersion": "packed-tube20-v1"
+  },
+  "resourceStatistics": {
+    "heapUsedEndBytes": 66398968,
+    "maxRssBytes": 221888512,
+    "rssEndBytes": 221888512,
+    "systemCpuMicroseconds": 128574,
+    "userCpuMicroseconds": 4904226
+  },
+  "shardDigest": "45a3b458a221bee35ba07c4aaa6ab8a64d9a9e3718d719dd37075ebe710016e3",
+  "startIndex": 2900,
+  "startTime": "2026-10-04T06:51:29.813Z",
+  "summary": {
+    "accepted": 100,
+    "analysisIncomplete": 63,
+    "duplicate": 0,
+    "qualityRejected": 0,
+    "unknown": 0
+  }
+}
