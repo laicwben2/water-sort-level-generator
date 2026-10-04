@@ -1,0 +1,54 @@
+{
+  "architecture": "arm64",
+  "candidateTimings": [
+    {
+      "candidateIndex": 50,
+      "elapsedMs": 236.55012499999998
+    }
+  ],
+  "candidatesProcessed": 1,
+  "elapsedMs": 243.910666,
+  "endIndex": 50,
+  "finishTime": "2026-10-04T05:54:37.493Z",
+  "formatVersion": "local-run-v1",
+  "git": {
+    "branch": "feat/local-deterministic-shards-v1",
+    "commit": "46ffd3eee9c7c9d958e4b2b648c8bd5646621ddc",
+    "dirty": true
+  },
+  "hostname": "chenhengyideMacBook-Neo.local",
+  "nodeVersion": "v24.19.0",
+  "npmVersion": "11.17.0",
+  "osRelease": "25.6.0",
+  "platform": "darwin",
+  "reproducibility": {
+    "analysisVersion": "workload-trap-recovery-v1",
+    "batchSeed": "mac-local-pilot-v1",
+    "canonicalVersion": "tube-order-v2",
+    "configFingerprint": "b54ade4ff19be507500b4a0e36f0ad79c7ff0d14059999cc8444fa09d24d69f4",
+    "configFingerprintVersion": "sha256-canonical-json-v1",
+    "encodingVersion": "tube64-v1",
+    "generatorVersion": "local-global-index-v1+generator-0.2.0",
+    "rngVersion": "fnv1a32-mulberry32-v1",
+    "seedNamespace": "local-v1",
+    "serializationVersion": "sorted-json-lf-v1",
+    "solverStateEncodingVersion": "packed-tube20-v1"
+  },
+  "resourceStatistics": {
+    "heapUsedEndBytes": 15605856,
+    "maxRssBytes": 84836352,
+    "rssEndBytes": 84852736,
+    "systemCpuMicroseconds": 156439,
+    "userCpuMicroseconds": 323870
+  },
+  "shardDigest": "f758f0053fe5bbb3f11e854ebf9feb7e2dd1e2825ae304ea142e3bd43ea67c1c",
+  "startIndex": 50,
+  "startTime": "2026-10-04T05:54:37.242Z",
+  "summary": {
+    "accepted": 1,
+    "analysisIncomplete": 1,
+    "duplicate": 0,
+    "qualityRejected": 0,
+    "unknown": 0
+  }
+}

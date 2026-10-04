@@ -216,3 +216,7 @@ Range mode processes inclusive candidate identities, not an accepted quota. It w
 Begin with 100 candidates. Use a local SSD outside iCloud sync; for authorized long Mac runs use `caffeinate -i npm run generate -- ...`. Windows uses native Node with the identical commit, runtime, lockfile, seed and config. See [local generation, merge and certification](docs/local-generation.md).
 
 The [Mac 100-candidate pilot report](docs/mac-local-pilot.md) records environment, quality gates, raw research distributions, resource observations and rough performance estimates. Windows certification is prepared but remains pending.
+
+## Published pilot data / handoff
+
+The [Mac pilot handoff](data/pilots/mac-local-pilot-v1/README.md) includes all 100 generated puzzles, original run manifests, recorded environment, raw metric summary, and byte-identical repeat/merge evidence for reuse by another task.

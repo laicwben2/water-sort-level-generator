@@ -1,0 +1,149 @@
+{
+  "digest": "a5e20616055ca3ad026bbe2a71fee3cf359438c65aadb33be02c7d0d8a8ca974",
+  "candidatesProcessed": 100,
+  "summary": {
+    "accepted": 100,
+    "analysisIncomplete": 61,
+    "duplicate": 0,
+    "qualityRejected": 0,
+    "unknown": 0
+  },
+  "elapsedMs": 31115.969292,
+  "acceptanceRate": 1,
+  "outputBytes": 1413153,
+  "manifestBytes": 9394,
+  "memory": {
+    "heapUsedEndBytes": 73981192,
+    "maxRssBytes": 182059008,
+    "rssEndBytes": 182124544,
+    "systemCpuMicroseconds": 602962,
+    "userCpuMicroseconds": 9109920
+  },
+  "candidateElapsedMs": {
+    "samples": 100,
+    "min": 0.9154159999998228,
+    "mean": 305.2838325,
+    "p50": 101.1205000000009,
+    "p95": 1544.1325419999994,
+    "max": 3127.389500000001
+  },
+  "workload": {
+    "optimalMoves": {
+      "samples": 100,
+      "min": 12,
+      "mean": 18.17,
+      "p50": 18,
+      "p95": 23,
+      "max": 24
+    },
+    "movesIntoEmptyTube": {
+      "samples": 100,
+      "min": 1,
+      "mean": 2.17,
+      "p50": 2,
+      "p95": 3,
+      "max": 4
+    },
+    "totalAlternativeMoves": {
+      "samples": 100,
+      "min": 7,
+      "mean": 57.15,
+      "p50": 59,
+      "p95": 103,
+      "max": 122
+    }
+  },
+  "trap": {
+    "wrongMoveCount": {
+      "samples": 100,
+      "min": 3,
+      "mean": 30.53,
+      "p50": 30,
+      "p95": 57,
+      "max": 74
+    },
+    "deadEndCount": {
+      "samples": 100,
+      "min": 0,
+      "mean": 1.39,
+      "p50": 0,
+      "p95": 5,
+      "max": 26
+    },
+    "knownAlternativeCount": {
+      "samples": 100,
+      "min": 7,
+      "mean": 51.06,
+      "p50": 54,
+      "p95": 81,
+      "max": 92
+    },
+    "unknownCount": {
+      "samples": 100,
+      "min": 0,
+      "mean": 0,
+      "p50": 0,
+      "p95": 0,
+      "max": 0
+    },
+    "knownCoverage": {
+      "samples": 100,
+      "min": 0.7941176470588235,
+      "mean": 0.9479400887841711,
+      "p50": 0.9714285714285714,
+      "p95": 1,
+      "max": 1
+    }
+  },
+  "recovery": {
+    "recoveryPenaltyTotal": {
+      "samples": 100,
+      "min": 2,
+      "mean": 29.41,
+      "p50": 30,
+      "p95": 54,
+      "max": 74
+    },
+    "recoverableMistakeCount": {
+      "samples": 100,
+      "min": 2,
+      "mean": 29.14,
+      "p50": 30,
+      "p95": 53,
+      "max": 74
+    },
+    "maximumRecoveryPenalty": {
+      "samples": 100,
+      "min": 1,
+      "mean": 1.1,
+      "p50": 1,
+      "p95": 2,
+      "max": 3
+    },
+    "severeRecoveryCount": {
+      "samples": 100,
+      "min": 0,
+      "mean": 0,
+      "p50": 0,
+      "p95": 0,
+      "max": 0
+    }
+  },
+  "totals": {
+    "eligibleAlternatives": 5504,
+    "analyzedAlternatives": 5106,
+    "skippedAlternatives": 398,
+    "knownAlternativeCount": 5106,
+    "wrongMoveCount": 3053,
+    "recoverableMistakeCount": 2914,
+    "deadEndCount": 139,
+    "unknownCount": 0,
+    "recoveryPenaltyTotal": 2941,
+    "severeRecoveryCount": 0
+  },
+  "estimatesSeconds": {
+    "1000": 311.15969292,
+    "10000": 3111.5969292,
+    "100000": 31115.969292
+  }
+}

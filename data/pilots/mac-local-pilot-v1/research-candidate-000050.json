@@ -1,0 +1,77 @@
+{
+  "config": {
+    "maxAlternativesPerStep": 6,
+    "maxAnalyzedSteps": 1,
+    "maxDepthPerAlternative": 100,
+    "maxVisitedStatesPerAlternative": 1,
+    "severeRecoveryThreshold": 5
+  },
+  "digest": "bc3b945ab1b1c32ec9c887bf791e78bc66f361a1916ec2897c44c21881b7a5c1",
+  "formatVersion": "local-research-v1",
+  "records": [
+    {
+      "candidateIndex": 50,
+      "canonicalKey": "tube-order-v2:tube64-v1:0000000000000000.0000000000000000.0000000000040121.0000000000040345.0000000000041464.0000000000043042.0000000000045106.0000000000045263.0000000000046325",
+      "research": {
+        "analysisVersion": "workload-trap-recovery-v1",
+        "complete": false,
+        "mistakeRecovery": {
+          "analyzedAlternatives": 6,
+          "analyzedCoverage": 1,
+          "analyzedSteps": 1,
+          "averageRecoveryPenalty": 0,
+          "config": {
+            "maxAlternativesPerStep": 6,
+            "maxAnalyzedSteps": 1,
+            "maxDepthPerAlternative": 100,
+            "maxVisitedStatesPerAlternative": 1,
+            "severeRecoveryThreshold": 5
+          },
+          "deadEndCount": 0,
+          "deadEndRatio": 0,
+          "eligibleAlternatives": 6,
+          "equivalentOptimalSuccessorsExcluded": 0,
+          "knownAlternativeCount": 0,
+          "knownCoverage": 0,
+          "maximumRecoveryPenalty": 0,
+          "optimalAlternativeCount": 0,
+          "recoverableMistakeCount": 0,
+          "recoveryPenaltyTotal": 0,
+          "severeRecoveryCount": 0,
+          "skippedAlternatives": 0,
+          "skippedSteps": 22,
+          "unknownCount": 6,
+          "wrongMoveCount": 0
+        },
+        "optimalPath": {
+          "averageChoices": 3.4347826086956523,
+          "decisionSteps": 21,
+          "forcedSteps": 2,
+          "maximumChoices": 8,
+          "movesIntoEmptyTube": 2,
+          "movesJoiningSameType": 21,
+          "optimalMoves": 23,
+          "stagingRatio": 0.08695652173913043,
+          "totalAlternativeMoves": 56
+        },
+        "structural": {
+          "averageBlockingDepth": 1.5,
+          "averageTypeTubeSpread": 3.7142857142857144,
+          "blockingDepthTotal": 42,
+          "blockingSegmentCount": 28,
+          "fragmentationExcess": 21,
+          "initialEmptyTubes": 2,
+          "initialSegments": 28,
+          "maximumBlockingDepth": 3,
+          "maximumTypeTubeSpread": 4,
+          "mixedTubeCount": 7,
+          "monochromeFullTubeCount": 0,
+          "tubeCount": 9,
+          "typeCount": 7,
+          "typeTubeSpreadTotal": 26
+        }
+      }
+    }
+  ],
+  "sourceShardDigest": "f758f0053fe5bbb3f11e854ebf9feb7e2dd1e2825ae304ea142e3bd43ea67c1c"
+}

@@ -4,7 +4,7 @@
 
 - Repository: https://github.com/laicwben2/water-sort-level-generator.git
 - Base: `feat/difficulty-v2`, `46ffd3eee9c7c9d958e4b2b648c8bd5646621ddc`.
-- Review branch: `feat/local-deterministic-shards-v1`; final implementation commit is this report’s branch commit (see `git rev-parse HEAD`).
+- Review branch: `feat/local-deterministic-shards-v1`; implementation commit: `1c6418ebdf41f8d410fb1890821badceca94960e`.
 - macOS 26.6 (25G72), native ARM64; Node 24.19.0, npm 11.17.0.
 - Official Mac Node archive SHA-256: `8294b7aa9b03997481c06babf1e8b270c859358f27da57a11509afe537ac381d`.
 - The initial pilot was run before committing: manifest correctly records base HEAD and dirty working tree. Git/timestamps/OS never enter the deterministic artifact.
@@ -26,7 +26,7 @@
 - Process reported maxRSS: 173.62 MiB; RSS at resource snapshot: 173.69 MiB; heap used: 70.55 MiB. These snapshots are sampled before serialization/writing and do not prove a large-run memory bound.
 - Process CPU: 9.110 seconds user + 0.603 seconds system; wall time differs substantially, so machine load affects extrapolation.
 
-Local outputs (ignored by Git, retained for review):
+Published artifacts are available in [`data/pilots/mac-local-pilot-v1`](../data/pilots/mac-local-pilot-v1/README.md), including all generated puzzles, original manifests, verification artifacts and `environment.json`. The original local output paths below remain ignored by Git:
 
 - `output/mac-local-pilot/shard-000000-000099.json`
 - `output/mac-local-pilot/shard-000000-000099.run.json`

@@ -1,0 +1,80 @@
+{
+  "formatVersion": "local-pilot-environment-v1",
+  "recordedDate": "2026-10-04",
+  "timezone": "Asia/Taipei",
+  "repository": "https://github.com/laicwben2/water-sort-level-generator.git",
+  "baseBranch": "feat/difficulty-v2",
+  "baseCommit": "46ffd3eee9c7c9d958e4b2b648c8bd5646621ddc",
+  "branch": "feat/local-deterministic-shards-v1",
+  "implementationCommit": "1c6418ebdf41f8d410fb1890821badceca94960e",
+  "pilotSourceState": {
+    "branch": "feat/local-deterministic-shards-v1",
+    "commit": "46ffd3eee9c7c9d958e4b2b648c8bd5646621ddc",
+    "dirty": true
+  },
+  "provenanceNote": "Pilot ran before implementation commit. Original manifests preserve base HEAD + dirty=true; implementation was subsequently committed as implementationCommit. Publication changes documentation and copies artifacts only.",
+  "platform": "darwin",
+  "architecture": "arm64",
+  "macOSVersion": "26.6",
+  "macOSBuild": "25G72",
+  "nodeVersion": "24.19.0",
+  "npmVersion": "11.17.0",
+  "runtimeArchiveSHA256": "8294b7aa9b03997481c06babf1e8b270c859358f27da57a11509afe537ac381d",
+  "packageLockSHA256": "e13d2b2de38527aac2df33a43056ee0ac1d0fcbb013b33b0157f87c117f1b810",
+  "dependencies": {
+    "@types/node": "24.13.6",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3",
+    "vitest": "3.2.7"
+  },
+  "compute": "native local CPU/RAM; sequential generation; no cloud compute",
+  "quality": {
+    "npmCi": "passed; existing dependency tree preserved",
+    "npmTest": {
+      "passed": 68,
+      "files": 9
+    },
+    "npmBuild": "passed"
+  },
+  "seed": "mac-local-pilot-v1",
+  "startIndex": 0,
+  "endIndex": 99,
+  "config": {
+    "capacity": 4,
+    "colors": [
+      5,
+      6,
+      7
+    ],
+    "maxDepth": 100,
+    "maxEmptyTubes": 5,
+    "maxVisitedStates": 100000,
+    "mistakeAnalysis": {
+      "maxAlternativesPerStep": 6,
+      "maxAnalyzedSteps": 20,
+      "maxDepthPerAlternative": 100,
+      "maxVisitedStatesPerAlternative": 25000,
+      "severeRecoveryThreshold": 5
+    }
+  },
+  "logicalDigest": "a5e20616055ca3ad026bbe2a71fee3cf359438c65aadb33be02c7d0d8a8ca974",
+  "windowsCertification": "pending",
+  "integrity": {
+    "algorithm": "sha256-file-bytes",
+    "files": {
+      "candidate-000050.json": "3895aa6da31622b189952b3656bb6c75af4746be66b2a1c86350184d1e8b5e76",
+      "candidate-000050.run.json": "1655cd03a7a4e2e0ec2aebfe87a9bea2d4a1cf42e8ccb9f9cddf714b4cdfadb5",
+      "merged.json": "a8d4fee29c2e7eb2513852e8155815695c861e7dcf3526b65c5c7636226d6f88",
+      "pilot-summary.json": "bd2f60b2a3b13d3d554390c93170437c049ef02c7a33f83c06f0b5e770ac6c77",
+      "repeat-000000-000099.json": "a8d4fee29c2e7eb2513852e8155815695c861e7dcf3526b65c5c7636226d6f88",
+      "repeat-000000-000099.run.json": "746c491cb57741654f52e0fb0b7196071eefa90c7a4c5aab093aab941e80c683",
+      "research-candidate-000050.json": "5ca36a392142b99dafa72a0cd680f583786248c5f47fa0563a9437ce3c4d061a",
+      "shard-000000-000049.json": "e43e0cca602c004df114cd0c48a1ecb0f7500e4e1b9c483fec08fa0094b336db",
+      "shard-000000-000049.run.json": "3786c776446c0f63de9e6acdbedf709420ef183cdd9e883f05168663532cb125",
+      "shard-000000-000099.json": "a8d4fee29c2e7eb2513852e8155815695c861e7dcf3526b65c5c7636226d6f88",
+      "shard-000000-000099.run.json": "c334c7dd24f984adb9e26b54b4fd2dc3033eea2c3a8459da43908588ca3a8fbf",
+      "shard-000050-000099.json": "c8190e2dda03223a38000564602a52ca245c9329ca6cd9049f5f5a5eaf8b3e66",
+      "shard-000050-000099.run.json": "67aded092c0d666981b06b829bc5c30185072dc36270907635449f6fe06fe66c"
+    }
+  }
+}
