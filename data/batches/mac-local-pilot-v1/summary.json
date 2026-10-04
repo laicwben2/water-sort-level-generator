@@ -1,30 +1,41 @@
 {
   "formatVersion": "local-batch-publication-v1",
-  "requestedNewCandidates": 2000,
+  "requestedNewCandidates": 2900,
+  "targetTotalUniquePuzzles": 3000,
+  "requests": [
+    {
+      "additionalCandidates": 2000,
+      "completedThroughIndex": 2099
+    },
+    {
+      "targetTotalUniquePuzzles": 3000,
+      "resumeIndex": 2100
+    }
+  ],
   "batchSize": 100,
-  "completedBatches": 20,
-  "processedNewCandidates": 2000,
-  "newUniquePuzzles": 2000,
+  "completedBatches": 21,
+  "processedNewCandidates": 2100,
+  "newUniquePuzzles": 2100,
   "baselineCandidates": 100,
   "baselinePuzzles": 100,
   "baselineFile": "../../pilots/mac-local-pilot-v1/shard-000000-000099.json",
   "seed": "mac-local-pilot-v1",
   "ranges": [
     {
-      "endIndex": 2099,
+      "endIndex": 2199,
       "startIndex": 0
     }
   ],
   "catalogSummary": {
-    "accepted": 2100,
-    "analysisIncomplete": 1334,
+    "accepted": 2200,
+    "analysisIncomplete": 1394,
     "duplicate": 0,
     "qualityRejected": 0,
     "unknown": 0
   },
-  "catalogDigest": "cce7b78c44a8c5c9d7eae2af509121ac8c73d0d6628ace5c86a68176f771a091",
-  "catalogSHA256": "61452755a8522ef7011f8d5c7026c9d481001056ee5a2cf94bd42f616ef2c3b3",
-  "totalGenerationElapsedMs": 94836.31562299997,
+  "catalogDigest": "0733580b620aca6f2d1bc47fce6eee0686826a77d583f1570248b1cabf6f42cc",
+  "catalogSHA256": "403cf831ef71cf1e4816f0ea59b3e445234acfe1ec4c44cbf287c5827bb39471",
+  "totalGenerationElapsedMs": 134200.115665,
   "maximumBatchRssBytes": 295485440,
   "reproducibility": {
     "analysisVersion": "workload-trap-recovery-v1",
@@ -477,6 +488,27 @@
       "shardDigest": "0422efceeef1f0e0b279989dd4ea8572ca7afefbaa2a6f13a95ac90ae5eba77b",
       "shardSHA256": "8a967a8a0b55c52703510865f489f87220e42b5a4e361c2e06bae100e62bb3e9",
       "manifestSHA256": "37f14a3ad0e805e5a7c8b3f665691910d1f6b21d771374ef85b4becc7b987ef6"
+    },
+    {
+      "batch": 21,
+      "startIndex": 2100,
+      "endIndex": 2199,
+      "file": "shard-002100-002199.json",
+      "manifest": "shard-002100-002199.run.json",
+      "summary": {
+        "accepted": 100,
+        "analysisIncomplete": 60,
+        "duplicate": 0,
+        "qualityRejected": 0,
+        "unknown": 0
+      },
+      "elapsedMs": 39363.800042,
+      "maxRssBytes": 176537600,
+      "generationCommit": "607c6d2d1c47e3819709006e64b89b6906a3dc31",
+      "generationDirty": false,
+      "shardDigest": "5a4c9532b6b2768418bcf3d3a96ad8616ad9722cb4935345bdf03606d5ae87ec",
+      "shardSHA256": "eb3682cbbd69873375b57f6bdb8dff5e96ffb8b24b4027f8a87c192932eff3e3",
+      "manifestSHA256": "962e00e9f5fa71054f3ce02c044051b36ff97b8d073a86835e16e112c88fe226"
     }
   ]
 }

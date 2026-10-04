@@ -1,14 +1,6 @@
 {
-  "checkedAt": "2026-10-04T06:35:07.549Z",
-  "completedBatches": 20,
-  "newCandidates": 2000,
-  "totalCandidates": 2100,
-  "newUniquePuzzles": 2000,
-  "totalUniquePuzzles": 2100,
-  "perBatchValidation": "passed for all 20 raw shards and cumulative catalogs",
-  "independentReverseMerge": "byte-identical to cumulative catalog",
-  "fileSHA256Inventory": "all 20 shard/manifest pairs and catalog verified",
-  "generationSourceState": "all 20 runs clean; source and lockfile unchanged",
-  "catalogDigest": "cce7b78c44a8c5c9d7eae2af509121ac8c73d0d6628ace5c86a68176f771a091",
-  "catalogSHA256": "61452755a8522ef7011f8d5c7026c9d481001056ee5a2cf94bd42f616ef2c3b3"
+  "status": "pending-final-independent-merge",
+  "currentCatalogDigest": "0733580b620aca6f2d1bc47fce6eee0686826a77d583f1570248b1cabf6f42cc",
+  "perBatchValidation": "passed",
+  "previousVerification": "verification-2100.json"
 }
