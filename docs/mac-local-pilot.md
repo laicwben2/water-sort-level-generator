@@ -1,5 +1,7 @@
 # Mac local pilot — 2026-10-04
 
+This report preserves the original 100-candidate pilot observations. Subsequent authorized batches reached 3,000 unique puzzles on 2026-10-04; generation has stopped at index 2999. See [current status](current-status.md) for the cumulative results, validation and resumption notes. Pilot measurements and extrapolations below remain historical.
+
 ## Environment and provenance
 
 - Repository: https://github.com/laicwben2/water-sort-level-generator.git

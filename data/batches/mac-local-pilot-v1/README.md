@@ -2,6 +2,8 @@
 
 沿用 seed `mac-local-pilot-v1` 與原有設定；每批 100 candidates，驗證、累積合併去重、提交並推送。目標累積 3,000 題（原有 pilot 100 加上 2,900 candidates）；已完成 29/29 批。
 
+2026-10-04：本階段已完成並停止生成。下一個未使用 index 為 3000；待使用者另行指示再繼續。[目前狀況與階段交接](../../../docs/current-status.md) 記錄驗證、待辦與恢復方式。
+
 ## 讀取入口
 
 - [catalog.json](catalog.json)：主要累積資料，包含原有 100 candidates 與本次追加；目前處理 3000 candidates，可用 unique puzzles 3000 題，較原有新增 2900 題。
