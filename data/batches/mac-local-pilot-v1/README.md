@@ -7,6 +7,7 @@
 - [catalog.json](catalog.json)：主要累積資料，包含原有 100 candidates 與本次追加；目前處理 2100 candidates，可用 unique puzzles 2100 題，較原有新增 2000 題。
 - [summary.json](summary.json)：每批範圍、counts、時間、記憶體、檔案 SHA-256、生成 commit 與累積 digest。
 - [environment.json](environment.json)：runtime、OS、lockfile、實作版本與 provenance；各批原始 `.run.json` 提供詳細執行紀錄。
+- [verification.json](verification.json)：20 批 shard／manifest 與 catalog 的 SHA-256 核對通過；將全部 shards 反向重新合併，與逐批累積 catalog 完全 byte-identical。
 - [本機生成規格](../../../docs/local-generation.md)；[原有 pilot](../../pilots/mac-local-pilot-v1/README.md)。
 
 讀題使用 `acceptedPuzzles`；`candidates` 保留相同題目的 audit records，不能相加計數。每個 board 的試管內容由底至頂。沒有新難度標籤；analysisIncomplete 不代表 correctness 不通過，UNKNOWN 不等於無解。
