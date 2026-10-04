@@ -34,14 +34,9 @@ A budget cutoff is deterministic and never interpreted as unsolvable.
 
 ## Difficulty
 
-Current profile scoring uses:
+The historical accepted-count generator filters by profile minimum/maximum optimal moves. These profile windows remain legacy metadata, not a calibrated measure of human difficulty.
 
-- shortest solution length;
-- decision ratio along the shortest path;
-- empty-tube preference;
-- solver explored-state count as a tie-breaker.
-
-These are a starting point, not a complete model of human difficulty. Future work should add dead-end density, recovery cost after plausible mistakes, buried-color depth, and human playtest calibration.
+The local range workflow does not use those windows or assign difficulty classes. It preserves independently indexed candidates and correctness proofs, then collects workload, trap-risk and recovery-cost raw metrics. Exact duplicate projection is separate from intrinsic candidate outcomes. Selection and human calibration can reinterpret saved audit data without regenerating or re-proving puzzles. See [local generation](local-generation.md) and [difficulty research](difficulty-v2.md).
 
 ## Data separation
 

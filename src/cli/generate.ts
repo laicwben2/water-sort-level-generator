@@ -4,18 +4,34 @@ import { generateAuditCatalog } from '../generator'
 import { PROFILE_SETS, type ProfileName } from '../profiles'
 import { validateAuditCatalog } from '../validator'
 import { positiveIntArg, stringArg } from './args'
+import { localConfigArgs, runLocalGeneration, safeIntArg } from './local'
 
-const profileName = (stringArg('profile', 'expanded') ?? 'expanded') as ProfileName
-if (!(profileName in PROFILE_SETS)) throw new Error('--profile must be baseline or expanded')
+if (process.argv.slice(2).some(arg => /^--(start|end)-index(?:=|$)/.test(arg))) {
+  const allowed = new Set(['seed', 'start-index', 'end-index', 'output', 'colors', 'capacity', 'max-empty', 'max-depth', 'max-states', 'analysis-max-states', 'analysis-max-depth', 'analysis-max-steps', 'analysis-max-alternatives', 'severe-penalty'])
+  const seen = new Set<string>()
+  for (const arg of process.argv.slice(2)) {
+    const match = /^--([^=]+)=(.*)$/.exec(arg)
+    if (!match || !allowed.has(match[1]) || seen.has(match[1])) throw new Error(`Unsupported, malformed or repeated range option: ${arg}`)
+    seen.add(match[1])
+  }
+  await runLocalGeneration({
+    startIndex: safeIntArg('start-index'), endIndex: safeIntArg('end-index'),
+    batchSeed: stringArg('seed', 'water-sort:local-v1:default')!,
+    output: stringArg('output', 'output/shard.json')!, config: localConfigArgs(),
+  })
+} else {
+  const profileName = (stringArg('profile', 'expanded') ?? 'expanded') as ProfileName
+  if (!(profileName in PROFILE_SETS)) throw new Error('--profile must be baseline or expanded')
 
-const perDifficulty = positiveIntArg('count', 10)
-const maxAttempts = positiveIntArg('max-attempts', 2_000)
-const outputPath = resolve(stringArg('output', `data/audit/catalog-${profileName}.json`)!)
-const batchSeed = stringArg('seed', 'water-sort:generator:v0.2:default')!
+  const perDifficulty = positiveIntArg('count', 10)
+  const maxAttempts = positiveIntArg('max-attempts', 2_000)
+  const outputPath = resolve(stringArg('output', `data/audit/catalog-${profileName}.json`)!)
+  const batchSeed = stringArg('seed', 'water-sort:generator:v0.2:default')!
 
-const catalog = generateAuditCatalog({ profileName, perDifficulty, maxAttempts, batchSeed })
-const summary = validateAuditCatalog(catalog)
+  const catalog = generateAuditCatalog({ profileName, perDifficulty, maxAttempts, batchSeed })
+  const summary = validateAuditCatalog(catalog)
 
-await mkdir(dirname(outputPath), { recursive: true })
-await writeFile(outputPath, `${JSON.stringify(catalog, null, 2)}\n`)
-console.log(JSON.stringify({ output: outputPath, profile: profileName, batchSeed, ...summary }, null, 2))
+  await mkdir(dirname(outputPath), { recursive: true })
+  await writeFile(outputPath, `${JSON.stringify(catalog, null, 2)}\n`)
+  console.log(JSON.stringify({ output: outputPath, profile: profileName, batchSeed, ...summary }, null, 2))
+}

@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest'
+import { analyzeDifficultyV2 } from '../src/difficulty'
+import { serialize } from '../src/shard'
 import { CANONICAL_VERSION, ENCODING_VERSION, canonicalPuzzleKey } from '../src/canonical'
 import { exportRuntimePack, exportSolutionArtifact } from '../src/exporter'
 import { analyzeSolutionPath, solveBoard } from '../src/solver'
@@ -61,6 +63,19 @@ describe('catalog validation and exports', () => {
       metadata: { optimalMoves: catalog.puzzles[0].solver.optimalMoves },
     })
     expect(runtime.levels[0]).not.toHaveProperty('optimalSolution')
+  })
+
+  it('validates historical metrics and sorted-key JSON without altering v1 exports', () => {
+    const catalog = fixture()
+    const puzzle = catalog.puzzles[0]
+    puzzle.difficultyV2 = analyzeDifficultyV2(puzzle.board, puzzle.optimalSolution, puzzle.capacity)
+    delete puzzle.difficultyV2.structural.typeTubeSpreadTotal
+    delete puzzle.difficultyV2.structural.blockingDepthTotal
+    delete puzzle.difficultyV2.structural.blockingSegmentCount
+    const roundtrip = JSON.parse(serialize(catalog)) as AuditCatalog
+    expect(validateAuditCatalog(roundtrip).valid).toBe(true)
+    expect(exportRuntimePack(roundtrip, 'test')).toEqual(exportRuntimePack(catalog, 'test'))
+    expect(exportSolutionArtifact(roundtrip)).toEqual(exportSolutionArtifact(catalog))
   })
 
   it('exports a separate exact solution artifact', () => {

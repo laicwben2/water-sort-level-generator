@@ -33,6 +33,9 @@ export interface StructuralDifficultyMetrics {
   initialEmptyTubes: number
   initialSegments: number
   fragmentationExcess: number
+  typeTubeSpreadTotal?: number
+  blockingDepthTotal?: number
+  blockingSegmentCount?: number
   averageTypeTubeSpread: number
   maximumTypeTubeSpread: number
   averageBlockingDepth: number
@@ -68,6 +71,9 @@ export interface MistakeRecoveryMetrics {
   recoverableMistakeCount: number
   deadEndCount: number
   unknownCount: number
+  knownAlternativeCount?: number
+  wrongMoveCount?: number
+  recoveryPenaltyTotal?: number
   analyzedCoverage: number
   knownCoverage: number
   deadEndRatio: number

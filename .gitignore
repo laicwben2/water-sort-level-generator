@@ -3,3 +3,5 @@ coverage/
 data/audit/*.json
 data/output/*.json
 !.gitkeep
+.local/
+output/

@@ -1,3 +1,4 @@
+import { isDeepStrictEqual } from 'node:util'
 import { CANONICAL_VERSION, ENCODING_VERSION, canonicalPuzzleKey } from './canonical'
 import { applyMove, calculatePour, isSolved } from './rules'
 import { analyzeOptimalPathDifficulty, analyzeStructuralDifficulty } from './difficulty'
@@ -84,7 +85,7 @@ export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
     let board = puzzle.board.map((tube) => [...tube])
     for (const expectedMove of puzzle.optimalSolution) {
       const move = calculatePour(board, expectedMove.from, expectedMove.to, puzzle.capacity)
-      if (JSON.stringify(move) !== JSON.stringify(expectedMove)) {
+      if (!isDeepStrictEqual(move, expectedMove)) {
         throw new Error(`Invalid saved move: ${puzzle.id}`)
       }
       board = applyMove(board, expectedMove)
@@ -94,14 +95,17 @@ export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
     if (puzzle.optimalSolution.length !== puzzle.solver.optimalMoves) {
       throw new Error(`Solution length mismatch: ${puzzle.id}`)
     }
-    if (JSON.stringify(analyzeSolutionPath(puzzle.board, puzzle.optimalSolution, puzzle.capacity))
-      !== JSON.stringify(puzzle.solutionPath)) {
+    if (!isDeepStrictEqual(analyzeSolutionPath(puzzle.board, puzzle.optimalSolution, puzzle.capacity), puzzle.solutionPath)) {
       throw new Error(`Solution path metrics mismatch: ${puzzle.id}`)
     }
 
     if (puzzle.difficultyV2) {
       const structural = analyzeStructuralDifficulty(puzzle.board, puzzle.capacity)
-      if (JSON.stringify(structural) !== JSON.stringify(puzzle.difficultyV2.structural)) {
+      // Additional raw components are optional in historical audit-v2 records.
+      for (const key of ['typeTubeSpreadTotal', 'blockingDepthTotal', 'blockingSegmentCount'] as const) {
+        if (puzzle.difficultyV2.structural[key] === undefined) delete structural[key]
+      }
+      if (!isDeepStrictEqual(structural, puzzle.difficultyV2.structural)) {
         throw new Error(`Difficulty v2 structural metrics mismatch: ${puzzle.id}`)
       }
       const optimalPath = analyzeOptimalPathDifficulty(
@@ -109,7 +113,7 @@ export function validateAuditCatalog(catalog: AuditCatalog): ValidationSummary {
         puzzle.optimalSolution,
         puzzle.capacity,
       )
-      if (JSON.stringify(optimalPath) !== JSON.stringify(puzzle.difficultyV2.optimalPath)) {
+      if (!isDeepStrictEqual(optimalPath, puzzle.difficultyV2.optimalPath)) {
         throw new Error(`Difficulty v2 optimal-path metrics mismatch: ${puzzle.id}`)
       }
       const mistake = puzzle.difficultyV2.mistakeRecovery

@@ -196,3 +196,23 @@ Tests must verify:
 6. fit/choose thresholds from the observed relationship.
 
 No final Easy/Medium/Hard weighting is hard-coded in this phase.
+
+## Local research standard (2026-10-04)
+
+Supplied blind human playtest observations: 59 results, 9 anonymous sessions, 97% solved. These are exploratory evidence, not final calibration; this repository does not alter the underlying human records.
+
+| Aggregate relationship | Spearman rho |
+| --- | ---: |
+| Mean subjective difficulty / source Easy–Medium–Hard | -0.178 |
+| Mean subjective difficulty / optimal moves | -0.183 |
+| Mean subjective difficulty / wrong-move density | 0.754 |
+| Mean subjective difficulty / dead-end density | 0.753 |
+| Mean subjective difficulty / dead-end risk | 0.733 |
+| Mean subjective difficulty / solver average branching | -0.709 |
+| Completer median elapsed / optimal moves | 0.524 |
+| Completer median moves / optimal moves | 0.563 |
+| Mean retries/restarts / dead-end density | 0.844 |
+
+Keep three research axes: **workload**, **trap risk**, and **recovery cost**. Optimal moves describe workload, not human difficulty. Preserve counts, penalty sums, ratio denominators, sampled/skipped steps and unknown alternatives. Wrong-move count is recoverable mistakes plus proven dead ends; known-alternative count excludes UNKNOWN. Report ratios with their denominators/coverage, never silently treating skipped or unknown alternatives as safe or as dead ends. Path-based alternatives are a bounded proxy for plausible player behavior, not a proven cognitive model.
+
+New local shards omit difficulty labels and move-window selection. Keep generation/proof and research selection separate. Reinterpret raw metrics without solving; use a separate reanalysis artifact if changing alternative budgets. Population-based stratification and additional human data must precede final thresholds. No scalar weighting formula or final Easy/Medium/Hard thresholds are introduced.

@@ -6,7 +6,7 @@ This project generates candidate boards, proves solvability with a bounded A* so
 
 It intentionally has no dependency on React, Vite, localStorage, or a specific game UI. The exported pack can be consumed by the existing web game and future iOS, Android, Unity, or other clients that implement the same `rulesVersion`.
 
-## Architecture
+## Architecture (legacy accepted-count workflow)
 
 ```text
 candidate generation
@@ -39,8 +39,10 @@ The audit catalog keeps solver solutions and search metrics. The runtime pack st
 
 ## Install
 
+Use exact Node 24.19.0 and npm 11.17.0 (see `.nvmrc` and [local setup](docs/local-generation.md)).
+
 ```bash
-npm install
+npm ci
 ```
 
 ## Generate
@@ -196,3 +198,21 @@ npm run analyze:difficulty -- \
 ```
 
 The analyzer records coverage explicitly. Budget-exceeded alternatives remain `unknown`; they are never counted as dead ends. Difficulty thresholds are not hard-coded yet. See [docs/difficulty-v2.md](docs/difficulty-v2.md).
+
+## Local deterministic shards
+
+Use exact Node **24.19.0**, npm **11.17.0**, and `npm ci`. Native Mac and Windows generation uses local CPU/RAM only.
+
+```sh
+npm run generate -- --seed=mac-local-pilot-v1 --start-index=0 --end-index=99 --output=output/shard-000000-000099.json
+npm run validate -- --file=output/shard-000000-000099.json
+npm run merge -- output/shard-000000-000049.json output/shard-000050-000099.json --output=output/merged.json
+```
+
+The local flow is candidate generation → correctness proof → audit puzzle → raw analysis → research catalog → population analysis → selection/classification → runtime export.
+
+Range mode processes inclusive candidate identities, not an accepted quota. It writes deterministic JSON plus a separate operational `.run.json`. Research stores workload, trap and recovery metrics without final difficulty labels. The older `--count` workflow and v1 game exports remain available.
+
+Begin with 100 candidates. Use a local SSD outside iCloud sync; for authorized long Mac runs use `caffeinate -i npm run generate -- ...`. Windows uses native Node with the identical commit, runtime, lockfile, seed and config. See [local generation, merge and certification](docs/local-generation.md).
+
+The [Mac 100-candidate pilot report](docs/mac-local-pilot.md) records environment, quality gates, raw research distributions, resource observations and rough performance estimates. Windows certification is prepared but remains pending.
