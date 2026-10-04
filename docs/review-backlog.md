@@ -1,8 +1,23 @@
 # 審查與改善待辦 — 2026-10-04
 
-審查基準：`93cb2e264c6263e072f4d7fbaf2dbcb1435ae2df`，分支 `feat/local-deterministic-shards-v1`，累積 3,000 題。依使用者要求逐項記錄，本輪僅更新文件，不修改產品程式碼、不新增正式題目。狀態：審查進行中；以下皆為待辦，尚未實作。
+審查基準：`93cb2e264c6263e072f4d7fbaf2dbcb1435ae2df`，分支 `feat/local-deterministic-shards-v1`，累積 3,000 題。依使用者要求逐項記錄，本輪僅更新文件，不修改產品程式碼、不新增正式題目。狀態：本輪審查完成；以下 12 項皆為待辦，尚未實作。
 
 優先級：P1＝影響結果可信度或失敗後恢復；P2＝明確效能／操作改善；P3＝需量測再決策。程式位置以審查基準版本為準。實測與推論分開標示，效能提案須維持 deterministic seed／排序、exact canonical identity 與 UNKNOWN 語意。
+
+| 待辦 | 優先級 | 主題 | 證據 |
+| --- | --- | --- | --- |
+| R01 | P2 | 完整流程的時間／記憶體紀錄 | 程式及既有 manifests |
+| R02 | P2 | 累積 catalog 的重工、記憶體及 Git 體積 | 100／1,000／3,000 題實測 |
+| R03 | P1 | shard／manifest 成組發布及中斷恢復 | 寫入順序靜態確認 |
+| R04 | P2 | 路徑及 successor 重複計算 | 呼叫流程確認 |
+| R05 | P1 | reanalysis 靜默忽略錯字／接受零值 | CLI 實際重現 |
+| R06 | P2 | research validator、篩選及恢復 | CLI 重現＋程式確認 |
+| R07 | P2 | 顏色數／採樣造成 coverage 差異 | 全 3,000 題彙整 |
+| R08 | P2 | exact state key／transition 熱點 | 100 題 CPU profile |
+| R09 | P2 | 可移植批次 runner、status／resume | tracked files／本機 runner |
+| R10 | P2 | puzzle ID 的 namespace | identity 建構確認 |
+| R11 | P2 | recovery 數值一致性驗證缺口 | 記憶體副本 mutation 重現 |
+| R12 | P1 | `--help`／錯字落入 legacy 產題 | CLI 分支靜態確認 |
 
 ## R01 · P2 · 執行紀錄缺少完整流程耗時與真正的程序尖峰記憶體
 
@@ -31,7 +46,7 @@
 
 結論限於此次觀測：3,000 題驗證約占此流程 87.6%，應先追查驗證重工；既有 generation manifest 的 281.8 MiB 峰值無法代表 catalog 處理需求。1,000 題輸入是已存在的 `output/mac-local-pilot-v1-expansion/catalog-through-000999.json`，可由已發布 index 0–999 的 shards 重建；另兩組直接讀已發布 pilot／catalog。
 
-Git／資料體積補記：目前 catalog 42,293,397 bytes，加上 29 份原始 shard 40,923,062 bytes，兩者合計 83,216,459 bytes（未含 pilot／manifest）。catalog 內 `acceptedPuzzles` 單独 pretty JSON 約 16,848,737 bytes，而同題 payload 亦保留於 candidates。29 個不同歷史 catalog blobs 的**未壓縮邏輯內容**合計 653,807,889 bytes；這不是 clone 網路量或壓縮後 repository 大小。實測 `git count-objects -vH` 為 loose objects 79.61 MiB、pack 505.90 KiB（本機當下狀態，打包會改變）。採 immutable shards＋小型 manifest 後可避免每批生成新的完整 catalog blob；既有歷史保留，不建議為此重寫已發布 history。
+Git／資料體積補記：目前 catalog 42,293,397 bytes，加上 29 份原始 shard 40,923,062 bytes，兩者合計 83,216,459 bytes（未含 pilot／manifest）。catalog 內 `acceptedPuzzles` 單獨 pretty JSON 約 16,848,737 bytes，而同題 payload 亦保留於 candidates。29 個不同歷史 catalog blobs 的**未壓縮邏輯內容**合計 653,807,889 bytes；這不是 clone 網路量或壓縮後 repository 大小。實測 `git count-objects -vH` 為 loose objects 79.61 MiB、pack 505.90 KiB（本機當下狀態，打包會改變）。採 immutable shards＋小型 manifest 後可避免每批生成新的完整 catalog blob；既有歷史保留，不建議為此重寫已發布 history。
 
 原批次 execution log 另可估算 command-start 到下一個 command-start 的區間：29 次 generate 共 298.153 秒、58 次 validate 共 163.311 秒、29 次 merge 共 111.480 秒、29 次 git commit 共 158.231 秒。這些區間包含程序啟動及中間 runner 工作，不能當精準函式時間；已排除跨輪停頓及無下一筆 timestamp 的最後 push。與 R01 的 manifest generation 合計 266.821 秒相比，足以證實端到端耗時不只有 solver。先補精準 phase telemetry 再決定發布／儲存設計。
 
@@ -117,6 +132,23 @@ Git／資料體積補記：目前 catalog 42,293,397 bytes，加上 29 份原始
 - 改善方式：增加不需 solver 的整數不變式：recoverable=0 時 total／max／severe 必須為 0；recoverable>0 時 max≥1、total≥recoverable、max≤total≤recoverable×max。再驗 severe 與 threshold／max／total 的必要界限，例如 max<threshold 時 severe=0、max≥threshold 時 severe≥1（recoverable>0）。乘積應防安全整數溢位；使用 BigInt 做驗證或等價安全比較。
 - 驗證：對已有合法 fixtures 的逐欄 mutation／property tests，特別涵蓋零事件、有正 penalty 卻 max=0、總量小於事件數、severe 和 threshold 矛盾。不要加入需要重跑 solver 才能證明的 invariant；完整最短路徑證明仍屬獨立求解驗證範圍。
 
+## R12 · P1 · `generate --help` 或範圍旗標全拼錯，會進入 legacy 產題而非報錯
+
+- 狀態：待辦；靜態確認分支行為，未執行會開啟新產題的命令。
+- 位置：`src/cli/generate.ts:9–35`、`src/cli/args.ts:1–12`。
+- 問題：只有偵測到正確的 `--start-index`／`--end-index` 才進入嚴格 range parser；其餘全部走 legacy。`npm run generate -- --help` 沒有專用 help 分支，所以將使用 expanded／count=10／預設 seed 開始生成。兩個 range flags 都拼錯時亦會套用 legacy defaults。若成功，`writeFile` 會寫入（可覆寫）預設 `data/audit/catalog-expanded.json` 或 `--output` 指定檔案。這與 local range 模式明確拒絕覆寫的行為不同。
+- 改善方式：先處理 help／version，再以共用 strict parser 驗證所有 flags；使用明確 mode／subcommand 分派，未知或混用 flags 直接拒絕。保留有效 legacy 呼叫相容性，但不得用「未識別 range」推斷使用者要 legacy。將 legacy 寫檔的 overwrite policy 顯式化（例如需明確 flag，預設新檔），並在 help 列出 `--count` 是每難度 quota、range 是候選編號，避免數量誤會。
+- 驗證：`--help` 零 solver 呼叫、零寫檔、exit 0；range flags 各種拼錯、單缺、混用與未知旗標皆在運算前失敗；舊檔不可因錯字或看 help 而被覆寫。正常 legacy／range fixtures 的內容與 contract 保持一致。
+
+## 建議處理順序與驗收界線
+
+1. **先修操作與可信度**：R12、R05（共同 parser），R03（成組發布），R11（數值 invariant）與 R06 的 research validator。先補最小重現測試，再修改行為；錯誤請明示檔案／candidate／欄位，不只回傳通用 `Unsupported`。
+2. **再依量測優化成本**：R01 補完整 telemetry，R04 消除重工，R08 在同 fixtures 做 profile 比較；R02 依資料成長再決定採串流 writer 或新 manifest 格式。避免同一輪同時更改 solver、sampling 及儲存格式，否則差異難以定位。
+3. **完成可持續操作與研究用途**：R09 正式 runner 串接發布／恢復，R06 selective reanalysis，R07 coverage 報表／sensitivity study，R10 明確 namespace。新的並行或大規模運算另行取得使用者範圍指示。
+
+本輪涵蓋 native local generation／validation／merge／research／solver、主要 CLI、已發布題庫、歷史 run manifests 及本機批次工具。未執行新正式產題、完整 Windows certification、磁碟故障注入、OOM 壓力測試或新的 10,000+ 題 benchmark。未改 consumer UI；此處 UX 指操作命令、進度、錯誤、恢復與其他工作的資料交接。既有 Windows certification／難度校準待辦仍維持 [目前狀況文件](current-status.md) 所記錄的未完成狀態。
+
 ## 審查紀錄
 
-- R01–R11 已逐項記錄。已完成容量量測、CLI 重現、coverage 分組、100 題 research CPU profile、批次操作及 recovery consistency 重現；接續整理 Git 成本與優先順序。尚未完成的檢查不代表通過。
+- 先記錄 R01，再於後續檢查逐次補入 R02–R11；取得量測／重現結果後回填對應項目。
+- `b29d6d8` 已先提交推送前 11 項與量測證據，當時審查仍在進行；最後確認 R12，補入優先順序與範圍界線。本輪完成不代表所有可能問題均已排除。
