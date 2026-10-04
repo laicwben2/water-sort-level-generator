@@ -221,6 +221,8 @@ The [Mac 100-candidate pilot report](docs/mac-local-pilot.md) records environmen
 
 Current checkpoint: **3,000 unique puzzles**, generation stopped at candidate 2999 on 2026-10-04. See [current status and resumption notes](docs/current-status.md) for verification, remaining work, and the next range (3000–3099).
 
+See the [review backlog](docs/review-backlog.md) for incrementally recorded performance, reliability and CLI usability findings, measurements and proposed fixes. These are review notes; no implementation changes have been made for them.
+
 The [Mac pilot handoff](data/pilots/mac-local-pilot-v1/README.md) includes all 100 generated puzzles, original run manifests, recorded environment, raw metric summary, and byte-identical repeat/merge evidence for reuse by another task.
 
 The [Mac batch expansion handoff](data/batches/mac-local-pilot-v1/README.md) adds 2,900 puzzles in 29 published batches of 100. Its [cumulative catalog](data/batches/mac-local-pilot-v1/catalog.json) contains 3,000 unique puzzles including the original pilot; [batch summary](data/batches/mac-local-pilot-v1/summary.json), environment, original run manifests, and independent merge verification are included.
