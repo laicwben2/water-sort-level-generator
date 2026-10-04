@@ -67,3 +67,11 @@ local generate／certify／merge／reanalyze 改為父程序監督 worker；每 
 `npm run index:catalog -- shard-a.json shard-b.json --output=INDEX.json` 建立；`--input=INDEX.json` 驗證；加 `--materialize=CATALOG.json` 才建立既有 v1 完整 catalog，與原 merge contract 相容。輸出預設不覆寫，所有歷史 blobs 保留。原 3,000 題 catalog 不回寫或刪除。
 
 第八段驗證結果：index 順序／投影／overlap／checksum 測試及 build 通過。
+
+## 第九段：正式本機批次工具（R09）
+
+新增 `batch:local`，以 tracked immutable plan／shards／index snapshots 與 ignored operational state 分離。支援 dry-run、status、resume、publish-retry；quota 明確是 candidate range。每批依序生成、complete marker 核對、validation、更新小型 exact index／交接 README，再 optional commit／push。保留 git／generation 各階段時間；恢復前核對 baseline checksum、來源 src tree／lockfile、branch／namespace。Push retry 不重產題，不 force-push 或自動合併遠端分歧。預設不 publish，需建立 plan 時明確 `--publish=true`；同 directory 不支援並行 runner。
+
+僅做 dry-run，不新增正式題目的例子：`npm run batch:local -- --baseline=data/batches/mac-local-pilot-v1/catalog.json --directory=data/batches/next-local-series --start-index=3000 --end-index=3099 --dry-run=true`。啟動時顯示 pinned runtime、磁碟、候選範圍與下一個 index。恢復：`--directory=DIR --resume=true`；只看狀況：`--status=true`；發布失敗後只重送：`--publish-retry=true`。
+
+第九段驗證結果：92 tests／15 files 與 build 通過。暫存 Git repository／本機 bare remote 整合測試涵蓋 dry-run 零產題、push 拒絕、publish retry、resume 不重產。已對正式 3,000 題基線做下一批的 dry-run，未新增題目。

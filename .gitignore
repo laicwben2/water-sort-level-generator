@@ -5,3 +5,4 @@ data/output/*.json
 !.gitkeep
 .local/
 output/
+**/.batch-state.json

@@ -19,7 +19,8 @@
     "analyze:shard": "node --import tsx src/cli/analyze-shard.ts",
     "recover:artifact": "node --import tsx src/cli/recover-artifact.ts",
     "report:coverage": "node --import tsx src/cli/report-coverage.ts",
-    "index:catalog": "node --import tsx src/cli/catalog-index.ts"
+    "index:catalog": "node --import tsx src/cli/catalog-index.ts",
+    "batch:local": "node --import tsx src/cli/batch-local.ts"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
