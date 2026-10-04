@@ -35,3 +35,11 @@ generation 先將兩個檔案寫入唯一 staging directory，flush 後發布 ch
 單檔既有 reader 保持相容；新的批次工具以 complete marker 為成功條件。歷史 3,000 題無標記，不回寫假標記；透過既有 checksum／validator 驗證。測試涵蓋正常發布、拒絕覆寫、發布間中斷與既有檔案衝突。作業系統整機斷電的 directory fsync 行為尚未實機驗證，不宣稱跨平台 power-loss certification。
 
 第四段驗證結果：86 tests／11 files 與 build 通過。
+
+## 第五段：選題與可續跑研究（R06）
+
+`analyze:shard` 新增 inclusive `--start-index=N --end-index=N`、`--only-incomplete=true`、`--resume=true`。輸出升為 `local-research-v2`，明示選中 indices；v1 仍可讀／驗。每題完成即 exclusive 寫 checksum-bound checkpoint，來源 digest／分析版本／完整設定／選題不一致時拒絕續跑；已有完整 output 可驗證後返回。逐題顯示進度與 checkpoint 重用狀態，保留 checkpoints 供稽核，不改原 shards。
+
+範例：`npm run analyze:shard -- --input=data/batches/mac-local-pilot-v1/catalog.json --output=output/research-selected.json --start-index=0 --end-index=99 --only-incomplete=true`。中斷後加 `--resume=true`，保持其他參數一致。對同一 output 同時開多個程序不支援；exclusive files 會使競爭者失敗，而不覆寫已完成結果。
+
+第五段驗證結果：87 tests／12 files 與 build 通過。
