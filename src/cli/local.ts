@@ -1,7 +1,8 @@
 import { execFileSync } from 'node:child_process'
 import { hostname, release } from 'node:os'
-import { mkdir, writeFile, link, unlink, access } from 'node:fs/promises'
-import { dirname, resolve } from 'node:path'
+import { access } from 'node:fs/promises'
+import { resolve } from 'node:path'
+import { publishPair, writeExclusive } from '../artifact-store'
 import { performance } from 'node:perf_hooks'
 import { DEFAULT_LOCAL_CONFIG, generateLocalShard, serialize, validateLocalShard, validateConfig, type LocalConfig } from '../shard'
 import { stringArg } from './args'
@@ -44,12 +45,7 @@ export async function assertNewOutput(path: string): Promise<void> {
   throw new Error(`Output already exists: ${path}`)
 }
 // A unique temporary file and exclusive hard-link publication avoid truncation/overwrite.
-export async function writeArtifact(path: string, value: unknown): Promise<void> {
-  await mkdir(dirname(path), { recursive: true })
-  const temporary = `${path}.${process.pid}.tmp`
-  await writeFile(temporary, serialize(value), { encoding: 'utf8', flag: 'wx' })
-  try { await link(temporary, path) } finally { await unlink(temporary) }
-}
+export const writeArtifact = writeExclusive
 function gitValue(args: string[]): string | null {
   try { return execFileSync('git', args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim() }
   catch { return null }
@@ -60,6 +56,7 @@ export async function runLocalGeneration(options: { startIndex: number; endIndex
   if (!output.endsWith('.json') || output.endsWith('.run.json')) throw new Error('--output must end in .json, excluding .run.json')
   const manifest = output.replace(/\.json$/, '.run.json')
   await assertNewOutput(output); await assertNewOutput(manifest)
+  await assertNewOutput(`${output}.pending.json`); await assertNewOutput(`${output}.complete.json`)
   const git = {
     commit: gitValue(['rev-parse', 'HEAD']), branch: gitValue(['branch', '--show-current']),
     dirty: gitValue(['status', '--porcelain']) !== '',
@@ -87,7 +84,6 @@ export async function runLocalGeneration(options: { startIndex: number; endIndex
       userCpuMicroseconds: usage.userCPUTime, systemCpuMicroseconds: usage.systemCPUTime },
     candidateTimings, shardDigest: shard.digest,
   }
-  await writeArtifact(output, shard)
-  await writeArtifact(manifest, run)
+  await publishPair(output, shard, run)
   console.log(serialize({ output, manifest, digest: shard.digest, candidatesProcessed: shard.candidatesProcessed, summary: shard.summary, elapsedMs: run.elapsedMs }))
 }

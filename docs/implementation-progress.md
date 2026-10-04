@@ -27,3 +27,11 @@ R06 的選題／checkpoint 在下一段實作；現階段保持原有研究輸�
 相容驗證新增：既有 candidate 50 完整結果與 100 題 pilot 的所有 research records 相等；原題庫 3,000 題新版 validator 通過、digest 不變。
 
 第三段驗證結果：84 tests／10 files 與 build 通過。
+
+## 第四段：成組發布與恢復（R03）
+
+generation 先將兩個檔案寫入唯一 staging directory，flush 後發布 checksum journal，再 exclusive link 正式題目／manifest，最後寫 `.complete.json` 標記。中斷時保留 `.pending.json` 與 staged 原檔，`npm run recover:artifact -- --file=SHARD.json` 核對 checksum 後完成發布，不重新求解、不捏造 timing、不覆寫矛盾既有檔案。寫檔失敗時 temporary files 在 finally 清理；失敗前已發布 journal 的資料保留供恢復。
+
+單檔既有 reader 保持相容；新的批次工具以 complete marker 為成功條件。歷史 3,000 題無標記，不回寫假標記；透過既有 checksum／validator 驗證。測試涵蓋正常發布、拒絕覆寫、發布間中斷與既有檔案衝突。作業系統整機斷電的 directory fsync 行為尚未實機驗證，不宣稱跨平台 power-loss certification。
+
+第四段驗證結果：86 tests／11 files 與 build 通過。
