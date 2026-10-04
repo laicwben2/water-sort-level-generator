@@ -2,29 +2,29 @@
   "formatVersion": "local-batch-publication-v1",
   "requestedNewCandidates": 2000,
   "batchSize": 100,
-  "completedBatches": 8,
-  "processedNewCandidates": 800,
-  "newUniquePuzzles": 800,
+  "completedBatches": 9,
+  "processedNewCandidates": 900,
+  "newUniquePuzzles": 900,
   "baselineCandidates": 100,
   "baselinePuzzles": 100,
   "baselineFile": "../../pilots/mac-local-pilot-v1/shard-000000-000099.json",
   "seed": "mac-local-pilot-v1",
   "ranges": [
     {
-      "endIndex": 899,
+      "endIndex": 999,
       "startIndex": 0
     }
   ],
   "catalogSummary": {
-    "accepted": 900,
-    "analysisIncomplete": 568,
+    "accepted": 1000,
+    "analysisIncomplete": 636,
     "duplicate": 0,
     "qualityRejected": 0,
     "unknown": 0
   },
-  "catalogDigest": "69087dde1ae611a57dd8190e724c50d1c8c0b85f098cf46ed43413ad06f2aef4",
-  "catalogSHA256": "537b1aff29a7ec9822c67608b82624f2381fbe181f0d03e1d74cf2a54dec74fb",
-  "totalGenerationElapsedMs": 34978.39462399999,
+  "catalogDigest": "c6c32bfef1c26d2c7b91cb69a57c9619bd4b79fcae2470b07418a4af32fa1c90",
+  "catalogSHA256": "e2f07ba65ff6ee2709b3bf274530c75fbef020f20751dfe81d2fb45e5837b079",
+  "totalGenerationElapsedMs": 38745.17612399999,
   "maximumBatchRssBytes": 295485440,
   "reproducibility": {
     "analysisVersion": "workload-trap-recovery-v1",
@@ -225,6 +225,27 @@
       "shardDigest": "22b14ff9e556fab55d87ab1b441ffb875b0d2b8df94c5b20d16d86f3026ffcf0",
       "shardSHA256": "9ad7852709101805aa0a9ca0bf0c81b8cfc6981f15bc58b520710df20b6d0798",
       "manifestSHA256": "9fe98acf620d544c0eb3012f011ff0e4af38fcc2b4a24117106f0a9f556c18ff"
+    },
+    {
+      "batch": 9,
+      "startIndex": 900,
+      "endIndex": 999,
+      "file": "shard-000900-000999.json",
+      "manifest": "shard-000900-000999.run.json",
+      "summary": {
+        "accepted": 100,
+        "analysisIncomplete": 68,
+        "duplicate": 0,
+        "qualityRejected": 0,
+        "unknown": 0
+      },
+      "elapsedMs": 3766.7814999999996,
+      "maxRssBytes": 221364224,
+      "generationCommit": "a946c39e7ff2b664ff0a6b2b029c3b62752a98e1",
+      "generationDirty": false,
+      "shardDigest": "84ac33e0e4abd0b5912e37df75ed0a60672cff40c2b6795583ddd0316b04a172",
+      "shardSHA256": "97f14221ff6f5bd8564265c76b8c230c78fb3f043060cdadb133efc30e3d40f0",
+      "manifestSHA256": "f04529644b4c266c6d5d4e4b9bbfad1cd9702d07a526bb68690b0b1014a2ec29"
     }
   ]
 }
