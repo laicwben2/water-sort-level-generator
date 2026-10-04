@@ -1,0 +1,83 @@
+{
+  "formatVersion": "local-batch-publication-v1",
+  "requestedNewCandidates": 2000,
+  "batchSize": 100,
+  "completedBatches": 1,
+  "processedNewCandidates": 100,
+  "newUniquePuzzles": 100,
+  "baselineCandidates": 100,
+  "baselinePuzzles": 100,
+  "baselineFile": "../../pilots/mac-local-pilot-v1/shard-000000-000099.json",
+  "seed": "mac-local-pilot-v1",
+  "ranges": [
+    {
+      "endIndex": 199,
+      "startIndex": 0
+    }
+  ],
+  "catalogSummary": {
+    "accepted": 200,
+    "analysisIncomplete": 132,
+    "duplicate": 0,
+    "qualityRejected": 0,
+    "unknown": 0
+  },
+  "catalogDigest": "b67d32b37c3c6ba30698a71840320ce18da2ae20c6b7cbfd8ea7535828cf4e98",
+  "catalogSHA256": "f5395d79e37cec62ab0fe9e765a53647774dc3af0f121e0c3d3a33c4f67c4e54",
+  "totalGenerationElapsedMs": 3755.94325,
+  "maximumBatchRssBytes": 227147776,
+  "reproducibility": {
+    "analysisVersion": "workload-trap-recovery-v1",
+    "batchSeed": "mac-local-pilot-v1",
+    "canonicalVersion": "tube-order-v2",
+    "configFingerprint": "b54ade4ff19be507500b4a0e36f0ad79c7ff0d14059999cc8444fa09d24d69f4",
+    "configFingerprintVersion": "sha256-canonical-json-v1",
+    "encodingVersion": "tube64-v1",
+    "generatorVersion": "local-global-index-v1+generator-0.2.0",
+    "rngVersion": "fnv1a32-mulberry32-v1",
+    "seedNamespace": "local-v1",
+    "serializationVersion": "sorted-json-lf-v1",
+    "solverStateEncodingVersion": "packed-tube20-v1"
+  },
+  "config": {
+    "capacity": 4,
+    "colors": [
+      5,
+      6,
+      7
+    ],
+    "maxDepth": 100,
+    "maxEmptyTubes": 5,
+    "maxVisitedStates": 100000,
+    "mistakeAnalysis": {
+      "maxAlternativesPerStep": 6,
+      "maxAnalyzedSteps": 20,
+      "maxDepthPerAlternative": 100,
+      "maxVisitedStatesPerAlternative": 25000,
+      "severeRecoveryThreshold": 5
+    }
+  },
+  "batches": [
+    {
+      "batch": 1,
+      "startIndex": 100,
+      "endIndex": 199,
+      "file": "shard-000100-000199.json",
+      "manifest": "shard-000100-000199.run.json",
+      "summary": {
+        "accepted": 100,
+        "analysisIncomplete": 71,
+        "duplicate": 0,
+        "qualityRejected": 0,
+        "unknown": 0
+      },
+      "elapsedMs": 3755.94325,
+      "maxRssBytes": 227147776,
+      "generationCommit": "0d97846a991f5e1bd84795129c3c8329eb9bd639",
+      "generationDirty": false,
+      "shardDigest": "0b003c9ef07a83005b103298c7973ffc99cfe96418108f41ca2a143c7f0d90e2",
+      "shardSHA256": "982bf43cb6cf2995a66bc696f4fb309d70a0bbb23e974c40a2eb56bab5f6e7b0",
+      "manifestSHA256": "f1fdbcdf8536d88665c83920253b0119a3acabca4c2dd968592727cf859efb2d"
+    }
+  ]
+}

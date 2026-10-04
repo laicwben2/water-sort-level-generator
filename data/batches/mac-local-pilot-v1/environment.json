@@ -1,0 +1,14 @@
+{
+  "platform": "darwin",
+  "architecture": "arm64",
+  "osRelease": "25.6.0",
+  "nodeVersion": "v24.19.0",
+  "npmVersion": "11.17.0",
+  "implementationCommit": "1c6418ebdf41f8d410fb1890821badceca94960e",
+  "branch": "feat/local-deterministic-shards-v1",
+  "packageLockSHA256": "e13d2b2de38527aac2df33a43056ee0ac1d0fcbb013b33b0157f87c117f1b810",
+  "compute": "native local CPU/RAM; sequential batches; caffeinate; no cloud compute",
+  "baselineEnvironment": "../../pilots/mac-local-pilot-v1/environment.json",
+  "provenance": "Each unmodified run manifest records the clean source commit used by that batch. Source and lockfile are unchanged throughout publication. Different publication commits do not change generator configuration.",
+  "windowsCertification": "pending"
+}
