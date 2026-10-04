@@ -13,29 +13,29 @@
     }
   ],
   "batchSize": 100,
-  "completedBatches": 27,
-  "processedNewCandidates": 2700,
-  "newUniquePuzzles": 2700,
+  "completedBatches": 28,
+  "processedNewCandidates": 2800,
+  "newUniquePuzzles": 2800,
   "baselineCandidates": 100,
   "baselinePuzzles": 100,
   "baselineFile": "../../pilots/mac-local-pilot-v1/shard-000000-000099.json",
   "seed": "mac-local-pilot-v1",
   "ranges": [
     {
-      "endIndex": 2799,
+      "endIndex": 2899,
       "startIndex": 0
     }
   ],
   "catalogSummary": {
-    "accepted": 2800,
-    "analysisIncomplete": 1772,
+    "accepted": 2900,
+    "analysisIncomplete": 1835,
     "duplicate": 0,
     "qualityRejected": 0,
     "unknown": 0
   },
-  "catalogDigest": "de86df7e228d424a8096d599c8a18479ebc0c98c01ed2a7c04445d94e590b25c",
-  "catalogSHA256": "a031a34359851230266cd08f75415073350ea38b7bfea010f329208b9d5dc8dc",
-  "totalGenerationElapsedMs": 253536.23916499995,
+  "catalogDigest": "69bd4dbfed7ba3d2f43fc7d8d075f94355ffb4c23ba4bdb319426c0797f7f418",
+  "catalogSHA256": "920ba8295e1d2424fa9a96397da13190ed04da71ac5cd84be5adfc1d891ade4d",
+  "totalGenerationElapsedMs": 261983.75837399994,
   "maximumBatchRssBytes": 295485440,
   "reproducibility": {
     "analysisVersion": "workload-trap-recovery-v1",
@@ -635,6 +635,27 @@
       "shardDigest": "28747c4d6a258a429831b2915e49a927fa2ad7ac4622165cf3144c82645db1f6",
       "shardSHA256": "fb66a6af8d7718fe90ad04ef0357b38bdfb48469ac2a74fa550ee9fe94abcdbe",
       "manifestSHA256": "8d8a86ec987f418594a7ca8d5456b1220ba176b9261e32bf3b59ef69e020404e"
+    },
+    {
+      "batch": 28,
+      "startIndex": 2800,
+      "endIndex": 2899,
+      "file": "shard-002800-002899.json",
+      "manifest": "shard-002800-002899.run.json",
+      "summary": {
+        "accepted": 100,
+        "analysisIncomplete": 63,
+        "duplicate": 0,
+        "qualityRejected": 0,
+        "unknown": 0
+      },
+      "elapsedMs": 8447.519209,
+      "maxRssBytes": 206290944,
+      "generationCommit": "b2d044ba7ba42b87946cab9b8d3c4e6f52b3e7b3",
+      "generationDirty": false,
+      "shardDigest": "3d30228604ec0a2d204faf9ebf397bbb19c7e2049b64929630dfe8e911ee0062",
+      "shardSHA256": "ac9800fc04d5f3a6fbcd4a48eade95699e4dc11b91db7655b4525a3f50ada30b",
+      "manifestSHA256": "c7bbfa5e43945e49b12b70f7cd023f169a2f5b14135860ebe0e42c3a46174dc8"
     }
   ]
 }
