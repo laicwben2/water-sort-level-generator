@@ -2,29 +2,29 @@
   "formatVersion": "local-batch-publication-v1",
   "requestedNewCandidates": 2000,
   "batchSize": 100,
-  "completedBatches": 16,
-  "processedNewCandidates": 1600,
-  "newUniquePuzzles": 1600,
+  "completedBatches": 17,
+  "processedNewCandidates": 1700,
+  "newUniquePuzzles": 1700,
   "baselineCandidates": 100,
   "baselinePuzzles": 100,
   "baselineFile": "../../pilots/mac-local-pilot-v1/shard-000000-000099.json",
   "seed": "mac-local-pilot-v1",
   "ranges": [
     {
-      "endIndex": 1699,
+      "endIndex": 1799,
       "startIndex": 0
     }
   ],
   "catalogSummary": {
-    "accepted": 1700,
-    "analysisIncomplete": 1071,
+    "accepted": 1800,
+    "analysisIncomplete": 1141,
     "duplicate": 0,
     "qualityRejected": 0,
     "unknown": 0
   },
-  "catalogDigest": "b0ec7da6d810fa6f10eda015bbf0aa0187da635be1130aded13c9f9312d0f7d2",
-  "catalogSHA256": "23fdcaa1ec6c768d1aff2c538ec49c685b485124c02647799985ba583a967c11",
-  "totalGenerationElapsedMs": 68106.33816599999,
+  "catalogDigest": "787dac09b4a3fe893fdd73c1b9065c29bb7cde784d95e6e9f920e659b4a0638f",
+  "catalogSHA256": "77b48844a9b002391615150c559a38f5a8a029ae3471bbcc96503c7645046e2c",
+  "totalGenerationElapsedMs": 73274.93387399998,
   "maximumBatchRssBytes": 295485440,
   "reproducibility": {
     "analysisVersion": "workload-trap-recovery-v1",
@@ -393,6 +393,27 @@
       "shardDigest": "26924da221a0398b859d6fefacee15af4b8371f4e572b508a34720a1e0219d43",
       "shardSHA256": "2746553b87480250cb3e993efb493f4af3333c5615e2a8728d4b6cbbf5942d57",
       "manifestSHA256": "aae274efb7e52247fece892466f6863a33e1be9158a2c8de6aa03c18a3b100bf"
+    },
+    {
+      "batch": 17,
+      "startIndex": 1700,
+      "endIndex": 1799,
+      "file": "shard-001700-001799.json",
+      "manifest": "shard-001700-001799.run.json",
+      "summary": {
+        "accepted": 100,
+        "analysisIncomplete": 70,
+        "duplicate": 0,
+        "qualityRejected": 0,
+        "unknown": 0
+      },
+      "elapsedMs": 5168.595708,
+      "maxRssBytes": 212746240,
+      "generationCommit": "179df07a9549976f337da16a24271a4af0a51fca",
+      "generationDirty": false,
+      "shardDigest": "0142f748663078cb25fc46df028fcfc262c6517a41b77955cd503a45f7ecea6c",
+      "shardSHA256": "ee72c76f5c2121fd6fca559ae90737b92640b22d6d6418eeb2985686bc9646f3",
+      "manifestSHA256": "3713d1a78ea47d3e4c04419d266a31081f7e29b3d275f8e5a02394eac79fac88"
     }
   ]
 }
