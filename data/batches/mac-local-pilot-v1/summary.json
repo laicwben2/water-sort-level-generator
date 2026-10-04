@@ -2,29 +2,29 @@
   "formatVersion": "local-batch-publication-v1",
   "requestedNewCandidates": 2000,
   "batchSize": 100,
-  "completedBatches": 1,
-  "processedNewCandidates": 100,
-  "newUniquePuzzles": 100,
+  "completedBatches": 2,
+  "processedNewCandidates": 200,
+  "newUniquePuzzles": 200,
   "baselineCandidates": 100,
   "baselinePuzzles": 100,
   "baselineFile": "../../pilots/mac-local-pilot-v1/shard-000000-000099.json",
   "seed": "mac-local-pilot-v1",
   "ranges": [
     {
-      "endIndex": 199,
+      "endIndex": 299,
       "startIndex": 0
     }
   ],
   "catalogSummary": {
-    "accepted": 200,
-    "analysisIncomplete": 132,
+    "accepted": 300,
+    "analysisIncomplete": 191,
     "duplicate": 0,
     "qualityRejected": 0,
     "unknown": 0
   },
-  "catalogDigest": "b67d32b37c3c6ba30698a71840320ce18da2ae20c6b7cbfd8ea7535828cf4e98",
-  "catalogSHA256": "f5395d79e37cec62ab0fe9e765a53647774dc3af0f121e0c3d3a33c4f67c4e54",
-  "totalGenerationElapsedMs": 3755.94325,
+  "catalogDigest": "d569ace2d82d1e58f498eca0c74b1e38937d0ee400ed1376a539e9a280c4df8e",
+  "catalogSHA256": "d0e9ca942a82d8cce237f5330af9729ebbedac11f6731922dfd78b149093aba3",
+  "totalGenerationElapsedMs": 7506.93375,
   "maximumBatchRssBytes": 227147776,
   "reproducibility": {
     "analysisVersion": "workload-trap-recovery-v1",
@@ -78,6 +78,27 @@
       "shardDigest": "0b003c9ef07a83005b103298c7973ffc99cfe96418108f41ca2a143c7f0d90e2",
       "shardSHA256": "982bf43cb6cf2995a66bc696f4fb309d70a0bbb23e974c40a2eb56bab5f6e7b0",
       "manifestSHA256": "f1fdbcdf8536d88665c83920253b0119a3acabca4c2dd968592727cf859efb2d"
+    },
+    {
+      "batch": 2,
+      "startIndex": 200,
+      "endIndex": 299,
+      "file": "shard-000200-000299.json",
+      "manifest": "shard-000200-000299.run.json",
+      "summary": {
+        "accepted": 100,
+        "analysisIncomplete": 59,
+        "duplicate": 0,
+        "qualityRejected": 0,
+        "unknown": 0
+      },
+      "elapsedMs": 3750.9905,
+      "maxRssBytes": 224821248,
+      "generationCommit": "2e84352ec7151dd00a844a7bca541942d662ff31",
+      "generationDirty": false,
+      "shardDigest": "fd4fcca1bfa3907cf7af6d5f48b28a6089af4d92d151c17cefda77fb79753688",
+      "shardSHA256": "310219fc98610370e8491ebd70a568eafeb464d473b4577e6f39338b77b2e743",
+      "manifestSHA256": "a79d22acdaafac9db010f34b2107b1eea8c2878f5d417dd8244030fe8770d253"
     }
   ]
 }
