@@ -221,4 +221,4 @@ The [Mac 100-candidate pilot report](docs/mac-local-pilot.md) records environmen
 
 The [Mac pilot handoff](data/pilots/mac-local-pilot-v1/README.md) includes all 100 generated puzzles, original run manifests, recorded environment, raw metric summary, and byte-identical repeat/merge evidence for reuse by another task.
 
-The [Mac batch expansion handoff](data/batches/mac-local-pilot-v1/README.md) adds 2,000 puzzles in 20 published batches of 100. Its [cumulative catalog](data/batches/mac-local-pilot-v1/catalog.json) contains 2,100 unique puzzles including the original pilot; [batch summary](data/batches/mac-local-pilot-v1/summary.json), environment, original run manifests, and independent merge verification are included.
+The [Mac batch expansion handoff](data/batches/mac-local-pilot-v1/README.md) adds 2,900 puzzles in 29 published batches of 100. Its [cumulative catalog](data/batches/mac-local-pilot-v1/catalog.json) contains 3,000 unique puzzles including the original pilot; [batch summary](data/batches/mac-local-pilot-v1/summary.json), environment, original run manifests, and independent merge verification are included.
