@@ -1,6 +1,6 @@
 # 審查與改善待辦 — 2026-10-04
 
-審查基準：`93cb2e264c6263e072f4d7fbaf2dbcb1435ae2df`，分支 `feat/local-deterministic-shards-v1`，累積 3,000 題。依使用者要求逐項記錄，本輪僅更新文件，不修改產品程式碼、不新增正式題目。狀態：本輪審查完成；以下 12 項皆為待辦，尚未實作。
+審查基準：`93cb2e264c6263e072f4d7fbaf2dbcb1435ae2df`，分支 `feat/local-deterministic-shards-v1`，累積 3,000 題。依使用者要求逐項記錄，本輪僅更新文件，不修改產品程式碼、不新增正式題目。狀態：本輪審查完成；以下保留審查時的 12 項待辦與證據；2026-10-05 起的實作進度見 [改善實作紀錄](implementation-progress.md)。
 
 優先級：P1＝影響結果可信度或失敗後恢復；P2＝明確效能／操作改善；P3＝需量測再決策。程式位置以審查基準版本為準。實測與推論分開標示，效能提案須維持 deterministic seed／排序、exact canonical identity 與 UNKNOWN 語意。
 

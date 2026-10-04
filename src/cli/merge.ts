@@ -1,13 +1,11 @@
 import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { mergeLocalShards, serialize } from '../shard'
-import { stringArg } from './args'
+import { parseCliOptions, stringArg } from './args'
 import { assertNewOutput, requireLocalRuntime, writeArtifact } from './local'
 
+const paths = parseCliOptions(['output'], 'Merge: shard-a.json shard-b.json --output=merged.json. Overlaps and incompatible inputs are rejected.', true)
 requireLocalRuntime()
-const paths = process.argv.slice(2).filter(arg => !arg.startsWith('--'))
-const unknownFlags = process.argv.slice(2).filter(arg => arg.startsWith('--') && !arg.startsWith('--output='))
-if (unknownFlags.length) throw new Error(`Unsupported merge option: ${unknownFlags[0]}`)
 if (!paths.length) throw new Error('Usage: npm run merge -- shard-a.json shard-b.json --output=merged.json')
 const output = resolve(stringArg('output', 'output/merged.json')!)
 await assertNewOutput(output)

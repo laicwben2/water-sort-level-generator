@@ -13,6 +13,20 @@ function cli(name: string, args: string[]) {
   })
 }
 describe('native local CLI', () => {
+  it('help never generates or overwrites and legacy typos fail before work', () => {
+    const output = join(directory, 'help.json')
+    expect(cli('generate', ['--help', `--output=${output}`])).toContain('per difficulty')
+    expect(existsSync(output)).toBe(false)
+    for (const args of [['--start-inde=0', '--end-inde=1'], ['--count=1x'], ['--count=0'], ['--seed=a', '--seed=b']]) {
+      expect(() => cli('generate', [...args, `--output=${output}`])).toThrow()
+      expect(existsSync(output)).toBe(false)
+    }
+    expect(cli('analyze-shard', ['--help'])).toContain('positive')
+  })
+  it.each(['--analysis-max-state=1', '--analysis-max-states=0', '--severe-penalty=0', '--analysis-max-steps=1x', '--analysis-max-states=1 --analysis-max-states=2'])('rejects invalid analysis options before reading a source: %s', flag => {
+    expect(() => cli('analyze-shard', ['--input=missing.json', ...flag.split(' '), `--output=${join(directory, 'invalid-research.json')}`])).toThrow()
+    expect(existsSync(join(directory, 'invalid-research.json'))).toBe(false)
+  })
   it('writes deterministic shards with separate varying manifests and validates real files', () => {
     const a = join(directory, 'a.json'), b = join(directory, 'b.json')
     const args = ['--seed=cli-test', '--start-index=0', '--end-index=0', '--colors=2', '--capacity=2']

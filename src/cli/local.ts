@@ -3,7 +3,7 @@ import { hostname, release } from 'node:os'
 import { mkdir, writeFile, link, unlink, access } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { performance } from 'node:perf_hooks'
-import { DEFAULT_LOCAL_CONFIG, generateLocalShard, serialize, validateLocalShard, type LocalConfig } from '../shard'
+import { DEFAULT_LOCAL_CONFIG, generateLocalShard, serialize, validateLocalShard, validateConfig, type LocalConfig } from '../shard'
 import { stringArg } from './args'
 
 export function requireLocalRuntime(): void {
@@ -22,7 +22,7 @@ export function localConfigArgs(): LocalConfig {
     if (!/^\d+$/.test(raw)) throw new Error('--colors must contain integer type counts')
     return Number(raw)
   })
-  return {
+  const config: LocalConfig = {
     colors, capacity: safeIntArg('capacity', 4), maxEmptyTubes: safeIntArg('max-empty', 5),
     maxDepth: safeIntArg('max-depth', 100), maxVisitedStates: safeIntArg('max-states', 100_000),
     mistakeAnalysis: {
@@ -33,6 +33,8 @@ export function localConfigArgs(): LocalConfig {
       severeRecoveryThreshold: safeIntArg('severe-penalty', 5),
     },
   }
+  validateConfig(config)
+  return config
 }
 export async function assertNewOutput(path: string): Promise<void> {
   try { await access(path) } catch (error) {
